@@ -18,7 +18,8 @@ const app = express();
 const port = Number(process.env.PORT ?? 4000);
 const host = process.env.HOST ?? "0.0.0.0";
 const DEFAULT_AVAILABILITY_TIMEOUT_MS = 25_000;
-const DEFAULT_JDEMENATO_BROWSER_TIMEOUT_MS = 20_000;
+const DEFAULT_TK_SPARTA_AVAILABILITY_TIMEOUT_MS = 60_000;
+const DEFAULT_JDEMENATO_BROWSER_TIMEOUT_MS = 45_000;
 
 const querySchema = z.object({
   club: z.string().default("tk-sparta-praha"),
@@ -241,7 +242,9 @@ function jdemenatoBrowserLogger() {
 
 function providerTimeoutMs(clubSlug: string): number {
   const providerSpecificTimeout =
-    clubSlug === "tk-sparta-praha" ? optionalNumber(process.env.TK_SPARTA_AVAILABILITY_TIMEOUT_MS) : undefined;
+    clubSlug === "tk-sparta-praha"
+      ? optionalNumber(process.env.TK_SPARTA_AVAILABILITY_TIMEOUT_MS) ?? DEFAULT_TK_SPARTA_AVAILABILITY_TIMEOUT_MS
+      : undefined;
 
   return providerSpecificTimeout ?? optionalNumber(process.env.AVAILABILITY_TIMEOUT_MS) ?? DEFAULT_AVAILABILITY_TIMEOUT_MS;
 }

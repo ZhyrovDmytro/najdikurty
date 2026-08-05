@@ -5,6 +5,8 @@ import type { AvailabilityResult } from "../../types.js";
 const DEFAULT_BROWSER_PROFILE_DIR = ".mamekurt/browser-profiles/jdemenato";
 const DEFAULT_BROWSER_TIMEOUT_MS = 90_000;
 const DEFAULT_HTTP_FALLBACK_TIMEOUT_MS = 5_000;
+const DEFAULT_PORTAL_FROM_HOUR = 2;
+const DEFAULT_PORTAL_TO_HOUR = 22;
 
 export interface JdemeNaToFetchOptions {
   baseUrl?: string;
@@ -119,9 +121,9 @@ async function fetchJdemeNaToPortalSearchAvailabilityWithHttp(
   const sourceUrl = portalSearchUrl(baseUrl, {
     city: options.city ?? "Praha",
     date,
-    fromHour: options.fromHour ?? 0,
+    fromHour: options.fromHour ?? DEFAULT_PORTAL_FROM_HOUR,
     sportId: options.sportId ?? "172791371",
-    toHour: options.toHour ?? 24
+    toHour: options.toHour ?? DEFAULT_PORTAL_TO_HOUR
   });
   const session = new CookieSession(options.fetchImpl ?? fetch, options.timeoutMs);
 
@@ -180,9 +182,9 @@ async function fetchJdemeNaToPortalSearchAvailabilityWithBrowser(
   const sourceUrl = portalSearchUrl(baseUrl, {
     city: options.city ?? "Praha",
     date,
-    fromHour: options.fromHour ?? 0,
+    fromHour: options.fromHour ?? DEFAULT_PORTAL_FROM_HOUR,
     sportId: options.sportId ?? "172791371",
-    toHour: options.toHour ?? 24
+    toHour: options.toHour ?? DEFAULT_PORTAL_TO_HOUR
   });
 
   browserOptions.logger?.("portal.browser.launch.start", {
@@ -462,23 +464,28 @@ async function submitPortalSearchForm(
   logger?.("portal.browser.search.prepare", {
     city: options.city ?? "Praha",
     date,
-    fromHour: options.fromHour ?? 0,
+    fromHour: options.fromHour ?? DEFAULT_PORTAL_FROM_HOUR,
     sportId: options.sportId ?? "172791371",
-    toHour: options.toHour ?? 24
+    toHour: options.toHour ?? DEFAULT_PORTAL_TO_HOUR
   });
 
   const searchForm = page.locator("#searchForm").first();
-  await searchForm.waitFor({ state: "visible", timeout: timeoutMs });
+  try {
+    await searchForm.waitFor({ state: "visible", timeout: timeoutMs });
+  } catch (error) {
+    logger?.("portal.browser.search.form.missing", await browserPageDiagnostics(page));
+    throw error;
+  }
 
   await page.locator("#globalSport").selectOption(options.sportId ?? "172791371");
   await page.locator("#textfield").fill(options.city ?? "Praha");
   await page.locator("#date").fill(formatPortalDate(date));
   await page.locator("#fromHour").evaluate((element, value) => {
     (element as HTMLInputElement).value = String(value);
-  }, options.fromHour ?? 0);
+  }, options.fromHour ?? DEFAULT_PORTAL_FROM_HOUR);
   await page.locator("#toHour").evaluate((element, value) => {
     (element as HTMLInputElement).value = String(value);
-  }, options.toHour ?? 24);
+  }, options.toHour ?? DEFAULT_PORTAL_TO_HOUR);
 
   const searchResponsePromise = page.waitForLoadState("domcontentloaded", { timeout: timeoutMs }).catch(() => undefined);
   await page.locator("#searchForm .btnSubmit").click();
@@ -488,6 +495,19 @@ async function submitPortalSearchForm(
   logger?.("portal.browser.search.submitted", {
     currentUrl: safePageUrl(page.url())
   });
+}
+
+async function browserPageDiagnostics(page: import("playwright-core").Page): Promise<Record<string, unknown>> {
+  const title = await page.title().catch(() => "unknown");
+  const bodyText = await page.locator("body").innerText({ timeout: 1_000 }).catch(() => "");
+
+  return {
+    currentUrl: safePageUrl(page.url()),
+    hasCloudflareText: /cloudflare|security verification|verify you are human|not a bot/i.test(bodyText),
+    hasSearchForm: await page.locator("#searchForm").count().then((count) => count > 0).catch(() => false),
+    pageTitle: title,
+    textStart: bodyText.replace(/\s+/g, " ").trim().slice(0, 180)
+  };
 }
 
 async function fetchRenderedHtmlWithBrowser(options: JdemeNaToBrowserRenderOptions): Promise<JdemeNaToRenderedHtml> {
