@@ -1516,6 +1516,14 @@ a.detailInfoRow:hover {
     grid-column: 1 / -1;
   }
 
+  .searchField-startTime {
+    grid-column: 1;
+  }
+
+  .searchField-endTime {
+    grid-column: 2;
+  }
+
   .searchField .uiFieldLabel {
     font-size: 0.82rem;
   }

@@ -509,7 +509,7 @@ function App() {
             <option value="outdoor">Outdoor</option>
           </Select>
         </Field>
-        <Field icon={<Timer size={16} />} label="Start time" className="searchField">
+        <Field icon={<Timer size={16} />} label="Start time" className="searchField searchField-startTime">
           <Select value={timeWindow.start} onChange={(event) => updateStartTime(event.target.value)} disabled={timeOptions.length === 0}>
             {startTimeOptions.map((time) => (
               <option value={time} key={time}>
@@ -518,7 +518,7 @@ function App() {
             ))}
           </Select>
         </Field>
-        <Field icon={<Timer size={16} />} label="End time" className="searchField">
+        <Field icon={<Timer size={16} />} label="End time" className="searchField searchField-endTime">
           <Select value={timeWindow.end} onChange={(event) => updateEndTime(event.target.value)} disabled={timeOptions.length === 0}>
             {endTimeOptions.map((time) => (
               <option value={time} key={time}>
