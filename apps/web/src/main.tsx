@@ -42,6 +42,7 @@ const initialParams = new URLSearchParams(window.location.search);
 const initialCurrentDate = pragueDateInputValue(new Date());
 const today = selectableDate(initialParams.get("date"), initialCurrentDate);
 const initialTheme = localStorage.getItem("mamekurt-theme") === "dark" ? "dark" : "light";
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
 type Page = "clubs" | "allClubs" | "about" | "privacy" | "terms" | "cookies";
 type CourtType = "indoor" | "outdoor";
 type CourtTypeFilter = CourtType | "all";
@@ -71,7 +72,7 @@ const CLUBS: Club[] = [
     slug: "tk-sparta-praha",
     name: "TK Sparta Prague",
     sport: "padel",
-    imageUrl: "/clubs/tk-sparta-praha.png",
+    imageUrl: assetPath("clubs/tk-sparta-praha.png"),
     address: "Za Císařským mlýnem 1115/2, 170 00 Praha 7-Bubeneč",
     phone: "+420 731 422 225",
     priceInfo: "1 h: Po-Pá 8-16 520 Kč, 16-21 580 Kč; víkend 540 Kč.",
@@ -86,7 +87,7 @@ const CLUBS: Club[] = [
     slug: "padel-prosek",
     name: "Padel Prosek",
     sport: "padel",
-    imageUrl: "/clubs/padel-prosek.png",
+    imageUrl: assetPath("clubs/padel-prosek.png"),
     address: "Lovosická 559, 190 00 Praha 9-Střížkov",
     phone: "+420 601 559 559",
     priceInfo: "1 h: Po-Pá 7-22 600 Kč; víkend 480 Kč.",
@@ -100,7 +101,7 @@ const CLUBS: Club[] = [
     slug: "padel-club-spoje",
     name: "Padel Club Spoje",
     sport: "padel",
-    imageUrl: "/clubs/padel-club-spoje.png",
+    imageUrl: assetPath("clubs/padel-club-spoje.png"),
     address: "Na Balkáně 990/21A, 130 00 Praha",
     phone: "+420 737 303 003",
     priceInfo: "1 h: Po-Pá 8-14 480 Kč, 14-20 520 Kč; víkend 520 Kč.",
@@ -113,7 +114,7 @@ const CLUBS: Club[] = [
     slug: "tenis-a-padel-klub-pisecna",
     name: "Tenis & Padel klub Písečná",
     sport: "padel",
-    imageUrl: "/clubs/tenis-a-padel-klub-pisecna.png",
+    imageUrl: assetPath("clubs/tenis-a-padel-klub-pisecna.png"),
     address: "K Sadu 590/1, Praha 8 - Troja, 182 00 Praha",
     phone: "+420 725 843 649",
     priceInfo: "1 h: Po-Pá 8-16 540 Kč, 16-22 640 Kč; víkend 540 Kč.",
@@ -126,7 +127,7 @@ const CLUBS: Club[] = [
     slug: "sk-slavia-praha-padel",
     name: "SK Slavia Praha Padel",
     sport: "padel",
-    imageUrl: "/clubs/sk-slavia-praha-padel.png",
+    imageUrl: assetPath("clubs/sk-slavia-praha-padel.png"),
     address: "Vladivostocká 1460/10, Praha 10",
     phone: "+420 606 030 301",
     priceInfo: "1 h: Po-Pá 8-10 690 Kč, 10-15 550 Kč, 15-22 690 Kč; víkend 550 Kč.",
@@ -139,7 +140,7 @@ const CLUBS: Club[] = [
     slug: "head-tenis-centrum-vestec",
     name: "Head Tenis Centrum, Vestec",
     sport: "padel",
-    imageUrl: "/clubs/head-tenis-centrum-vestec.png",
+    imageUrl: assetPath("clubs/head-tenis-centrum-vestec.png"),
     address: "Sportovní 456, 252 42 Vestec-Jesenice u Prahy",
     phone: "+420 777 773 139",
     priceInfo: "1 h: Po-Pá 7-16 750 Kč, 16-24 900 Kč; víkend 850 Kč.",
@@ -154,7 +155,7 @@ const CLUBS: Club[] = [
     slug: "padel-neride",
     name: "Padel Neride",
     sport: "padel",
-    imageUrl: "/clubs/padel-neride.png",
+    imageUrl: assetPath("clubs/padel-neride.png"),
     address: "V Chotejně 700, 102 00 Praha 15",
     phone: "+420 272 111 817",
     priceInfo: "1 h: léto Po-Pá 6-16 420 Kč, 16-24 490 Kč, víkend 420 Kč; zima 650-750 Kč.",
@@ -168,7 +169,7 @@ const CLUBS: Club[] = [
     slug: "padel-dzus",
     name: "Padel Džus",
     sport: "padel",
-    imageUrl: "/clubs/padel-dzus.png",
+    imageUrl: assetPath("clubs/padel-dzus.png"),
     address: "U Továren 999/31, 102 00 Praha 15-Hostivař",
     phone: "+420 602 605 905",
     priceInfo: "1 h: Po-Pá 7-16 650-800 Kč, 16-23 750-900 Kč; víkend 700-850 Kč.",
@@ -182,7 +183,7 @@ const CLUBS: Club[] = [
     slug: "padel-powers-smichov",
     name: "Padel Powers Smíchov",
     sport: "padel",
-    imageUrl: "/clubs/padel-powers-smichov.png",
+    imageUrl: assetPath("clubs/padel-powers-smichov.png"),
     address: "Křížová 6, 150 00 Praha 5-Smíchov",
     phone: "+420 725 521 360",
     priceInfo: "1 h: Po-Pá 7-16 800 Kč, 16-00 900 Kč.",
@@ -196,7 +197,7 @@ const CLUBS: Club[] = [
     slug: "cisarska-louka-padel",
     name: "Císařská louka Padel",
     sport: "padel",
-    imageUrl: "/clubs/cisarska-louka-padel.png",
+    imageUrl: assetPath("clubs/cisarska-louka-padel.png"),
     address: "Areál Císařská louka, Praha 5-Smíchov",
     phone: "+420 725 795 323",
     priceInfo: "1 h: Po-Pá 9-12 690 Kč, 12-16 790 Kč, 16-23 850 Kč; víkend 11-21:30 850 Kč.",
@@ -248,7 +249,7 @@ function App() {
       const results = await Promise.allSettled(
         FETCHABLE_CLUBS.map(async (club) => {
           const params = new URLSearchParams({ club: club.slug, sport: club.sport, date });
-          const response = await fetch(`/api/availability?${params}`);
+          const response = await fetch(`${API_BASE_URL}/api/availability?${params}`);
           const payload = await response.json();
 
           if (!response.ok) {
@@ -405,7 +406,7 @@ function App() {
     <main className="appShell">
       <nav className="topbar" aria-label="Page navigation">
         <a className="brandMark" href={clubsHref(date)} onClick={(event) => handleInternalNavigation(event, () => navigateToClubs("push"))}>
-          <img src="/logo.png" alt="" />
+          <img src={assetPath("logo.png")} alt="" />
           HLEDATKURTY
         </a>
         {page !== "clubs" || selectedClub ? (
@@ -694,7 +695,7 @@ function SiteFooter({
     <footer className="siteFooter">
       <div className="footerBrand">
         <a className="footerLogo" href={clubsHref(date)} onClick={(event) => handleInternalNavigation(event, onNavigateToClubs)}>
-          <img src="/logo.png" alt="" />
+          <img src={assetPath("logo.png")} alt="" />
           <span>HLEDATKURTY</span>
         </a>
         <p>Independent padel court availability finder for Prague, Czech Republic.</p>
@@ -1353,6 +1354,10 @@ function clubsHref(date: string): string {
 
 function allClubsHref(): string {
   return "?page=all-clubs";
+}
+
+function assetPath(path: string): string {
+  return `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`;
 }
 
 function aboutHref(): string {
