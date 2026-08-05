@@ -90,10 +90,12 @@ class CookieSession {
       headers.set("Cookie", cookieHeader);
     }
 
-    const response = await this.fetchImpl(url, {
-      ...init,
-      headers
-    });
+    const response = await fetchWithRetry(() =>
+      this.fetchImpl(url, {
+        ...init,
+        headers
+      })
+    );
     this.storeCookies(response.headers);
     return response;
   }
@@ -110,6 +112,29 @@ class CookieSession {
       this.cookies.set(firstPart.slice(0, separatorIndex), firstPart.slice(separatorIndex + 1));
     }
   }
+}
+
+async function fetchWithRetry(fetcher: () => Promise<Response>, attempts = 3): Promise<Response> {
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      return await fetcher();
+    } catch (error) {
+      lastError = error;
+      if (attempt === attempts) {
+        break;
+      }
+
+      await delay(250 * attempt);
+    }
+  }
+
+  throw lastError;
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function readSetCookieHeaders(headers: Headers): string[] {

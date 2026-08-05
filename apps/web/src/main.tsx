@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   AlertCircle,
@@ -221,6 +221,11 @@ interface TrackedClub {
   priceFrom: number;
 }
 
+interface LoadProgress {
+  completed: number;
+  total: number;
+}
+
 function App() {
   const [page, setPage] = useState<Page>(initialPage);
   const [date, setDate] = useState(today);
@@ -239,48 +244,65 @@ function App() {
   const [failedClubs, setFailedClubs] = useState<FailedClub[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadProgress, setLoadProgress] = useState<LoadProgress>({ completed: 0, total: 0 });
+  const loadSequenceRef = useRef(0);
   const currentPragueDate = pragueDateInputValue(now);
   const trackedClubs = useMemo(() => sortTrackedClubs(buildTrackedClubs(CLUBS), clubSort, clubSortDirection), [clubSort, clubSortDirection]);
 
   async function loadAvailability() {
+    const loadId = loadSequenceRef.current + 1;
+    loadSequenceRef.current = loadId;
+
     setIsLoading(true);
+    setAvailabilityByClub({});
     setFailedClubs([]);
     setLoadError(null);
+    setLoadProgress({ completed: 0, total: FETCHABLE_CLUBS.length });
 
     try {
-      const results = await Promise.allSettled(
+      await Promise.all(
         FETCHABLE_CLUBS.map(async (club) => {
           const params = new URLSearchParams({ club: club.slug, sport: club.sport, date });
-          const response = await fetch(`${API_BASE_URL}/api/availability?${params}`);
-          const payload = await response.json();
+          try {
+            const response = await fetch(`${API_BASE_URL}/api/availability?${params}`);
+            const payload = await response.json();
 
-          if (!response.ok) {
-            throw new Error(payload.error ?? `Failed to load ${club.name}`);
+            if (!response.ok) {
+              throw new Error(payload.error ?? `Failed to load ${club.name}`);
+            }
+
+            if (loadSequenceRef.current !== loadId) return;
+            setAvailabilityByClub((currentAvailability) => ({
+              ...currentAvailability,
+              [club.slug]: payload
+            }));
+          } catch (error) {
+            if (loadSequenceRef.current !== loadId) return;
+            setFailedClubs((currentFailedClubs) => [
+              ...currentFailedClubs,
+              {
+                club,
+                reason: error instanceof Error ? error.message : "Could not be checked"
+              }
+            ]);
+          } finally {
+            if (loadSequenceRef.current === loadId) {
+              setLoadProgress((currentProgress) => ({
+                ...currentProgress,
+                completed: Math.min(currentProgress.completed + 1, currentProgress.total)
+              }));
+            }
           }
-
-          return [club.slug, payload] as const;
         })
       );
-      const successfulResults = results
-        .filter((result): result is PromiseFulfilledResult<readonly [string, AvailabilityResult]> => result.status === "fulfilled")
-        .map((result) => result.value);
-      const failedResults = results.flatMap((result, index) =>
-        result.status === "rejected"
-          ? [
-              {
-                club: FETCHABLE_CLUBS[index],
-                reason: result.reason instanceof Error ? result.reason.message : "Could not be checked"
-              }
-            ]
-          : []
-      );
-
-      setAvailabilityByClub(Object.fromEntries(successfulResults));
-      setFailedClubs(failedResults);
     } catch (loadError) {
-      setLoadError(loadError instanceof Error ? loadError.message : "Failed to load availability");
+      if (loadSequenceRef.current === loadId) {
+        setLoadError(loadError instanceof Error ? loadError.message : "Failed to load availability");
+      }
     } finally {
-      setIsLoading(false);
+      if (loadSequenceRef.current === loadId) {
+        setIsLoading(false);
+      }
     }
   }
 
@@ -533,8 +555,14 @@ function App() {
         <div>
           <Search size={18} />
           <strong>
-            {isLoading ? "Checking clubs" : selectedClub ? `${selectedSlots.length} bookable slots` : `${visibleClubResults.length} matching clubs`}
+            {selectedClub ? `${selectedSlots.length} bookable slots` : `${visibleClubResults.length} matching clubs`}
           </strong>
+          {loadProgress.total > 0 ? (
+            <span className={isLoading ? "loadProgressBadge loadProgressBadge-loading" : "loadProgressBadge"}>
+              {isLoading ? <span className="loadProgressSpinner" aria-hidden="true" /> : null}
+              {loadProgress.completed}/{loadProgress.total} checked
+            </span>
+          ) : null}
         </div>
         <Button
           aria-label="Refresh availability"

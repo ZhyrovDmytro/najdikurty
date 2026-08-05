@@ -181,6 +181,7 @@ function sanitizeLoginLocation(location: string): string {
 async function fetchRenderedHtmlWithBrowser(options: JdemeNaToBrowserRenderOptions): Promise<JdemeNaToRenderedHtml> {
   const { chromium } = await import("playwright-core");
   const context = await chromium.launchPersistentContext(options.userDataDir, {
+    args: ["--no-sandbox", "--disable-dev-shm-usage"],
     channel: options.channel,
     executablePath: options.executablePath,
     headless: options.headless,

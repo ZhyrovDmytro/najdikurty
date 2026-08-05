@@ -61,12 +61,13 @@ If the hosting provider blocks the plain HTTP login request, enable the TK Spart
 export JDEMENATO_BROWSER="1"
 export JDEMENATO_BROWSER_PROFILE_DIR="/tmp/mamekurt-jdemenato"
 export JDEMENATO_BROWSER_HEADLESS="true"
+export PLAYWRIGHT_BROWSERS_PATH="0"
 ```
 
 On Render, install Chromium during build before starting the API:
 
 ```bash
-npm ci && npx playwright-core install chromium && npm run build -w @mamekurt/scrapers && npm run build -w @mamekurt/api
+PLAYWRIGHT_BROWSERS_PATH=0 npm ci && PLAYWRIGHT_BROWSERS_PATH=0 npx playwright-core install chromium && npm run build -w @mamekurt/scrapers && npm run build -w @mamekurt/api
 ```
 
 If you want to route only the browser login through an approved proxy, set `JDEMENATO_BROWSER_PROXY_SERVER` and optionally
