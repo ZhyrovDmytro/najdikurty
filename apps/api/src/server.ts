@@ -165,6 +165,7 @@ async function fetchAvailabilityByClub(query: z.infer<typeof querySchema>) {
 async function fetchTkSpartaAvailability(query: z.infer<typeof querySchema>) {
   try {
     return await fetchJdemeNaToPortalSearchAvailability({
+      browser: jdemenatoBrowserOptions(query.live),
       clubSlug: query.club,
       date: query.date,
       logger: jdemenatoBrowserLogger(),

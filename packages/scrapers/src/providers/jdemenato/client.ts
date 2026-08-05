@@ -23,6 +23,7 @@ export interface JdemeNaToCredentials {
 
 export interface JdemeNaToPortalSearchOptions {
   baseUrl?: string;
+  browser?: JdemeNaToBrowserOptions | false;
   city?: string;
   clubSlug: string;
   date?: string;
@@ -88,6 +89,30 @@ export async function fetchJdemeNaToAvailability(options: JdemeNaToFetchOptions)
 export async function fetchJdemeNaToPortalSearchAvailability(
   options: JdemeNaToPortalSearchOptions
 ): Promise<AvailabilityResult> {
+  try {
+    return await fetchJdemeNaToPortalSearchAvailabilityWithHttp(options);
+  } catch (error) {
+    const browserOptions = normalizeBrowserOptions(options.browser);
+    if (!browserOptions) {
+      throw error;
+    }
+
+    browserOptions.logger?.("portal.http.failure", {
+      error: error instanceof Error ? error.message : String(error)
+    });
+    browserOptions.logger?.("portal.browser.fallback.start", {
+      clubSlug: options.clubSlug,
+      date: options.date,
+      organizationName: options.organizationName
+    });
+
+    return fetchJdemeNaToPortalSearchAvailabilityWithBrowser(options, browserOptions);
+  }
+}
+
+async function fetchJdemeNaToPortalSearchAvailabilityWithHttp(
+  options: JdemeNaToPortalSearchOptions
+): Promise<AvailabilityResult> {
   const startedAt = Date.now();
   const baseUrl = options.baseUrl ?? "https://jdemenato.cz";
   const date = options.date ?? todayPrague();
@@ -142,6 +167,87 @@ export async function fetchJdemeNaToPortalSearchAvailability(
     date,
     sport: options.sport
   });
+}
+
+async function fetchJdemeNaToPortalSearchAvailabilityWithBrowser(
+  options: JdemeNaToPortalSearchOptions,
+  browserOptions: JdemeNaToBrowserOptions
+): Promise<AvailabilityResult> {
+  const startedAt = Date.now();
+  const baseUrl = options.baseUrl ?? "https://jdemenato.cz";
+  const date = options.date ?? todayPrague();
+  const timeoutMs = browserOptions.timeoutMs ?? DEFAULT_BROWSER_TIMEOUT_MS;
+  const sourceUrl = portalSearchUrl(baseUrl, {
+    city: options.city ?? "Praha",
+    date,
+    fromHour: options.fromHour ?? 0,
+    sportId: options.sportId ?? "172791371",
+    toHour: options.toHour ?? 24
+  });
+
+  browserOptions.logger?.("portal.browser.launch.start", {
+    clubSlug: options.clubSlug,
+    headless: browserOptions.headless ?? true,
+    timeoutMs
+  });
+
+  const { chromium } = await import("playwright-core");
+  const context = await chromium.launchPersistentContext(browserOptions.userDataDir ?? DEFAULT_BROWSER_PROFILE_DIR, {
+    args: ["--no-sandbox", "--disable-dev-shm-usage"],
+    channel: browserOptions.channel,
+    executablePath: browserOptions.executablePath,
+    headless: browserOptions.headless ?? true,
+    proxy: browserOptions.proxy,
+    timeout: timeoutMs,
+    viewport: { width: 1440, height: 1000 }
+  });
+
+  try {
+    browserOptions.logger?.("portal.browser.launch.success", {
+      durationMs: Date.now() - startedAt
+    });
+
+    const page = context.pages()[0] ?? (await context.newPage());
+    page.setDefaultTimeout(timeoutMs);
+
+    browserOptions.logger?.("portal.browser.goto", {
+      sourcePath: sourceUrl.pathname
+    });
+    await page.goto(sourceUrl.toString(), { waitUntil: "domcontentloaded", timeout: timeoutMs });
+
+    await submitPortalSearchForm(page, options, date, timeoutMs, browserOptions.logger);
+
+    const card = page
+      .locator("[data-search-result]")
+      .filter({ has: page.locator("h2", { hasText: options.organizationName }) })
+      .first();
+    await card.waitFor({ state: "visible", timeout: timeoutMs });
+    browserOptions.logger?.("portal.browser.club.found", {
+      durationMs: Date.now() - startedAt,
+      organizationName: options.organizationName
+    });
+
+    await card.locator("a.showTimetable").first().click();
+    await page.locator(".reservationCalendarContainer .verticalTimetable").first().waitFor({
+      state: "visible",
+      timeout: timeoutMs
+    });
+
+    const timetableHtml = await page.locator(".reservationCalendarContainer").first().evaluate((element) => element.outerHTML);
+    browserOptions.logger?.("portal.browser.timetable.loaded", {
+      durationMs: Date.now() - startedAt,
+      htmlLength: timetableHtml.length
+    });
+
+    return parseJdemeNaToAvailability(timetableHtml, {
+      sourceUrl: sourceUrl.toString(),
+      clubSlug: options.clubSlug,
+      date,
+      sport: options.sport
+    });
+  } finally {
+    await context.close();
+  }
 }
 
 export interface JdemeNaToBrowserOptions {
@@ -344,6 +450,44 @@ function parseTapestryZoneContent(responseText: string): string {
   }
 
   return responseText;
+}
+
+async function submitPortalSearchForm(
+  page: import("playwright-core").Page,
+  options: JdemeNaToPortalSearchOptions,
+  date: string,
+  timeoutMs: number,
+  logger?: JdemeNaToBrowserLogger
+): Promise<void> {
+  logger?.("portal.browser.search.prepare", {
+    city: options.city ?? "Praha",
+    date,
+    fromHour: options.fromHour ?? 0,
+    sportId: options.sportId ?? "172791371",
+    toHour: options.toHour ?? 24
+  });
+
+  const searchForm = page.locator("#searchForm").first();
+  await searchForm.waitFor({ state: "visible", timeout: timeoutMs });
+
+  await page.locator("#globalSport").selectOption(options.sportId ?? "172791371");
+  await page.locator("#textfield").fill(options.city ?? "Praha");
+  await page.locator("#date").fill(formatPortalDate(date));
+  await page.locator("#fromHour").evaluate((element, value) => {
+    (element as HTMLInputElement).value = String(value);
+  }, options.fromHour ?? 0);
+  await page.locator("#toHour").evaluate((element, value) => {
+    (element as HTMLInputElement).value = String(value);
+  }, options.toHour ?? 24);
+
+  const searchResponsePromise = page.waitForLoadState("domcontentloaded", { timeout: timeoutMs }).catch(() => undefined);
+  await page.locator("#searchForm .btnSubmit").click();
+  await searchResponsePromise;
+  await page.locator("[data-search-result]").first().waitFor({ state: "visible", timeout: timeoutMs });
+
+  logger?.("portal.browser.search.submitted", {
+    currentUrl: safePageUrl(page.url())
+  });
 }
 
 async function fetchRenderedHtmlWithBrowser(options: JdemeNaToBrowserRenderOptions): Promise<JdemeNaToRenderedHtml> {
@@ -612,6 +756,11 @@ function todayPrague(): string {
   });
 
   return formatter.format(new Date());
+}
+
+function formatPortalDate(date: string): string {
+  const [year, month, day] = date.split("-");
+  return `${Number(month)}/${Number(day)}/${year}`;
 }
 
 function normalizeText(value: string): string {
