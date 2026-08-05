@@ -1518,10 +1518,17 @@ a.detailInfoRow:hover {
 
   .searchField-startTime {
     grid-column: 1;
+    grid-row: 3;
   }
 
   .searchField-endTime {
     grid-column: 2;
+    grid-row: 3;
+  }
+
+  .searchField-courtType {
+    grid-column: 1 / -1;
+    grid-row: 4;
   }
 
   .searchField .uiFieldLabel {

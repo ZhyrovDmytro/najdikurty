@@ -502,7 +502,7 @@ function App() {
             ))}
           </Select>
         </Field>
-        <Field icon={<CloudSun size={16} />} label="Court type" className="searchField">
+        <Field icon={<CloudSun size={16} />} label="Court type" className="searchField searchField-courtType">
           <Select value={courtTypeFilter} onChange={(event) => setCourtTypeFilter(event.target.value as CourtTypeFilter)}>
             <option value="all">All courts</option>
             <option value="indoor">Indoor</option>
