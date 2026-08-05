@@ -62,6 +62,7 @@ export JDEMENATO_BROWSER="1"
 export JDEMENATO_BROWSER_PROFILE_DIR="/tmp/mamekurt-jdemenato"
 export JDEMENATO_BROWSER_HEADLESS="true"
 export PLAYWRIGHT_BROWSERS_PATH="0"
+export TK_SPARTA_AVAILABILITY_TIMEOUT_MS="25000"
 ```
 
 On Render, install Chromium during build before starting the API:

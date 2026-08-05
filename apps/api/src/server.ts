@@ -16,6 +16,8 @@ import {
 const app = express();
 const port = Number(process.env.PORT ?? 4000);
 const host = process.env.HOST ?? "0.0.0.0";
+const DEFAULT_AVAILABILITY_TIMEOUT_MS = 25_000;
+const DEFAULT_JDEMENATO_BROWSER_TIMEOUT_MS = 20_000;
 
 const querySchema = z.object({
   club: z.string().default("tk-sparta-praha"),
@@ -31,12 +33,43 @@ app.get("/health", (_request, response) => {
 });
 
 app.get("/api/availability", async (request, response, next) => {
+  const startedAt = Date.now();
+  const requestId = createRequestId();
+
   try {
     const query = querySchema.parse(request.query);
-    const availability = await fetchAvailabilityByClub(query);
+    const timeoutMs = providerTimeoutMs(query.club);
+    logInfo("availability.start", {
+      requestId,
+      club: query.club,
+      date: query.date,
+      sport: query.sport,
+      timeoutMs
+    });
 
+    const availability = await withTimeout(
+      fetchAvailabilityByClub(query),
+      timeoutMs,
+      `${query.club} availability timed out`
+    );
+
+    logInfo("availability.success", {
+      requestId,
+      club: query.club,
+      date: availability.date,
+      courts: availability.courts.length,
+      durationMs: Date.now() - startedAt,
+      sourceUrl: availability.sourceUrl
+    });
     response.json(availability);
   } catch (error) {
+    const parsedQuery = querySchema.safeParse(request.query);
+    logError("availability.failure", error, {
+      requestId,
+      club: parsedQuery.success ? parsedQuery.data.club : "unknown",
+      date: parsedQuery.success ? parsedQuery.data.date : undefined,
+      durationMs: Date.now() - startedAt
+    });
     next(error);
   }
 });
@@ -161,9 +194,37 @@ function jdemenatoBrowserOptions(live?: string) {
     channel: process.env.JDEMENATO_BROWSER_CHANNEL,
     executablePath: process.env.JDEMENATO_BROWSER_EXECUTABLE_PATH,
     headless: process.env.JDEMENATO_BROWSER_HEADLESS !== "false",
-    timeoutMs: optionalNumber(process.env.JDEMENATO_BROWSER_TIMEOUT_MS),
+    logger: jdemenatoBrowserLogger(),
+    timeoutMs: optionalNumber(process.env.JDEMENATO_BROWSER_TIMEOUT_MS) ?? DEFAULT_JDEMENATO_BROWSER_TIMEOUT_MS,
     proxy: jdemenatoBrowserProxy()
   };
+}
+
+function jdemenatoBrowserLogger() {
+  return (event: string, details: Record<string, unknown> = {}) => {
+    logInfo(`jdemenato.${event}`, details);
+  };
+}
+
+function providerTimeoutMs(clubSlug: string): number {
+  const providerSpecificTimeout =
+    clubSlug === "tk-sparta-praha" ? optionalNumber(process.env.TK_SPARTA_AVAILABILITY_TIMEOUT_MS) : undefined;
+
+  return providerSpecificTimeout ?? optionalNumber(process.env.AVAILABILITY_TIMEOUT_MS) ?? DEFAULT_AVAILABILITY_TIMEOUT_MS;
+}
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeout = setTimeout(() => reject(new Error(message)), timeoutMs);
+  });
+
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+  });
 }
 
 function jdemenatoBrowserProxy() {
@@ -186,6 +247,25 @@ function optionalNumber(value: string | undefined): number | undefined {
 
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function createRequestId(): string {
+  return Math.random().toString(36).slice(2, 10);
+}
+
+function logInfo(event: string, details: Record<string, unknown> = {}) {
+  console.log(JSON.stringify({ level: "info", event, ...details }));
+}
+
+function logError(event: string, error: unknown, details: Record<string, unknown> = {}) {
+  console.error(
+    JSON.stringify({
+      level: "error",
+      event,
+      ...details,
+      error: error instanceof Error ? error.message : String(error)
+    })
+  );
 }
 
 function bookaballCredentials() {
