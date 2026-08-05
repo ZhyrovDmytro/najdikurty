@@ -58,4 +58,47 @@ describe("fetchJdemeNaToAvailability", () => {
     expect(new Headers(requests[1]?.init?.headers).get("Cookie")).toBe("JSESSIONID=first-session");
     expect(new Headers(requests[2]?.init?.headers).get("Cookie")).toBe("JSESSIONID=logged-in-session");
   });
+
+  it("uses the browser fallback when enabled and HTTP login is blocked", async () => {
+    const html = readFileSync(new URL("./fixtures/jdemenato-tk-sparta.html", import.meta.url), "utf8");
+    const responses = [
+      new Response("<form></form>", {
+        headers: {
+          "set-cookie": "JSESSIONID=first-session; Path=/reservation; HttpOnly"
+        }
+      }),
+      new Response("Forbidden", {
+        status: 403
+      })
+    ];
+    const fetchImpl = (async () => {
+      const response = responses.shift();
+      if (!response) {
+        throw new Error("Unexpected extra request");
+      }
+      return response;
+    }) as typeof fetch;
+
+    const result = await fetchJdemeNaToAvailability({
+      baseUrl: "https://jdemenato.cz",
+      browser: {
+        enabled: true,
+        renderer: async () => ({
+          html,
+          sourceUrl: "https://jdemenato.cz/reservation/myportalorganizationcalendar"
+        })
+      },
+      clubSlug: "tk-sparta-praha",
+      credentials: {
+        email: "player@example.com",
+        password: "secret"
+      },
+      date: "2026-08-12",
+      fetchImpl,
+      sport: "padel"
+    });
+
+    expect(result.courts).toHaveLength(2);
+    expect(result.sourceUrl).toBe("https://jdemenato.cz/reservation/myportalorganizationcalendar");
+  });
 });

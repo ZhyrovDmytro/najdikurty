@@ -55,6 +55,23 @@ export TK_SPARTA_EMAIL="your-email"
 export TK_SPARTA_PASSWORD="your-password"
 ```
 
+If the hosting provider blocks the plain HTTP login request, enable the TK Sparta browser-backed fallback:
+
+```bash
+export JDEMENATO_BROWSER="1"
+export JDEMENATO_BROWSER_PROFILE_DIR="/tmp/mamekurt-jdemenato"
+export JDEMENATO_BROWSER_HEADLESS="true"
+```
+
+On Render, install Chromium during build before starting the API:
+
+```bash
+npm ci && npx playwright-core install chromium && npm run build -w @mamekurt/scrapers && npm run build -w @mamekurt/api
+```
+
+If you want to route only the browser login through an approved proxy, set `JDEMENATO_BROWSER_PROXY_SERVER` and optionally
+`JDEMENATO_BROWSER_PROXY_USERNAME` / `JDEMENATO_BROWSER_PROXY_PASSWORD`.
+
 Padel Džus uses Bookaball. Availability can be read from the booking API, and credentials can be provided for an authenticated session:
 
 ```bash

@@ -2,6 +2,9 @@ import * as cheerio from "cheerio";
 import { parseJdemeNaToAvailability } from "./parser.js";
 import type { AvailabilityResult } from "../../types.js";
 
+const DEFAULT_BROWSER_PROFILE_DIR = ".mamekurt/browser-profiles/jdemenato";
+const DEFAULT_BROWSER_TIMEOUT_MS = 90_000;
+
 export interface JdemeNaToFetchOptions {
   baseUrl?: string;
   clubSlug: string;
@@ -9,6 +12,7 @@ export interface JdemeNaToFetchOptions {
   date?: string;
   sport?: string;
   fetchImpl?: typeof fetch;
+  browser?: JdemeNaToBrowserOptions | false;
 }
 
 export interface JdemeNaToCredentials {
@@ -17,6 +21,78 @@ export interface JdemeNaToCredentials {
 }
 
 export async function fetchJdemeNaToAvailability(options: JdemeNaToFetchOptions): Promise<AvailabilityResult> {
+  try {
+    return await fetchJdemeNaToAvailabilityWithHttp(options);
+  } catch (error) {
+    const browserOptions = normalizeBrowserOptions(options.browser);
+    if (!browserOptions || !options.credentials) {
+      throw error;
+    }
+
+    const renderer = browserOptions.renderer ?? fetchRenderedHtmlWithBrowser;
+    const baseUrl = options.baseUrl ?? "https://jdemenato.cz";
+    const date = options.date;
+    const rendered = await renderer({
+      baseUrl,
+      channel: browserOptions.channel,
+      clubSlug: options.clubSlug,
+      credentials: options.credentials,
+      date,
+      executablePath: browserOptions.executablePath,
+      headless: browserOptions.headless ?? true,
+      proxy: browserOptions.proxy,
+      sport: options.sport,
+      timeoutMs: browserOptions.timeoutMs ?? DEFAULT_BROWSER_TIMEOUT_MS,
+      userDataDir: browserOptions.userDataDir ?? DEFAULT_BROWSER_PROFILE_DIR
+    });
+
+    return parseJdemeNaToAvailability(rendered.html, {
+      sourceUrl: rendered.sourceUrl,
+      clubSlug: options.clubSlug,
+      sport: options.sport
+    });
+  }
+}
+
+export interface JdemeNaToBrowserOptions {
+  enabled?: boolean;
+  userDataDir?: string;
+  channel?: string;
+  executablePath?: string;
+  headless?: boolean;
+  timeoutMs?: number;
+  proxy?: JdemeNaToBrowserProxy;
+  renderer?: JdemeNaToBrowserRenderer;
+}
+
+export interface JdemeNaToBrowserProxy {
+  server: string;
+  username?: string;
+  password?: string;
+}
+
+export interface JdemeNaToBrowserRenderOptions {
+  baseUrl: string;
+  clubSlug: string;
+  credentials: JdemeNaToCredentials;
+  date?: string;
+  sport?: string;
+  userDataDir: string;
+  channel?: string;
+  executablePath?: string;
+  headless: boolean;
+  timeoutMs: number;
+  proxy?: JdemeNaToBrowserProxy;
+}
+
+export interface JdemeNaToRenderedHtml {
+  html: string;
+  sourceUrl: string;
+}
+
+export type JdemeNaToBrowserRenderer = (options: JdemeNaToBrowserRenderOptions) => Promise<JdemeNaToRenderedHtml>;
+
+async function fetchJdemeNaToAvailabilityWithHttp(options: JdemeNaToFetchOptions): Promise<AvailabilityResult> {
   const baseUrl = options.baseUrl ?? "https://jdemenato.cz";
   const session = new CookieSession(options.fetchImpl ?? fetch);
   const overviewUrl = options.credentials
@@ -58,6 +134,14 @@ export async function fetchJdemeNaToAvailability(options: JdemeNaToFetchOptions)
   });
 }
 
+function normalizeBrowserOptions(options: JdemeNaToFetchOptions["browser"]): JdemeNaToBrowserOptions | undefined {
+  if (options === undefined || options === false || options.enabled === false) {
+    return undefined;
+  }
+
+  return options;
+}
+
 async function login(
   session: CookieSession,
   baseUrl: string,
@@ -92,6 +176,74 @@ function sanitizeLoginLocation(location: string): string {
   }
 
   return location.replace(/;jsessionid=[^/?#]+/i, ";jsessionid=<redacted>");
+}
+
+async function fetchRenderedHtmlWithBrowser(options: JdemeNaToBrowserRenderOptions): Promise<JdemeNaToRenderedHtml> {
+  const { chromium } = await import("playwright-core");
+  const context = await chromium.launchPersistentContext(options.userDataDir, {
+    channel: options.channel,
+    executablePath: options.executablePath,
+    headless: options.headless,
+    proxy: options.proxy,
+    viewport: { width: 1440, height: 1000 }
+  });
+
+  try {
+    const page = context.pages()[0] ?? (await context.newPage());
+    page.setDefaultTimeout(options.timeoutMs);
+
+    await browserLogin(page, options);
+
+    const overviewUrl = new URL("/reservation/myportalorganizationcalendar", options.baseUrl);
+    await page.goto(overviewUrl.toString(), { waitUntil: "domcontentloaded", timeout: options.timeoutMs });
+    let html = await page.content();
+
+    if (options.sport && selectedSport(html) !== options.sport.toLowerCase()) {
+      const sportUrl = findSportUrl(html, options.baseUrl, options.sport);
+      if (sportUrl) {
+        await page.goto(sportUrl.toString(), { waitUntil: "domcontentloaded", timeout: options.timeoutMs });
+        html = await page.content();
+      }
+    }
+
+    if (options.date && selectedDate(html) !== options.date) {
+      await page.goto(authenticatedDateUrl(options.baseUrl, options.date).toString(), {
+        waitUntil: "domcontentloaded",
+        timeout: options.timeoutMs
+      });
+      html = await page.content();
+    }
+
+    return {
+      html,
+      sourceUrl: page.url()
+    };
+  } finally {
+    await context.close();
+  }
+}
+
+async function browserLogin(
+  page: import("playwright-core").Page,
+  options: JdemeNaToBrowserRenderOptions
+): Promise<void> {
+  const loginUrl = new URL(`/reservation/${options.clubSlug}/login`, options.baseUrl);
+  await page.goto(loginUrl.toString(), { waitUntil: "domcontentloaded", timeout: options.timeoutMs });
+
+  await page.locator('input[name="j_username"]').fill(options.credentials.email);
+  await page.locator('input[name="j_password"]').fill(options.credentials.password);
+
+  const loginResponsePromise = page
+    .waitForResponse((response) => response.url().includes("/j_spring_security_check"), { timeout: options.timeoutMs })
+    .catch(() => undefined);
+  const navigationPromise = page.waitForURL(/myportalorganizationcalendar/, { timeout: options.timeoutMs }).catch(() => undefined);
+
+  await page.locator('input[name="j_password"]').press("Enter");
+  const loginResponse = await Promise.race([loginResponsePromise, navigationPromise.then(() => undefined)]);
+  const location = loginResponse?.headers().location ?? "";
+  if (!page.url().includes("/reservation/myportalorganizationcalendar")) {
+    throw new Error(`JdemeNaTo browser login failed: status ${loginResponse?.status() ?? "unknown"}, location ${sanitizeLoginLocation(location)}`);
+  }
 }
 
 async function assertTextResponse(response: Response, url: string): Promise<string> {

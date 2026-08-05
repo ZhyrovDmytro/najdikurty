@@ -116,6 +116,7 @@ async function fetchAvailabilityByClub(query: z.infer<typeof querySchema>) {
   }
 
   return fetchJdemeNaToAvailability({
+    browser: query.club === "tk-sparta-praha" ? jdemenatoBrowserOptions(query.live) : undefined,
     clubSlug: query.club,
     credentials: query.club === "tk-sparta-praha" ? tkSpartaCredentials() : undefined,
     date: query.date,
@@ -143,6 +144,48 @@ function tkSpartaCredentials() {
   }
 
   return { email, password };
+}
+
+function jdemenatoBrowserOptions(live?: string) {
+  if (process.env.JDEMENATO_BROWSER === "0") {
+    return false;
+  }
+
+  if (process.env.JDEMENATO_BROWSER !== "1" && live !== "1") {
+    return undefined;
+  }
+
+  return {
+    enabled: true,
+    userDataDir: process.env.JDEMENATO_BROWSER_PROFILE_DIR,
+    channel: process.env.JDEMENATO_BROWSER_CHANNEL,
+    executablePath: process.env.JDEMENATO_BROWSER_EXECUTABLE_PATH,
+    headless: process.env.JDEMENATO_BROWSER_HEADLESS !== "false",
+    timeoutMs: optionalNumber(process.env.JDEMENATO_BROWSER_TIMEOUT_MS),
+    proxy: jdemenatoBrowserProxy()
+  };
+}
+
+function jdemenatoBrowserProxy() {
+  const server = process.env.JDEMENATO_BROWSER_PROXY_SERVER;
+  if (!server) {
+    return undefined;
+  }
+
+  return {
+    server,
+    username: process.env.JDEMENATO_BROWSER_PROXY_USERNAME,
+    password: process.env.JDEMENATO_BROWSER_PROXY_PASSWORD
+  };
+}
+
+function optionalNumber(value: string | undefined): number | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
 }
 
 function bookaballCredentials() {
