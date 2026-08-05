@@ -249,6 +249,10 @@ a {
   content: "";
 }
 
+.mobileMenuButton {
+  display: none;
+}
+
 .uiButton {
   display: inline-flex;
   align-items: center;
@@ -1373,21 +1377,21 @@ a.detailInfoRow:hover {
 
   .topbar {
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: 8px 12px;
+    gap: 8px;
     margin: 0 -6px 14px;
-    padding: 10px 12px 12px;
+    padding: 8px 10px;
   }
 
   .brandMark {
     grid-column: 1;
     grid-row: 1;
-    min-height: 40px;
-    font-size: 0.95rem;
+    min-height: 36px;
+    font-size: 0.9rem;
   }
 
   .brandMark img {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
   }
 
   .topbarSpacer {
@@ -1395,32 +1399,45 @@ a.detailInfoRow:hover {
   }
 
   .breadcrumbs {
-    grid-column: 1 / -1;
-    grid-row: 3;
-    font-size: 0.84rem;
+    display: none;
   }
 
   .topbarNav {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    gap: 14px;
-    overflow-x: auto;
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 10px;
+    display: none;
+    min-width: 190px;
+    padding: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .topbarNavOpen {
+    display: grid;
+    gap: 4px;
   }
 
   .topbarNavLink {
-    min-height: 36px;
-    padding: 6px 0;
-    font-size: 0.95rem;
+    min-height: 38px;
+    padding: 8px 10px;
+    font-size: 0.92rem;
   }
 
   .topbarNavLink:hover,
   .topbarNavLink:focus-visible {
-    background: transparent;
+    background: var(--surface-muted);
   }
 
   .topbarNavLink.active::after {
+    top: 8px;
     right: 0;
+    bottom: 8px;
     left: 0;
+    width: 3px;
+    height: auto;
   }
 
   .topbarActions {
@@ -1428,6 +1445,15 @@ a.detailInfoRow:hover {
     grid-row: 1;
     align-self: center;
     justify-content: flex-end;
+  }
+
+  .topbarActions .uiButton-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .mobileMenuButton {
+    display: inline-flex;
   }
 
   .aboutHero {

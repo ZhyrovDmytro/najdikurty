@@ -11,6 +11,7 @@ import {
   FileText,
   Link2,
   ListOrdered,
+  Menu,
   MapPin,
   Moon,
   Phone,
@@ -234,6 +235,7 @@ function App() {
   const [clubSort, setClubSort] = useState<ClubSort>("name");
   const [clubSortDirection, setClubSortDirection] = useState<SortDirection>("asc");
   const [theme, setTheme] = useState<"light" | "dark">(initialTheme);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [failedClubs, setFailedClubs] = useState<FailedClub[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -296,6 +298,10 @@ function App() {
     document.documentElement.dataset.theme = theme;
     localStorage.setItem("mamekurt-theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [page, selectedClubSlug]);
 
   useEffect(() => {
     function handlePopState() {
@@ -414,7 +420,7 @@ function App() {
         ) : (
           <span className="topbarSpacer" aria-hidden="true" />
         )}
-        <div className="topbarNav" aria-label="Primary navigation">
+        <div className={isMobileMenuOpen ? "topbarNav topbarNavOpen" : "topbarNav"} aria-label="Primary navigation">
           <a className={page === "clubs" ? "topbarNavLink active" : "topbarNavLink"} href={clubsHref(date)} onClick={(event) => handleInternalNavigation(event, () => navigateToClubs("push"))}>
             Find court
           </a>
@@ -432,6 +438,16 @@ function App() {
             onClick={() => setTheme((currentTheme) => (currentTheme === "dark" ? "light" : "dark"))}
             size="icon"
             title={theme === "dark" ? "Light mode" : "Dark mode"}
+            variant="secondary"
+          />
+          <Button
+            aria-expanded={isMobileMenuOpen}
+            aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+            className="mobileMenuButton"
+            icon={<Menu size={18} />}
+            onClick={() => setIsMobileMenuOpen((isOpen) => !isOpen)}
+            size="icon"
+            title={isMobileMenuOpen ? "Close menu" : "Open menu"}
             variant="secondary"
           />
         </div>
