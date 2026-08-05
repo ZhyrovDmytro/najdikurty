@@ -82,8 +82,16 @@ async function login(
 
   const location = response.headers.get("location") ?? "";
   if (response.status < 300 || response.status >= 400 || !location.includes("/reservation/myportalorganizationcalendar")) {
-    throw new Error("JdemeNaTo login failed");
+    throw new Error(`JdemeNaTo login failed: status ${response.status}, location ${sanitizeLoginLocation(location)}`);
   }
+}
+
+function sanitizeLoginLocation(location: string): string {
+  if (!location) {
+    return "none";
+  }
+
+  return location.replace(/;jsessionid=[^/?#]+/i, ";jsessionid=<redacted>");
 }
 
 async function assertTextResponse(response: Response, url: string): Promise<string> {
