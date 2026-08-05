@@ -1,0 +1,17 @@
+{
+  "name": "mamekurt",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/api",
+    "apps/web",
+    "packages/scrapers"
+  ],
+  "scripts": {
+    "build": "npm run build -w @mamekurt/scrapers && npm run build -w @mamekurt/api && npm run build -w @mamekurt/web",
+    "dev:api": "npm run dev -w @mamekurt/api",
+    "dev:web": "npm run dev -w @mamekurt/web",
+    "test": "npm test --workspaces --if-present"
+  }
+}

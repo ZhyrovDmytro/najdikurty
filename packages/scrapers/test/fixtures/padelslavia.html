@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="cs">
+
+    <head>
+        <base href="https://rezervace.padelslavia.cz" />
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="Přehled rezervací" />
+        <meta name="keywords" content="">
+
+        <title>Rezervace  | Rezervační systém SK SLAVIA PRAHA PADEL</title>
+
+
+        <!-- CSS -->
+        <link href="css/bootstrap.css" rel="stylesheet">
+        <link href="css/bootstrap-icons.css" rel="stylesheet">
+        <link href="css/rezervacni-system.css" rel="stylesheet">
+        <link href="css/flag-icon.min.css" rel="stylesheet">
+
+        <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+        <link href="js/jconfirm/jConfirm.css" rel="stylesheet" />
+        <link href="js/jqueryui/jquery-ui.min.css" rel="stylesheet" />
+
+        <!-- Favicons -->
+        <link rel="apple-touch-icon" sizes="180x180" href="favicons/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="favicons/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="favicons/favicon-16x16.png">
+        <link rel="manifest" href="favicons/site.webmanifest">
+        <link rel="mask-icon" href="favicons/safari-pinned-tab.svg" color="#a24335">
+        <link rel="shortcut icon" href="favicons/favicon.ico">
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-config" content="favicons/browserconfig.xml">
+        <meta name="theme-color" content="#ffffff">
+
+        <!-- ============= JS ============== -->
+        <script src="js/bootstrap.min.js"></script>
+
+        <script src="js/jquery.min.3.3.1.js"></script>
+        <script src="js/jqueryui/jquery-ui.min.js"></script>
+
+        <script src="js/jconfirm/jConfirm.js"></script>
+        <script src="js/js_cs.js"></script>
+        <!-- ============= JS KONEC / ============== -->
+
+    </head>
+	<body>
+    <!-- ============= HORNÍ LIŠTA ============== -->
+    <section class="horni-lista bg-obrazek bg-horni-lista py-3">
+        <div class="container">
+            <div class="row h-100 align-items-center">
+                <div class="col-8 text-start">
+                    <h1>SK Slavia Praha Padel</h1>
+                    <h2>rezervační systém</h2>
+                </div>
+                <div class="col-4 text-end d-none d-md-block">
+                    <a href="https://padelslavia.cz/cs" >
+                    <img src="pics/logo.png" class="img-fluid" alt="SK Slavia Praha Padel" title="SK Slavia Praha Padel">
+                    </a>
+                </div>
+                <div class="col-4 text-end d-md-none">
+                    <a href="https://padelslavia.cz/cs" >
+                    <img src="pics/logo_smaller.png" class="img-fluid" alt="SK Slavia Praha Padel" title="SK Slavia Praha Padel">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- ============= HORNÍ LIŠTA KONEC // ============== -->
+                <!-- ============= UŽIVATEL LIŠTA ============== -->
+            <section class="uzivatel-lista bg-seda py-3">
+                <div class="container horizontal-scrollable">
+                    <div class="row h-100 align-items-center">
+                        <div class="col-12 text-end horizontal-scrollable-hide">
+                            <a href="cs/prihlaseni" class="btn btn-sm btn-success ms-2"><i class="bi bi-box-arrow-right me-2"></i>Přihlásit</a>
+                                                                                                <a class=" ms-2" href="/en"><span class="flag-icon flag-icon-gb"></span></a>
+                                                                                    </div>
+                    </div>
+                </div>
+            </section>
+        <!-- ============= UŽIVATEL LIŠTA KONEC // ============== -->
+
+    <!-- ============= HLAVNÍ MENU ============== -->
+        <section class="bg-seda-svetla sticky-top py-3">
+            <div class="container">
+                <nav class="navbar sticky-top navbar-expand-xl">
+                    <div class="container-fluid">
+                        <span class="navbar-brand" href="#"></span>
+
+                        <button class="navbar-toggler collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#rs_navigace" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="toggler-icon top-bar"></span>
+                            <span class="toggler-icon middle-bar"></span>
+                            <span class="toggler-icon bottom-bar"></span>
+                        </button>
+
+                        <div class="collapse navbar-collapse" id="rs_navigace">
+
+                            <ul class="navbar-nav ms-auto">
+                                <!-- Vsichni -->
+                                <li class="nav-item"><a class="nav-link active" href="cs/rezervace"><i class="bi bi-calendar3 me-2"></i>Rezervace</a></li>
+                                
+                                                                                            </ul>
+
+                        </div> <!-- navbar-collapse.// -->
+                    </div> <!-- container-fluid.// -->
+                </nav>
+
+            </div>
+        </section>
+    <!-- ============= HLAVNÍ MENU KONEC // ============== -->
+
+
+      	    <!-- ============= ALERTS MENU ============== -->
+
+    <section class="alerts bg-bila ">
+        <div class="container" id="alert-container">
+                        <!--
+            <div class="progress">
+                <div class="progress-bar progress-bar-striped progress-bar-animated bg-secondary" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+            </div>
+            -->
+        </div>
+    </section>
+
+    <!-- ============= ALERTS KONEC // ============== -->
+            <section class="bg-seda-svetla-2 py-3">
+    <div class="container horizontal-scrollable">
+        <div class="row h-100 align-items-center">
+
+            <div class="col-12 text-end horizontal-scrollable-hide">
+                <button type="button" class="btn btn-sm btn-outline-dark ms-1 active">Úterý<i class="bi bi-chevron-compact-right ms-1 me-1"></i>04.08.</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section class="tabulka-rezervace bg-bila py-3">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+
+                <!-- TABULKA -->
+                <div class="table-responsive">
+                    <table class="table align-middle table-bordered border-primary text-center">
+
+                                                    
+                                <thead>
+                                <tr>
+                                                                            <th scope="col" class="sirka-sloupce">
+                                                                                    </th>
+                                                                            <th scope="col" class="sirka-sloupce">
+                                            KURT 1 - PADEL                                        </th>
+                                                                            <th scope="col" class="sirka-sloupce">
+                                            KURT 2 - SLAVIA                                        </th>
+                                                                            <th scope="col" class="sirka-sloupce">
+                                            KURT 3 - PRAHA                                        </th>
+                                                                            <th scope="col" class="sirka-sloupce">
+                                            KURT 4 - DELUXE                                        </th>
+                                    
+                                </tr>
+                                </thead>
+                                <tbody>
+                                                                                                                <tr>
+                                                                                                                                    <td class="bg-hlavni_barva fw-600">
+                                                    08:00                                                </td>
+                                                                                                                                                                                                                                                                                            <td  rowspan="2" class="obsazeno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  rowspan="2" class="obsazeno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td class="obsazeno">
+                                                            &nbsp;
+                                                        </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td class="obsazeno">
+                                                            &nbsp;
+                                                        </td>
+                                                                                                    
+                                                                                                                    </tr>
+                                                                                                                <tr>
+                                                                                                                                    <td class="bg-hlavni_barva fw-600">
+                                                    08:30                                                </td>
+                                                                                                                                                                                
+                                                                                                                                                                                
+                                                                                                                                                                                                                                                                                            <td class="obsazeno">
+                                                            &nbsp;
+                                                        </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td class="obsazeno">
+                                                            &nbsp;
+                                                        </td>
+                                                                                                    
+                                                                                                                    </tr>
+                                                                                                                <tr>
+                                                                                                                                    <td class="bg-hlavni_barva fw-600">
+                                                    09:00                                                </td>
+                                                                                                                                                                                                                                                                                            <td  rowspan="3" class="obsazeno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td class="obsazeno">
+                                                            &nbsp;
+                                                        </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td class="obsazeno">
+                                                            &nbsp;
+                                                        </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td class="obsazeno">
+                                                            &nbsp;
+                                                        </td>
+                                                                                                    
+                                                                                                                    </tr>
+                                                                                                                <tr>
+                                                                                                                                    <td class="bg-hlavni_barva fw-600">
+                                                    09:30                                                </td>
+                                                                                                                                                                                
+                                                                                                                                                                                                                                                                                            <td class="obsazeno">
+                                                            &nbsp;
+                                                        </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td class="obsazeno">
+                                                            &nbsp;
+                                                        </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td class="obsazeno">
+                                                            &nbsp;
+                                                        </td>
+                                                                                                    
+                                                                                                                    </tr>
+                                                                                                                <tr>
+                                                                                                                                    <td class="bg-hlavni_barva fw-600">
+                                                    10:00                                                </td>
+                                                                                                                                                                                
+                                                                                                                                                                                                                                                                                            <td class="obsazeno">
+                                                            &nbsp;
+                                                        </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td class="obsazeno">
+                                                            &nbsp;
+                                                        </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  rowspan="4" class="obsazeno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                    </tr>
+                                                                                                                <tr>
+                                                                                                                                    <td class="bg-hlavni_barva fw-600">
+                                                    10:30                                                </td>
+                                                                                                                                                                                                                                                                                            <td class="obsazeno">
+                                                            &nbsp;
+                                                        </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td class="obsazeno">
+                                                            &nbsp;
+                                                        </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td class="obsazeno">
+                                                            &nbsp;
+                                                        </td>
+                                                                                                    
+                                                                                                                                                                                
+                                                                                                                    </tr>
+                                                                                                                <tr>
+                                                                                                                                    <td class="bg-hlavni_barva fw-600">
+                                                    11:00                                                </td>
+                                                                                                                                                                                                                                                                                            <td  rowspan="4" class="obsazeno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td class="obsazeno">
+                                                            &nbsp;
+                                                        </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td class="obsazeno">
+                                                            &nbsp;
+                                                        </td>
+                                                                                                    
+                                                                                                                                                                                
+                                                                                                                    </tr>
+                                                                                                                <tr>
+                                                                                                                                    <td class="bg-hlavni_barva fw-600">
+                                                    11:30                                                </td>
+                                                                                                                                                                                
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                
+                                                                                                                    </tr>
+                                                                                                                <tr>
+                                                                                                                                    <td class="bg-hlavni_barva fw-600">
+                                                    12:00                                                </td>
+                                                                                                                                                                                
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                    </tr>
+                                                                                                                <tr>
+                                                                                                                                    <td class="bg-hlavni_barva fw-600">
+                                                    12:30                                                </td>
+                                                                                                                                                                                
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                    </tr>
+                                                                                                                <tr>
+                                                                                                                                    <td class="bg-hlavni_barva fw-600">
+                                                    13:00                                                </td>
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                    </tr>
+                                                                                                                <tr>
+                                                                                                                                    <td class="bg-hlavni_barva fw-600">
+                                                    13:30                                                </td>
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                    </tr>
+                                                                                                                <tr>
+                                                                                                                                    <td class="bg-hlavni_barva fw-600">
+                                                    14:00                                                </td>
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                    </tr>
+                                                                                                                <tr>
+                                                                                                                                    <td class="bg-hlavni_barva fw-600">
+                                                    14:30                                                </td>
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                    </tr>
+                                                                                                                <tr>
+                                                                                                                                    <td class="bg-hlavni_barva fw-600">
+                                                    15:00                                                </td>
+                                                                                                                                                                                                                                                                                            <td  rowspan="2" class="obsazeno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  rowspan="2" class="obsazeno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  rowspan="3" class="obsazeno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                    </tr>
+                                                                                                                <tr>
+                                                                                                                                    <td class="bg-hlavni_barva fw-600">
+                                                    15:30                                                </td>
+                                                                                                                                                                                
+                                                                                                                                                                                
+                                                                                                                                                                                                                                                                                            <td  rowspan="3" class="obsazeno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                
+                                                                                                                    </tr>
+                                                                                                                <tr>
+                                                                                                                                    <td class="bg-hlavni_barva fw-600">
+                                                    16:00                                                </td>
+                                                                                                                                                                                                                                                                                            <td  rowspan="3" class="obsazeno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  rowspan="2" class="obsazeno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                
+                                                                                                                                                                                
+                                                                                                                    </tr>
+                                                                                                                <tr>
+                                                                                                                                    <td class="bg-hlavni_barva fw-600">
+                                                    16:30                                                </td>
+                                                                                                                                                                                
+                                                                                                                                                                                
+                                                                                                                                                                                
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                    </tr>
+                                                                                                                <tr>
+                                                                                                                                    <td class="bg-hlavni_barva fw-600">
+                                                    17:00                                                </td>
+                                                                                                                                                                                
+                                                                                                                                                                                                                                                                                            <td  rowspan="3" class="obsazeno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  rowspan="3" class="obsazeno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  rowspan="3" class="obsazeno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                    </tr>
+                                                                                                                <tr>
+                                                                                                                                    <td class="bg-hlavni_barva fw-600">
+                                                    17:30                                                </td>
+                                                                                                                                                                                                                                                                                            <td  rowspan="3" class="obsazeno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                
+                                                                                                                                                                                
+                                                                                                                                                                                
+                                                                                                                    </tr>
+                                                                                                                <tr>
+                                                                                                                                    <td class="bg-hlavni_barva fw-600">
+                                                    18:00                                                </td>
+                                                                                                                                                                                
+                                                                                                                                                                                
+                                                                                                                                                                                
+                                                                                                                                                                                
+                                                                                                                    </tr>
+                                                                                                                <tr>
+                                                                                                                                    <td class="bg-hlavni_barva fw-600">
+                                                    18:30                                                </td>
+                                                                                                                                                                                
+                                                                                                                                                                                                                                                                                            <td  rowspan="2" class="obsazeno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  rowspan="2" class="obsazeno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  rowspan="3" class="obsazeno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                    </tr>
+                                                                                                                <tr>
+                                                                                                                                    <td class="bg-hlavni_barva fw-600">
+                                                    19:00                                                </td>
+                                                                                                                                                                                                                                                                                            <td  rowspan="4" class="obsazeno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                
+                                                                                                                                                                                
+                                                                                                                                                                                
+                                                                                                                    </tr>
+                                                                                                                <tr>
+                                                                                                                                    <td class="bg-hlavni_barva fw-600">
+                                                    19:30                                                </td>
+                                                                                                                                                                                
+                                                                                                                                                                                                                                                                                            <td  rowspan="2" class="obsazeno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                
+                                                                                                                    </tr>
+                                                                                                                <tr>
+                                                                                                                                    <td class="bg-hlavni_barva fw-600">
+                                                    20:00                                                </td>
+                                                                                                                                                                                
+                                                                                                                                                                                
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  rowspan="3" class="obsazeno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                    </tr>
+                                                                                                                <tr>
+                                                                                                                                    <td class="bg-hlavni_barva fw-600">
+                                                    20:30                                                </td>
+                                                                                                                                                                                
+                                                                                                                                                                                                                                                                                            <td  rowspan="3" class="obsazeno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                                                                                                                            <td  rowspan="3" class="obsazeno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                
+                                                                                                                    </tr>
+                                                                                                                <tr>
+                                                                                                                                    <td class="bg-hlavni_barva fw-600">
+                                                    21:00                                                </td>
+                                                                                                                                                                                                                                                                                            <td  rowspan="2" class="obsazeno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                                                                                
+                                                                                                                                                                                
+                                                                                                                                                                                
+                                                                                                                    </tr>
+                                                                                                                <tr>
+                                                                                                                                    <td class="bg-hlavni_barva fw-600">
+                                                    21:30                                                </td>
+                                                                                                                                                                                
+                                                                                                                                                                                
+                                                                                                                                                                                
+                                                                                                                                                                                                                                                                                            <td  class="volno">
+                                                                                                                     </td>
+                                                                                                    
+                                                                                                                    </tr>
+                                                                                    </tbody>
+                        <tfoot>
+                        <tr>
+                                                    <td>
+                                                            </td>
+                                                    <td>
+                                KURT 1 - PADEL                            </td>
+                                                    <td>
+                                KURT 2 - SLAVIA                            </td>
+                                                    <td>
+                                KURT 3 - PRAHA                            </td>
+                                                    <td>
+                                KURT 4 - DELUXE                            </td>
+                                                </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="bg-bila py-1 legenda-barev">
+    <div class="container text-center">
+        <div class="col-8 offset-2">
+            <span class="badge volno">Volný kurt</span>
+            <span class="badge obsazeno">Obsazený kurt</span>
+        </div>
+    </div>
+</section>
+    
+
+    <!-- ============= PATIČKA ============== -->
+    <footer class="bg-bila py-4">
+        <div class="container text-center">
+            <div class="col-12 copyright">
+                <p>
+                    <img src="pics/footer.png" class="mb-2" alt="SK Slavia Praha Padel" title="SK Slavia Praha Padel"><br>
+                    &copy; 2023 - 2026 SK Slavia Praha Padel<br>
+                    <!--<a href="#">Podmínky ochrany soukromí a GDPR</a>-->
+                </p>
+            </div>
+        </div>
+    </footer>
+    <!-- ============= PATIČKA KONEC // ============== -->
+
+	</body>
+</html>
