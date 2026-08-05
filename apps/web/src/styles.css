@@ -201,6 +201,10 @@ a {
   gap: 8px;
 }
 
+.topbarSpacer {
+  min-width: 0;
+}
+
 .topbarNav {
   display: flex;
   align-items: center;
@@ -1368,28 +1372,61 @@ a.detailInfoRow:hover {
   }
 
   .topbar {
-    grid-template-columns: 1fr auto;
-    gap: 10px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 12px;
     margin: 0 -6px 14px;
-    padding: 10px;
+    padding: 10px 12px 12px;
+  }
+
+  .brandMark {
+    grid-column: 1;
+    grid-row: 1;
+    min-height: 40px;
+    font-size: 0.95rem;
+  }
+
+  .brandMark img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .topbarSpacer {
+    display: none;
   }
 
   .breadcrumbs {
     grid-column: 1 / -1;
-    order: 4;
+    grid-row: 3;
+    font-size: 0.84rem;
   }
 
   .topbarNav {
     grid-column: 1 / -1;
-    order: 3;
+    grid-row: 2;
+    gap: 14px;
     overflow-x: auto;
   }
 
   .topbarNavLink {
-    min-height: 40px;
+    min-height: 36px;
+    padding: 6px 0;
+    font-size: 0.95rem;
+  }
+
+  .topbarNavLink:hover,
+  .topbarNavLink:focus-visible {
+    background: transparent;
+  }
+
+  .topbarNavLink.active::after {
+    right: 0;
+    left: 0;
   }
 
   .topbarActions {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
     justify-content: flex-end;
   }
 

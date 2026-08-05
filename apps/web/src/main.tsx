@@ -412,7 +412,7 @@ function App() {
         {page !== "clubs" || selectedClub ? (
           <Breadcrumbs page={page} selectedClub={selectedClub} onHome={() => navigateToClubs("push")} />
         ) : (
-          <span aria-hidden="true" />
+          <span className="topbarSpacer" aria-hidden="true" />
         )}
         <div className="topbarNav" aria-label="Primary navigation">
           <a className={page === "clubs" ? "topbarNavLink active" : "topbarNavLink"} href={clubsHref(date)} onClick={(event) => handleInternalNavigation(event, () => navigateToClubs("push"))}>
