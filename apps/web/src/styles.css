@@ -1479,8 +1479,15 @@ a.detailInfoRow:hover {
   }
 
   .resultBar {
-    display: grid;
     gap: 10px;
+  }
+
+  .resultBar > div:first-child {
+    flex: 1 1 auto;
+  }
+
+  .resultBar .uiButton {
+    flex: 0 0 auto;
   }
 
   .clubGrid {
