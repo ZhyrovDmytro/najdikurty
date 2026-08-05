@@ -61,13 +61,14 @@ export function Alert({ children, className = "", icon, title, ...props }: Alert
 
 interface FieldProps {
   children: ReactNode;
+  className?: string;
   icon?: ReactNode;
   label: string;
 }
 
-export function Field({ children, icon, label }: FieldProps) {
+export function Field({ children, className = "", icon, label }: FieldProps) {
   return (
-    <label className="uiField">
+    <label className={`uiField ${className}`}>
       <span className="uiFieldLabel">
         {icon ? <span className="uiFieldIcon">{icon}</span> : null}
         {label}

@@ -481,10 +481,10 @@ function App() {
           ) : null}
 
           <Card className="searchPanel">
-        <Field icon={<CalendarDays size={16} />} label="Date">
+        <Field icon={<CalendarDays size={16} />} label="Date" className="searchField searchField-date">
           <Input type="date" min={currentPragueDate} value={date} onChange={(event) => updateDate(event.target.value)} />
         </Field>
-        <Field icon={<UsersRound size={16} />} label="Courts needed">
+        <Field icon={<UsersRound size={16} />} label="Courts needed" className="searchField">
           <Select value={courtsNeeded} onChange={(event) => setCourtsNeeded(Number(event.target.value))}>
             {Array.from({ length: maxCourtCount }, (_, index) => index + 1).map((count) => (
               <option value={count} key={count}>
@@ -493,7 +493,7 @@ function App() {
             ))}
           </Select>
         </Field>
-        <Field icon={<SlidersHorizontal size={16} />} label="Duration">
+        <Field icon={<SlidersHorizontal size={16} />} label="Duration" className="searchField">
           <Select value={duration} onChange={(event) => setDuration(Number(event.target.value))}>
             {durationOptions.map((minutes) => (
               <option value={minutes} key={minutes}>
@@ -502,14 +502,14 @@ function App() {
             ))}
           </Select>
         </Field>
-        <Field icon={<CloudSun size={16} />} label="Court type">
+        <Field icon={<CloudSun size={16} />} label="Court type" className="searchField">
           <Select value={courtTypeFilter} onChange={(event) => setCourtTypeFilter(event.target.value as CourtTypeFilter)}>
             <option value="all">All courts</option>
             <option value="indoor">Indoor</option>
             <option value="outdoor">Outdoor</option>
           </Select>
         </Field>
-        <Field icon={<Timer size={16} />} label="Start time">
+        <Field icon={<Timer size={16} />} label="Start time" className="searchField">
           <Select value={timeWindow.start} onChange={(event) => updateStartTime(event.target.value)} disabled={timeOptions.length === 0}>
             {startTimeOptions.map((time) => (
               <option value={time} key={time}>
@@ -518,7 +518,7 @@ function App() {
             ))}
           </Select>
         </Field>
-        <Field icon={<Timer size={16} />} label="End time">
+        <Field icon={<Timer size={16} />} label="End time" className="searchField">
           <Select value={timeWindow.end} onChange={(event) => updateEndTime(event.target.value)} disabled={timeOptions.length === 0}>
             {endTimeOptions.map((time) => (
               <option value={time} key={time}>

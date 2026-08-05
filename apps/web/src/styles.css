@@ -1503,8 +1503,27 @@ a.detailInfoRow:hover {
   }
 
   .searchPanel {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
     padding: 14px;
+  }
+
+  .searchField {
+    min-width: 0;
+  }
+
+  .searchField-date {
+    grid-column: 1 / -1;
+  }
+
+  .searchField .uiFieldLabel {
+    font-size: 0.82rem;
+  }
+
+  .searchField .uiControl {
+    min-height: 40px;
+    padding: 8px 10px;
+    font-size: 0.92rem;
   }
 
   .resultBar {
