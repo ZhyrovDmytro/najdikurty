@@ -48,11 +48,12 @@ export PADEL_SLAVIA_EMAIL="your-email"
 export PADEL_SLAVIA_PASSWORD="your-password"
 ```
 
-TK Sparta exposes its broader calendar through the logged-in portal:
+TK Sparta is fetched through the public JdemeNaTo portal search result first. The logged-in calendar/browser fallback is kept as a backup:
 
 ```bash
 export TK_SPARTA_EMAIL="your-email"
 export TK_SPARTA_PASSWORD="your-password"
+export JDEMENATO_PORTAL_TIMEOUT_MS="10000"
 ```
 
 If the hosting provider blocks the plain HTTP login request, enable the TK Sparta browser-backed fallback:
@@ -61,6 +62,7 @@ If the hosting provider blocks the plain HTTP login request, enable the TK Spart
 export JDEMENATO_BROWSER="1"
 export JDEMENATO_BROWSER_PROFILE_DIR="/tmp/mamekurt-jdemenato"
 export JDEMENATO_BROWSER_HEADLESS="true"
+export JDEMENATO_HTTP_TIMEOUT_MS="5000"
 export PLAYWRIGHT_BROWSERS_PATH="0"
 export TK_SPARTA_AVAILABILITY_TIMEOUT_MS="25000"
 ```

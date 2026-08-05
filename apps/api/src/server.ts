@@ -4,6 +4,7 @@ import { z } from "zod";
 import {
   fetchBookaballAvailability,
   fetchJdemeNaToAvailability,
+  fetchJdemeNaToPortalSearchAvailability,
   fetchPadelosAvailability,
   fetchPadelSlaviaAvailability,
   fetchPlaytomicAvailability,
@@ -148,6 +149,17 @@ async function fetchAvailabilityByClub(query: z.infer<typeof querySchema>) {
     });
   }
 
+  if (query.club === "tk-sparta-praha") {
+    return fetchJdemeNaToPortalSearchAvailability({
+      clubSlug: query.club,
+      date: query.date,
+      logger: jdemenatoBrowserLogger(),
+      organizationName: "TK Sparta Praha",
+      sport: query.sport,
+      timeoutMs: optionalNumber(process.env.JDEMENATO_PORTAL_TIMEOUT_MS) ?? 10_000
+    });
+  }
+
   return fetchJdemeNaToAvailability({
     browser: query.club === "tk-sparta-praha" ? jdemenatoBrowserOptions(query.live) : undefined,
     clubSlug: query.club,
@@ -194,6 +206,7 @@ function jdemenatoBrowserOptions(live?: string) {
     channel: process.env.JDEMENATO_BROWSER_CHANNEL,
     executablePath: process.env.JDEMENATO_BROWSER_EXECUTABLE_PATH,
     headless: process.env.JDEMENATO_BROWSER_HEADLESS !== "false",
+    httpTimeoutMs: optionalNumber(process.env.JDEMENATO_HTTP_TIMEOUT_MS),
     logger: jdemenatoBrowserLogger(),
     timeoutMs: optionalNumber(process.env.JDEMENATO_BROWSER_TIMEOUT_MS) ?? DEFAULT_JDEMENATO_BROWSER_TIMEOUT_MS,
     proxy: jdemenatoBrowserProxy()

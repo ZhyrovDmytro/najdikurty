@@ -7,6 +7,7 @@ const SLOT_MINUTES = 30;
 interface ParseOptions {
   sourceUrl: string;
   clubSlug: string;
+  date?: string;
   sport?: string;
   fetchedAt?: string;
 }
@@ -21,7 +22,7 @@ interface ParsedCell {
 
 export function parseJdemeNaToAvailability(html: string, options: ParseOptions): AvailabilityResult {
   const $ = cheerio.load(html);
-  const selectedDate = extractSelectedDate($);
+  const selectedDate = extractSelectedDate($, options.date);
   const sport = options.sport ?? extractSelectedSport($) ?? "unknown";
   const courtNames = $(".verticalTimetable thead .serviceTop")
     .map((_, element) => normalizeText($(element).text()))
@@ -116,14 +117,14 @@ export function parseJdemeNaToAvailability(html: string, options: ParseOptions):
   };
 }
 
-function extractSelectedDate($: cheerio.CheerioAPI): string {
+function extractSelectedDate($: cheerio.CheerioAPI, fallbackDate?: string): string {
   const selected = $(".timeNavigation a.selectedDay time").attr("datetime");
   const calendarDate = $("#datePicker").attr("data-date");
   const pageInitDate = $("script")
     .text()
     .match(/"date":"(\d{4}-\d{2}-\d{2})"/)?.[1];
 
-  const date = selected ?? calendarDate ?? pageInitDate;
+  const date = selected ?? calendarDate ?? pageInitDate ?? fallbackDate;
   if (!date) {
     throw new Error("No selected date found in JdemeNaTo page");
   }

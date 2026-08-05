@@ -4,6 +4,7 @@ import type { AvailabilityResult } from "../../types.js";
 
 const DEFAULT_BROWSER_PROFILE_DIR = ".mamekurt/browser-profiles/jdemenato";
 const DEFAULT_BROWSER_TIMEOUT_MS = 90_000;
+const DEFAULT_HTTP_FALLBACK_TIMEOUT_MS = 5_000;
 
 export interface JdemeNaToFetchOptions {
   baseUrl?: string;
@@ -20,11 +21,31 @@ export interface JdemeNaToCredentials {
   password: string;
 }
 
+export interface JdemeNaToPortalSearchOptions {
+  baseUrl?: string;
+  city?: string;
+  clubSlug: string;
+  date?: string;
+  fetchImpl?: typeof fetch;
+  fromHour?: number;
+  logger?: JdemeNaToBrowserLogger;
+  organizationName: string;
+  sport?: string;
+  sportId?: string;
+  timeoutMs?: number;
+  toHour?: number;
+}
+
 export async function fetchJdemeNaToAvailability(options: JdemeNaToFetchOptions): Promise<AvailabilityResult> {
+  const browserOptions = normalizeBrowserOptions(options.browser);
   try {
-    return await fetchJdemeNaToAvailabilityWithHttp(options);
+    return await fetchJdemeNaToAvailabilityWithHttp(options, {
+      logger: browserOptions?.logger,
+      timeoutMs: browserOptions && options.credentials
+        ? browserOptions.httpTimeoutMs ?? DEFAULT_HTTP_FALLBACK_TIMEOUT_MS
+        : undefined
+    });
   } catch (error) {
-    const browserOptions = normalizeBrowserOptions(options.browser);
     if (!browserOptions || !options.credentials) {
       throw error;
     }
@@ -64,6 +85,65 @@ export async function fetchJdemeNaToAvailability(options: JdemeNaToFetchOptions)
   }
 }
 
+export async function fetchJdemeNaToPortalSearchAvailability(
+  options: JdemeNaToPortalSearchOptions
+): Promise<AvailabilityResult> {
+  const startedAt = Date.now();
+  const baseUrl = options.baseUrl ?? "https://jdemenato.cz";
+  const date = options.date ?? todayPrague();
+  const sourceUrl = portalSearchUrl(baseUrl, {
+    city: options.city ?? "Praha",
+    date,
+    fromHour: options.fromHour ?? 0,
+    sportId: options.sportId ?? "172791371",
+    toHour: options.toHour ?? 24
+  });
+  const session = new CookieSession(options.fetchImpl ?? fetch, options.timeoutMs);
+
+  options.logger?.("portal.search.start", {
+    clubSlug: options.clubSlug,
+    date,
+    organizationName: options.organizationName,
+    sourcePath: sourceUrl.pathname,
+    timeoutMs: options.timeoutMs
+  });
+
+  const searchResponse = await session.fetch(sourceUrl);
+  const searchHtml = await assertTextResponse(searchResponse, sourceUrl.toString());
+  const timetableUrl = findPortalTimetableUrl(searchHtml, baseUrl, options.organizationName);
+  options.logger?.("portal.search.loaded", {
+    durationMs: Date.now() - startedAt,
+    foundTimetable: Boolean(timetableUrl),
+    htmlLength: searchHtml.length
+  });
+
+  if (!timetableUrl) {
+    throw new Error(`JdemeNaTo portal search did not find ${options.organizationName}`);
+  }
+
+  options.logger?.("portal.timetable.fetch", {
+    urlPath: timetableUrl.pathname
+  });
+  const timetableResponse = await session.fetch(timetableUrl, {
+    headers: {
+      "X-Requested-With": "XMLHttpRequest"
+    }
+  });
+  const timetableText = await assertTextResponse(timetableResponse, timetableUrl.toString());
+  const timetableHtml = parseTapestryZoneContent(timetableText);
+  options.logger?.("portal.timetable.loaded", {
+    durationMs: Date.now() - startedAt,
+    htmlLength: timetableHtml.length
+  });
+
+  return parseJdemeNaToAvailability(timetableHtml, {
+    sourceUrl: sourceUrl.toString(),
+    clubSlug: options.clubSlug,
+    date,
+    sport: options.sport
+  });
+}
+
 export interface JdemeNaToBrowserOptions {
   enabled?: boolean;
   userDataDir?: string;
@@ -71,6 +151,7 @@ export interface JdemeNaToBrowserOptions {
   executablePath?: string;
   headless?: boolean;
   timeoutMs?: number;
+  httpTimeoutMs?: number;
   proxy?: JdemeNaToBrowserProxy;
   renderer?: JdemeNaToBrowserRenderer;
   logger?: JdemeNaToBrowserLogger;
@@ -105,18 +186,37 @@ export interface JdemeNaToRenderedHtml {
 export type JdemeNaToBrowserRenderer = (options: JdemeNaToBrowserRenderOptions) => Promise<JdemeNaToRenderedHtml>;
 export type JdemeNaToBrowserLogger = (event: string, details?: Record<string, unknown>) => void;
 
-async function fetchJdemeNaToAvailabilityWithHttp(options: JdemeNaToFetchOptions): Promise<AvailabilityResult> {
+interface JdemeNaToHttpDiagnostics {
+  logger?: JdemeNaToBrowserLogger;
+  timeoutMs?: number;
+}
+
+async function fetchJdemeNaToAvailabilityWithHttp(
+  options: JdemeNaToFetchOptions,
+  diagnostics: JdemeNaToHttpDiagnostics = {}
+): Promise<AvailabilityResult> {
+  const startedAt = Date.now();
   const baseUrl = options.baseUrl ?? "https://jdemenato.cz";
-  const session = new CookieSession(options.fetchImpl ?? fetch);
+  const session = new CookieSession(options.fetchImpl ?? fetch, diagnostics.timeoutMs);
   const overviewUrl = options.credentials
     ? new URL("/reservation/myportalorganizationcalendar", baseUrl)
     : new URL(`/reservation/${options.clubSlug}/reservationcalendaroverview`, baseUrl);
 
+  diagnostics.logger?.("http.start", {
+    clubSlug: options.clubSlug,
+    date: options.date,
+    sport: options.sport,
+    timeoutMs: diagnostics.timeoutMs
+  });
+
   if (options.credentials) {
-    await login(session, baseUrl, options.clubSlug, options.credentials);
+    await login(session, baseUrl, options.clubSlug, options.credentials, diagnostics);
   }
 
   let currentUrl = overviewUrl;
+  diagnostics.logger?.("http.calendar.fetch", {
+    urlPath: currentUrl.pathname
+  });
   let response = await session.fetch(currentUrl);
   let html = await assertTextResponse(response, overviewUrl.toString());
 
@@ -136,9 +236,18 @@ async function fetchJdemeNaToAvailabilityWithHttp(options: JdemeNaToFetchOptions
     }
 
     currentUrl = dateUrl;
+    diagnostics.logger?.("http.date.fetch", {
+      date: options.date,
+      urlPath: dateUrl.pathname
+    });
     response = await session.fetch(currentUrl);
     html = await assertTextResponse(response, dateUrl.toString());
   }
+
+  diagnostics.logger?.("http.success", {
+    durationMs: Date.now() - startedAt,
+    sourcePath: currentUrl.pathname
+  });
 
   return parseJdemeNaToAvailability(html, {
     sourceUrl: currentUrl.toString(),
@@ -159,14 +268,21 @@ async function login(
   session: CookieSession,
   baseUrl: string,
   clubSlug: string,
-  credentials: JdemeNaToCredentials
+  credentials: JdemeNaToCredentials,
+  diagnostics: JdemeNaToHttpDiagnostics = {}
 ): Promise<void> {
   const loginUrl = new URL(`/reservation/${clubSlug}/login`, baseUrl);
+  diagnostics.logger?.("http.login.page.fetch", {
+    urlPath: loginUrl.pathname
+  });
   await session.fetch(loginUrl);
 
   const form = new URLSearchParams({
     j_password: credentials.password,
     j_username: credentials.email
+  });
+  diagnostics.logger?.("http.login.submit", {
+    urlPath: `/reservation/${clubSlug}/j_spring_security_check`
   });
   const response = await session.fetch(new URL(`/reservation/${clubSlug}/j_spring_security_check`, baseUrl), {
     body: form,
@@ -178,6 +294,10 @@ async function login(
   });
 
   const location = response.headers.get("location") ?? "";
+  diagnostics.logger?.("http.login.response", {
+    location: sanitizeLoginLocation(location),
+    status: response.status
+  });
   if (response.status < 300 || response.status >= 400 || !location.includes("/reservation/myportalorganizationcalendar")) {
     throw new Error(`JdemeNaTo login failed: status ${response.status}, location ${sanitizeLoginLocation(location)}`);
   }
@@ -189,6 +309,41 @@ function sanitizeLoginLocation(location: string): string {
   }
 
   return location.replace(/;jsessionid=[^/?#]+/i, ";jsessionid=<redacted>");
+}
+
+function portalSearchUrl(
+  baseUrl: string,
+  options: { city: string; date: string; fromHour: number; sportId: string; toHour: number }
+): URL {
+  return new URL(
+    `/reservation/portalsearch/${options.sportId}_${encodeURIComponent(options.city)}_${options.date}_${options.fromHour}_${options.toHour}_f`,
+    baseUrl
+  );
+}
+
+function findPortalTimetableUrl(html: string, baseUrl: string, organizationName: string): URL | undefined {
+  const $ = cheerio.load(html);
+  const requestedName = normalizeText(organizationName).toLowerCase();
+
+  const result = $("[data-search-result]")
+    .filter((_, element) => normalizeText($(element).find("h2").first().text()).toLowerCase() === requestedName)
+    .first();
+
+  const href = result.find("a.showTimetable").first().attr("href");
+  return href ? new URL(href, baseUrl) : undefined;
+}
+
+function parseTapestryZoneContent(responseText: string): string {
+  try {
+    const parsed = JSON.parse(responseText) as { content?: unknown };
+    if (typeof parsed.content === "string") {
+      return parsed.content;
+    }
+  } catch {
+    // Some Tapestry endpoints can return HTML directly when JavaScript headers are ignored.
+  }
+
+  return responseText;
 }
 
 async function fetchRenderedHtmlWithBrowser(options: JdemeNaToBrowserRenderOptions): Promise<JdemeNaToRenderedHtml> {
@@ -341,7 +496,10 @@ async function assertTextResponse(response: Response, url: string): Promise<stri
 class CookieSession {
   private readonly cookies = new Map<string, string>();
 
-  constructor(private readonly fetchImpl: typeof fetch) {}
+  constructor(
+    private readonly fetchImpl: typeof fetch,
+    private readonly timeoutMs?: number
+  ) {}
 
   async fetch(url: URL, init: RequestInit = {}): Promise<Response> {
     const headers = new Headers(init.headers);
@@ -357,12 +515,36 @@ class CookieSession {
       headers.set("Cookie", cookieHeader);
     }
 
-    const response = await this.fetchImpl(url, {
+    const response = await this.fetchWithTimeout(url, {
       ...init,
       headers
     });
     this.storeCookies(response.headers);
     return response;
+  }
+
+  private async fetchWithTimeout(url: URL, init: RequestInit): Promise<Response> {
+    if (!this.timeoutMs) {
+      return this.fetchImpl(url, init);
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
+
+    try {
+      return await this.fetchImpl(url, {
+        ...init,
+        signal: controller.signal
+      });
+    } catch (error) {
+      if (controller.signal.aborted) {
+        throw new Error(`JdemeNaTo HTTP request timed out after ${this.timeoutMs}ms: ${url.pathname}`);
+      }
+
+      throw error;
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 
   private cookieHeader(): string {
@@ -419,4 +601,19 @@ function selectedSport(html: string): string | undefined {
 function selectedDate(html: string): string | undefined {
   const $ = cheerio.load(html);
   return $(".timeNavigation a.selectedDay time").first().attr("datetime");
+}
+
+function todayPrague(): string {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    day: "2-digit",
+    month: "2-digit",
+    timeZone: "Europe/Prague",
+    year: "numeric"
+  });
+
+  return formatter.format(new Date());
+}
+
+function normalizeText(value: string): string {
+  return value.replace(/\s+/g, " ").trim();
 }
