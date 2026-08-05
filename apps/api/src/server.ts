@@ -150,7 +150,21 @@ async function fetchAvailabilityByClub(query: z.infer<typeof querySchema>) {
   }
 
   if (query.club === "tk-sparta-praha") {
-    return fetchJdemeNaToPortalSearchAvailability({
+    return fetchTkSpartaAvailability(query);
+  }
+
+  return fetchJdemeNaToAvailability({
+    browser: query.club === "tk-sparta-praha" ? jdemenatoBrowserOptions(query.live) : undefined,
+    clubSlug: query.club,
+    credentials: query.club === "tk-sparta-praha" ? tkSpartaCredentials() : undefined,
+    date: query.date,
+    sport: query.sport
+  });
+}
+
+async function fetchTkSpartaAvailability(query: z.infer<typeof querySchema>) {
+  try {
+    return await fetchJdemeNaToPortalSearchAvailability({
       clubSlug: query.club,
       date: query.date,
       logger: jdemenatoBrowserLogger(),
@@ -158,12 +172,17 @@ async function fetchAvailabilityByClub(query: z.infer<typeof querySchema>) {
       sport: query.sport,
       timeoutMs: optionalNumber(process.env.JDEMENATO_PORTAL_TIMEOUT_MS) ?? 10_000
     });
+  } catch (error) {
+    logError("jdemenato.portal.failure", error, {
+      club: query.club,
+      date: query.date
+    });
   }
 
   return fetchJdemeNaToAvailability({
-    browser: query.club === "tk-sparta-praha" ? jdemenatoBrowserOptions(query.live) : undefined,
+    browser: jdemenatoBrowserOptions(query.live),
     clubSlug: query.club,
-    credentials: query.club === "tk-sparta-praha" ? tkSpartaCredentials() : undefined,
+    credentials: tkSpartaCredentials(),
     date: query.date,
     sport: query.sport
   });
