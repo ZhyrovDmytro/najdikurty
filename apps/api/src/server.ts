@@ -330,7 +330,7 @@ function padelSlaviaCredentials() {
     return undefined;
   }
 
-  return { email, password };
+  return { email: email.trim(), password: password.trim() };
 }
 
 function tkSpartaCredentials() {
@@ -341,7 +341,7 @@ function tkSpartaCredentials() {
     return undefined;
   }
 
-  return { email, password };
+  return { email: email.trim(), password: password.trim() };
 }
 
 function jdemenatoBrowserOptions(live?: string, signal?: AbortSignal) {
@@ -569,5 +569,5 @@ function bookaballCredentials() {
     return undefined;
   }
 
-  return { email, password };
+  return { email: email.trim(), password: password.trim() };
 }

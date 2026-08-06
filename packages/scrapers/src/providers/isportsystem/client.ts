@@ -123,7 +123,7 @@ async function fetchRenderedHtmlWithBrowser(
   throwIfAborted(options.signal);
   const { chromium } = await import("playwright-core");
   const context = await chromium.launchPersistentContext(options.userDataDir, {
-    channel: options.channel ?? (options.executablePath ? undefined : "chrome"),
+    channel: options.channel,
     executablePath: options.executablePath,
     headless: options.headless,
     viewport: { width: 1600, height: 1200 }

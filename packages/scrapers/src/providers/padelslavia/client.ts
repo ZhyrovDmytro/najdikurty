@@ -67,7 +67,18 @@ async function login(session: CookieSession, baseUrl: string, credentials: Padel
 
   const location = response.headers.get("location") ?? "";
   if (response.status < 300 || response.status >= 400 || !location.includes("/cs/rezervace")) {
-    throw new Error("Padel Slavia login failed");
+    throw new Error(`Padel Slavia login failed: status ${response.status}, location ${sanitizeLoginLocation(location)}`);
+  }
+}
+
+function sanitizeLoginLocation(location: string): string {
+  if (!location) return "none";
+
+  try {
+    const parsed = new URL(location, "https://rezervace.padelslavia.cz");
+    return parsed.pathname || "none";
+  } catch {
+    return location.split("?")[0] || "none";
   }
 }
 
