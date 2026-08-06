@@ -249,10 +249,6 @@ a {
   content: "";
 }
 
-.mobileMenuButton {
-  display: none;
-}
-
 .uiButton {
   display: inline-flex;
   align-items: center;
@@ -334,6 +330,10 @@ a {
 
 .uiButtonIcon {
   display: inline-flex;
+}
+
+.topbarActions .mobileMenuButton {
+  display: none;
 }
 
 .uiCard {
@@ -821,6 +821,15 @@ a {
   font-size: 1rem;
 }
 
+.resultActions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
 .loadProgressBadge {
   display: inline-flex;
   align-items: center;
@@ -893,6 +902,159 @@ a {
   display: grid;
 }
 
+.clubCompactList {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.clubCompactRow {
+  padding: 0;
+}
+
+.clubCompactSelect {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(0, auto);
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 58px;
+  padding: 10px 12px;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  background: transparent;
+  border-bottom: 1px solid transparent;
+}
+
+.clubCompactSelect[aria-expanded="true"] {
+  border-bottom-color: var(--border);
+}
+
+.clubCompactSelect:focus-visible {
+  outline: 3px solid var(--blue-border);
+  outline-offset: -3px;
+}
+
+.clubCompactMain {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.clubCompactName {
+  margin: 0;
+  overflow: hidden;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  font-size: 0.98rem;
+  font-weight: 900;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clubCompactName:hover,
+.clubCompactName:focus-visible {
+  color: var(--blue);
+  text-decoration: underline;
+  outline: 0;
+}
+
+.clubCompactMain span {
+  flex: 0 0 auto;
+  color: var(--brand-strong);
+  font-size: 0.86rem;
+  font-weight: 900;
+}
+
+.clubCompactToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+  color: inherit;
+}
+
+.clubCompactMeta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.clubCompactChevron {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+  transition: transform 120ms ease;
+}
+
+.clubCompactSelect[aria-expanded="true"] .clubCompactChevron {
+  transform: rotate(180deg);
+}
+
+.clubCompactSlots {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 6px;
+  padding: 10px 12px 12px;
+  background: var(--surface-muted);
+}
+
+.clubCompactSlot {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2px 8px;
+  min-height: 42px;
+  padding: 7px 9px;
+  color: inherit;
+  text-decoration: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.clubCompactSlot:hover,
+.clubCompactSlot:focus-visible {
+  border-color: var(--brand-border);
+  box-shadow: 0 0 0 3px var(--brand-soft);
+  outline: 0;
+}
+
+.clubCompactSlot strong {
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
+
+.clubCompactSlot span {
+  grid-column: 1;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clubCompactSlot small {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  color: var(--brand-strong);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
 .clubSelect {
   display: grid;
   width: 100%;
@@ -937,6 +1099,26 @@ a {
   letter-spacing: 0;
 }
 
+.clubExternalTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.clubExternalTitle:hover,
+.clubExternalTitle:focus-visible {
+  color: var(--blue);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  outline: 0;
+}
+
+.clubExternalTitle svg {
+  flex: 0 0 auto;
+}
+
 .clubBody p {
   margin: 0;
   color: var(--brand-strong);
@@ -948,6 +1130,32 @@ a {
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
+}
+
+.freshnessBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+  min-height: 24px;
+  padding: 2px 8px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.35;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.freshnessBadge svg {
+  flex: 0 0 auto;
+}
+
+.freshnessBadge-stale {
+  color: var(--warning);
+  background: var(--warning-soft);
+  border-color: var(--warning-border);
 }
 
 .courtTypeBadges {
@@ -1489,7 +1697,7 @@ a.detailInfoRow:hover {
     height: 40px;
   }
 
-  .mobileMenuButton {
+  .topbarActions .mobileMenuButton {
     display: inline-flex;
   }
 
@@ -1597,11 +1805,39 @@ a.detailInfoRow:hover {
     flex: 1 1 auto;
   }
 
+  .resultActions {
+    gap: 6px;
+    max-width: none;
+  }
+
   .resultBar .uiButton {
     flex: 0 0 auto;
   }
 
   .clubGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .clubCompactSelect {
+    grid-template-columns: 1fr;
+    align-items: start;
+    min-height: 72px;
+  }
+
+  .clubCompactMain {
+    justify-content: space-between;
+  }
+
+  .clubCompactToggle {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .clubCompactMeta {
+    justify-content: flex-start;
+  }
+
+  .clubCompactSlots {
     grid-template-columns: 1fr;
   }
 

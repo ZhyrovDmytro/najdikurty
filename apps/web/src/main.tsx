@@ -4,6 +4,7 @@ import {
   AlertCircle,
   ArrowLeft,
   CalendarDays,
+  ChevronDown,
   Clock3,
   CloudSun,
   Cookie,
@@ -11,6 +12,7 @@ import {
   FileText,
   Link2,
   ListOrdered,
+  LayoutGrid,
   Menu,
   MapPin,
   Moon,
@@ -43,7 +45,13 @@ const initialParams = new URLSearchParams(window.location.search);
 const initialCurrentDate = pragueDateInputValue(new Date());
 const today = selectableDate(initialParams.get("date"), initialCurrentDate);
 const initialTheme = localStorage.getItem("mamekurt-theme") === "dark" ? "dark" : "light";
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
+const initialShortInfoMode = localStorage.getItem("mamekurt-results-view") === "compact";
+const CONFIGURED_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const GITHUB_PAGES_API_BASE_URL = "https://najdikurty.onrender.com";
+const API_BASE_URL = (
+  CONFIGURED_API_BASE_URL ||
+  (import.meta.env.MODE === "production" && window.location.hostname.endsWith("github.io") ? GITHUB_PAGES_API_BASE_URL : "")
+).replace(/\/$/, "");
 type Page = "clubs" | "allClubs" | "about" | "privacy" | "terms" | "cookies";
 type CourtType = "indoor" | "outdoor";
 type CourtTypeFilter = CourtType | "all";
@@ -59,6 +67,7 @@ interface Club {
   imageUrl: string;
   address: string;
   phone: string;
+  secondaryPhone?: string;
   priceInfo: string;
   courtCount: number;
   courtTypes: CourtType[];
@@ -153,6 +162,34 @@ const CLUBS: Club[] = [
     bookingUrl: () => "https://teniscentrum.isportsystem.cz/?op=tab-id-13"
   },
   {
+    slug: "padel-radotin",
+    name: "Padel Radotín",
+    sport: "padel",
+    imageUrl: assetPath("clubs/padel-radotin.png"),
+    address: "Šárovo kolo 932/1, 153 00 Praha 16",
+    phone: "+420 739 504 053",
+    secondaryPhone: "+420 739 504 052",
+    priceInfo: "1 h: Po-Pá 7-15 560 Kč, 15-22 640 Kč; víkend 7-22 600 Kč.",
+    courtCount: 3,
+    courtTypes: ["outdoor"],
+    courtTypeLabel: "3 outdoor courts",
+    acceptsMultisport: true,
+    bookingUrl: () => "https://padelradotin.isportsystem.cz/"
+  },
+  {
+    slug: "padel-cakovice",
+    name: "Padel Čakovice",
+    sport: "padel",
+    imageUrl: assetPath("clubs/padel-cakovice.png"),
+    address: "Jizerská 328/4, 196 00 Praha-Čakovice",
+    phone: "Not published",
+    priceInfo: "1 h: price not published.",
+    courtCount: 2,
+    courtTypes: ["indoor"],
+    courtTypeLabel: "2 indoor courts",
+    bookingUrl: () => "https://padelautomat.isportsystem.cz/"
+  },
+  {
     slug: "padel-neride",
     name: "Padel Neride",
     sport: "padel",
@@ -207,6 +244,19 @@ const CLUBS: Club[] = [
     courtTypeLabel: "3 outdoor courts",
     acceptsMultisport: true,
     bookingUrl: (date: string) => reenioBookingUrl(date)
+  },
+  {
+    slug: "sk-satalice",
+    name: "SK Satalice",
+    sport: "padel",
+    imageUrl: assetPath("clubs/sk-satalice.png"),
+    address: "Budovatelská 12, 190 15 Praha-Satalice",
+    phone: "+420 721 069 640",
+    priceInfo: "1 h: Po-Pá 8-22 590 Kč; víkend 8-22 540 Kč.",
+    courtCount: 2,
+    courtTypes: ["outdoor"],
+    courtTypeLabel: "2 outdoor courts",
+    bookingUrl: (date: string) => rogerOnlineUrl(date)
   }
 ];
 
@@ -226,6 +276,21 @@ interface LoadProgress {
   total: number;
 }
 
+async function parseAvailabilityResponse(response: Response): Promise<AvailabilityResult & { error?: string }> {
+  const contentType = response.headers.get("content-type") ?? "";
+
+  if (contentType.includes("application/json")) {
+    return response.json();
+  }
+
+  const text = await response.text();
+  throw new Error(
+    response.ok
+      ? "Availability response was not JSON"
+      : `Availability request failed with ${response.status} ${response.statusText || text.slice(0, 120)}`
+  );
+}
+
 function App() {
   const [page, setPage] = useState<Page>(initialPage);
   const [date, setDate] = useState(today);
@@ -240,6 +305,8 @@ function App() {
   const [clubSort, setClubSort] = useState<ClubSort>("name");
   const [clubSortDirection, setClubSortDirection] = useState<SortDirection>("asc");
   const [theme, setTheme] = useState<"light" | "dark">(initialTheme);
+  const [isShortInfoMode, setIsShortInfoMode] = useState(initialShortInfoMode);
+  const [expandedCompactClubSlugs, setExpandedCompactClubSlugs] = useState<Set<string>>(() => new Set());
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [failedClubs, setFailedClubs] = useState<FailedClub[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -250,22 +317,35 @@ function App() {
   const trackedClubs = useMemo(() => sortTrackedClubs(buildTrackedClubs(CLUBS), clubSort, clubSortDirection), [clubSort, clubSortDirection]);
 
   async function loadAvailability() {
+    const targetClubs = selectedClubSlug
+      ? CLUBS.filter((club) => club.slug === selectedClubSlug && club.availabilityEnabled !== false)
+      : FETCHABLE_CLUBS;
     const loadId = loadSequenceRef.current + 1;
     loadSequenceRef.current = loadId;
 
     setIsLoading(true);
-    setAvailabilityByClub({});
+    setAvailabilityByClub((currentAvailability) => {
+      if (!selectedClubSlug) return {};
+      const nextAvailability = { ...currentAvailability };
+      delete nextAvailability[selectedClubSlug];
+      return nextAvailability;
+    });
     setFailedClubs([]);
     setLoadError(null);
-    setLoadProgress({ completed: 0, total: FETCHABLE_CLUBS.length });
+    setLoadProgress({ completed: 0, total: targetClubs.length });
+
+    if (targetClubs.length === 0) {
+      setIsLoading(false);
+      return;
+    }
 
     try {
       await Promise.all(
-        FETCHABLE_CLUBS.map(async (club) => {
+        targetClubs.map(async (club) => {
           const params = new URLSearchParams({ club: club.slug, sport: club.sport, date });
           try {
             const response = await fetch(`${API_BASE_URL}/api/availability?${params}`);
-            const payload = await response.json();
+            const payload = await parseAvailabilityResponse(response);
 
             if (!response.ok) {
               throw new Error(payload.error ?? `Failed to load ${club.name}`);
@@ -309,7 +389,7 @@ function App() {
   useEffect(() => {
     if (page !== "clubs") return;
     void loadAvailability();
-  }, [date, page]);
+  }, [date, page, selectedClubSlug]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 30_000);
@@ -320,6 +400,10 @@ function App() {
     document.documentElement.dataset.theme = theme;
     localStorage.setItem("mamekurt-theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    localStorage.setItem("mamekurt-results-view", isShortInfoMode ? "compact" : "cards");
+  }, [isShortInfoMode]);
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -357,6 +441,11 @@ function App() {
   const selectedClub = page === "clubs" ? (CLUBS.find((club) => club.slug === selectedClubSlug) ?? null) : null;
   const selectedAvailability = selectedClub ? availabilityByClub[selectedClub.slug] : null;
   const selectedClubFailure = selectedClub ? failedClubs.find(({ club }) => club.slug === selectedClub.slug) : null;
+  const isSelectedClubSlotsLoading =
+    selectedClub !== null &&
+    selectedClub.availabilityEnabled !== false &&
+    !selectedAvailability &&
+    !selectedClubFailure;
 
   const durationOptions = useMemo(() => {
     const firstAvailability = Object.values(availabilityByClub)[0];
@@ -425,10 +514,15 @@ function App() {
           bookingUrl: selectedClub.bookingUrl(selectedAvailability.date)
         }))
       : [];
-  const maxCourtCount = Math.max(...Object.values(availabilityByClub).map((availability) => availability.courts.length), 2);
+  const maxCourtCount = selectedClub
+    ? selectedClub.courtCount
+    : Math.max(...Object.values(availabilityByClub).map((availability) => availability.courts.length), 2);
   const durationLabel = formatDuration(duration, selectedAvailability?.dayRange ?? Object.values(availabilityByClub)[0]?.dayRange);
   const startTimeOptions = timeOptions.filter((time) => time < timeWindow.end);
   const endTimeOptions = timeOptions.filter((time) => time > timeWindow.start);
+  const visibleClubSlugs = useMemo(() => visibleClubResults.map((result) => result.club.slug), [visibleClubResults]);
+  const areAllCompactRowsExpanded =
+    visibleClubSlugs.length > 0 && visibleClubSlugs.every((clubSlug) => expandedCompactClubSlugs.has(clubSlug));
 
   return (
     <main className="appShell">
@@ -564,15 +658,43 @@ function App() {
             </span>
           ) : null}
         </div>
-        <Button
-          aria-label="Refresh availability"
-          icon={<RefreshCw size={18} />}
-          onClick={loadAvailability}
-          size="icon"
-          title="Refresh availability"
-          variant="secondary"
-          disabled={isLoading}
-        />
+        <div className="resultActions">
+          {!selectedClub ? (
+            <>
+              {isShortInfoMode && visibleClubSlugs.length > 0 ? (
+                <Button
+                  aria-label={areAllCompactRowsExpanded ? "Hide slots" : "Show slots"}
+                  onClick={() =>
+                    setExpandedCompactClubSlugs(
+                      areAllCompactRowsExpanded ? new Set() : new Set(visibleClubSlugs)
+                    )
+                  }
+                  size="sm"
+                  variant="secondary"
+                >
+                  {areAllCompactRowsExpanded ? "Hide slots" : "Show slots"}
+                </Button>
+              ) : null}
+              <Button
+                aria-label={isShortInfoMode ? "Show club cards" : "Show compact club list"}
+                icon={isShortInfoMode ? <LayoutGrid size={18} /> : <ListOrdered size={18} />}
+                onClick={() => setIsShortInfoMode((currentMode) => !currentMode)}
+                size="icon"
+                title={isShortInfoMode ? "Show cards" : "Show compact list"}
+                variant="secondary"
+              />
+            </>
+          ) : null}
+          <Button
+            aria-label="Refresh availability"
+            icon={<RefreshCw size={18} />}
+            onClick={loadAvailability}
+            size="icon"
+            title="Refresh availability"
+            variant="secondary"
+            disabled={isLoading}
+          />
+        </div>
           </section>
 
           {loadError ? <Alert icon={<AlertCircle size={18} />} title={loadError} /> : null}
@@ -581,12 +703,19 @@ function App() {
           {selectedClub && selectedAvailability ? (
             <ClubDetail
               club={selectedClub}
+              availability={selectedAvailability}
               slots={selectedSlots}
               courtsNeeded={courtsNeeded}
               directBookingUrl={selectedClub.bookingUrl(selectedAvailability.date)}
             />
-          ) : selectedClub && isLoading ? (
-            <ClubDetailSkeleton />
+          ) : selectedClub && (isLoading || isSelectedClubSlotsLoading) ? (
+            <ClubDetail
+              club={selectedClub}
+              slots={[]}
+              courtsNeeded={courtsNeeded}
+              directBookingUrl={selectedClub.bookingUrl(date)}
+              slotsLoading
+            />
           ) : selectedClub ? (
             <ClubDetail
               club={selectedClub}
@@ -600,6 +729,9 @@ function App() {
             <ClubList
               results={visibleClubResults}
               isLoading={isLoading}
+              compact={isShortInfoMode}
+              expandedClubSlugs={expandedCompactClubSlugs}
+              onExpandedClubSlugsChange={setExpandedCompactClubSlugs}
               onSelectClub={(club) => updateSelectedClub(club.slug)}
             />
           )}
@@ -639,6 +771,7 @@ function App() {
   function updateSelectedClub(nextClubSlug: string | null) {
     setPage("clubs");
     setSelectedClubSlug(nextClubSlug);
+    setFailedClubs([]);
     writeUrl({ date, clubSlug: nextClubSlug, mode: "push" });
     window.scrollTo({ top: 0 });
   }
@@ -1059,25 +1192,134 @@ function FailedClubAlert({ failedClubs, date, title }: { failedClubs: FailedClub
 function ClubList({
   results,
   isLoading,
+  compact,
+  expandedClubSlugs,
+  onExpandedClubSlugsChange,
   onSelectClub
 }: {
   results: Array<{ club: Club; availability?: AvailabilityResult; bookableSlots: BookableSlot[] }>;
   isLoading: boolean;
+  compact: boolean;
+  expandedClubSlugs: Set<string>;
+  onExpandedClubSlugsChange: React.Dispatch<React.SetStateAction<Set<string>>>;
   onSelectClub: (club: Club) => void;
 }) {
   if (isLoading && results.length === 0) {
     return (
-      <section className="clubGrid" aria-label="Loading clubs">
+      <section className={compact ? "clubCompactList" : "clubGrid"} aria-label="Loading clubs">
         {Array.from({ length: 6 }, (_, index) => (
-          <Card className="clubCard loadingCard" key={index}>
-            <Skeleton className="imageSkeleton" />
-            <div className="clubBody">
+          compact ? (
+            <Card className="clubCompactRow loadingCard" key={index}>
               <Skeleton className="lineSkeleton wide" />
               <Skeleton className="lineSkeleton" />
-              <Skeleton className="lineSkeleton short" />
-            </div>
-          </Card>
+            </Card>
+          ) : (
+            <Card className="clubCard loadingCard" key={index}>
+              <Skeleton className="imageSkeleton" />
+              <div className="clubBody">
+                <Skeleton className="lineSkeleton wide" />
+                <Skeleton className="lineSkeleton" />
+                <Skeleton className="lineSkeleton short" />
+              </div>
+            </Card>
+          )
         ))}
+      </section>
+    );
+  }
+
+  if (compact) {
+    return (
+      <section className="clubCompactList" aria-label="Matching clubs">
+        {results.length > 0 ? (
+          results.map(({ club, availability, bookableSlots }) => {
+            const isExpanded = expandedClubSlugs.has(club.slug);
+            const toggleExpanded = () => {
+              onExpandedClubSlugsChange((currentSlugs) => {
+                const nextSlugs = new Set(currentSlugs);
+                if (nextSlugs.has(club.slug)) {
+                  nextSlugs.delete(club.slug);
+                } else {
+                  nextSlugs.add(club.slug);
+                }
+                return nextSlugs;
+              });
+            };
+
+            return (
+              <Card className="clubCompactRow" interactive key={club.slug}>
+                <div
+                  aria-expanded={isExpanded}
+                  className="clubCompactSelect"
+                  onClick={toggleExpanded}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      toggleExpanded();
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                >
+                <div className="clubCompactMain">
+                  <button
+                    className="clubCompactName"
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onSelectClub(club);
+                    }}
+                  >
+                    {club.name}
+                  </button>
+                  <span>{bookableSlots.length} slots</span>
+                </div>
+                <div className="clubCompactToggle">
+                  <div className="clubCompactMeta">
+                    <span className="trackedClubPrice">
+                      from <strong>{formatCzk(lowestPrice(club.priceInfo))}</strong>/h
+                    </span>
+                    {club.acceptsMultisport ? <span className="multisportBadge">Multisport</span> : null}
+                    <CourtTypeBadges courtTypes={club.courtTypes} />
+                    <span className="clubMeta">
+                      <Clock3 size={15} />
+                      {availability?.dayRange.start}-{availability?.dayRange.end}
+                    </span>
+                    <FreshnessBadge availability={availability} />
+                  </div>
+                  <ChevronDown className="clubCompactChevron" size={18} />
+                </div>
+              </div>
+              {isExpanded ? (
+                <div className="clubCompactSlots">
+                  {bookableSlots.map((slot) => (
+                    <a
+                      className="clubCompactSlot"
+                      href={slot.bookingUrl ?? club.bookingUrl(availability?.date ?? today)}
+                      key={`${club.slug}-${slot.start}-${slot.end}-${slot.courts.join("-")}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <strong>
+                        {slot.start} - {slot.end}
+                      </strong>
+                      <span>{slot.courts.join(" + ")}</span>
+                      <small>
+                        Book
+                        <ExternalLink size={13} />
+                      </small>
+                    </a>
+                  ))}
+                </div>
+              ) : null}
+              </Card>
+            );
+          })
+        ) : (
+          <EmptyState title="No matching clubs">
+            Try a shorter duration, fewer courts, or another day.
+          </EmptyState>
+        )}
       </section>
     );
   }
@@ -1087,12 +1329,34 @@ function ClubList({
       {results.length > 0 ? (
         results.map(({ club, availability, bookableSlots }) => (
           <Card className="clubCard" interactive key={club.slug}>
-            <button className="clubSelect" type="button" onClick={() => onSelectClub(club)}>
+            <div
+              className="clubSelect"
+              onClick={() => onSelectClub(club)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  onSelectClub(club);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+            >
               <img src={club.imageUrl} alt={`${club.name} padel courts`} />
               <div className="clubBody">
                 <div className="clubTitleRow">
                   <div>
-                    <h2>{club.name}</h2>
+                    <h2>
+                      <a
+                        className="clubExternalTitle"
+                        href={club.bookingUrl(availability?.date ?? today)}
+                        onClick={(event) => event.stopPropagation()}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {club.name}
+                        <ExternalLink size={15} />
+                      </a>
+                    </h2>
                     <p>{bookableSlots.length} matching slots</p>
                   </div>
                 </div>
@@ -1106,9 +1370,10 @@ function ClubList({
                   <Clock3 size={15} />
                   {availability?.dayRange.start}-{availability?.dayRange.end}
                 </span>
+                <FreshnessBadge availability={availability} />
                 <CourtTypeBadges courtTypes={club.courtTypes} />
               </div>
-            </button>
+            </div>
             <a className="addressLink" href={googleMapsUrl(club.address)} target="_blank" rel="noreferrer">
               <MapPin size={15} />
               <span>{club.address}</span>
@@ -1136,17 +1401,41 @@ function CourtTypeBadges({ courtTypes }: { courtTypes: CourtType[] }) {
   );
 }
 
+function PhoneInfoRow({ phone }: { phone: string }) {
+  const href = phoneHref(phone);
+
+  if (!href) {
+    return (
+      <span className="detailInfoRow">
+        <Phone size={16} />
+        <span>{phone}</span>
+      </span>
+    );
+  }
+
+  return (
+    <a className="detailInfoRow" href={`tel:${href}`}>
+      <Phone size={16} />
+      <span>{phone}</span>
+    </a>
+  );
+}
+
 function ClubDetail({
   club,
+  availability,
   slots,
   courtsNeeded,
+  slotsLoading = false,
   availabilityUnavailable = false,
   unavailableReason,
   directBookingUrl
 }: {
   club: Club;
+  availability?: AvailabilityResult;
   slots: BookableSlot[];
   courtsNeeded: number;
+  slotsLoading?: boolean;
   availabilityUnavailable?: boolean;
   unavailableReason?: string;
   directBookingUrl?: string;
@@ -1173,16 +1462,17 @@ function ClubDetail({
                   <span className="multisportBadge">Multisport</span>
                 </span>
               ) : null}
-              <a className="detailInfoRow" href={`tel:${phoneHref(club.phone)}`}>
-                <Phone size={16} />
-                <span>{club.phone}</span>
-              </a>
+              <PhoneInfoRow phone={club.phone} />
+              {club.secondaryPhone ? (
+                <PhoneInfoRow phone={club.secondaryPhone} />
+              ) : null}
               {directBookingUrl ? (
                 <a className="detailInfoRow detailBookingLink" href={directBookingUrl} target="_blank" rel="noreferrer">
                   <ExternalLink size={16} />
                   <span>Open booking system</span>
                 </a>
               ) : null}
+              <FreshnessBadge availability={availability} />
               <span className="detailInfoRow priceInfoRow">
                 <WalletCards size={16} />
                 <span>{renderPriceInfo(club.priceInfo)}</span>
@@ -1200,7 +1490,9 @@ function ClubDetail({
           </div>
           <ExternalLink size={18} />
         </div>
-        {slots.length > 0 ? (
+        {slotsLoading ? (
+          <SlotListSkeleton />
+        ) : slots.length > 0 ? (
           <div className="slotList">
             {slots.map((slot) => (
               <a
@@ -1251,6 +1543,22 @@ function ClubDetail({
   );
 }
 
+function SlotListSkeleton() {
+  return (
+    <div className="slotList" aria-label="Loading available times">
+      {Array.from({ length: 6 }, (_, index) => (
+        <div className="slot slotSkeleton" key={index}>
+          <div>
+            <Skeleton className="lineSkeleton short" />
+            <Skeleton className="lineSkeleton" />
+          </div>
+          <Skeleton className="pillSkeleton" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function ClubDetailSkeleton() {
   return (
     <>
@@ -1276,19 +1584,26 @@ function ClubDetailSkeleton() {
             <Skeleton className="lineSkeleton short" />
           </div>
         </div>
-        <div className="slotList">
-          {Array.from({ length: 6 }, (_, index) => (
-            <div className="slot slotSkeleton" key={index}>
-              <div>
-                <Skeleton className="lineSkeleton short" />
-                <Skeleton className="lineSkeleton" />
-              </div>
-              <Skeleton className="pillSkeleton" />
-            </div>
-          ))}
-        </div>
+        <SlotListSkeleton />
       </Card>
     </>
+  );
+}
+
+function FreshnessBadge({ availability }: { availability?: AvailabilityResult }) {
+  if (!availability) {
+    return null;
+  }
+
+  const state = availability.cache?.state;
+  const isStale = state === "stale";
+  const checkedAt = availability.cache?.cachedAt ?? availability.fetchedAt;
+
+  return (
+    <span className={isStale ? "freshnessBadge freshnessBadge-stale" : "freshnessBadge"}>
+      {isStale ? <TriangleAlert size={14} /> : <SearchCheck size={14} />}
+      {isStale ? "Stale" : "Checked"} {formatCheckedTime(checkedAt)}
+    </span>
   );
 }
 
@@ -1297,7 +1612,8 @@ function googleMapsUrl(address: string): string {
 }
 
 function phoneHref(phone: string): string {
-  return phone.replace(/[^\d+]/g, "");
+  const value = phone.replace(/[^\d+]/g, "");
+  return /\d/.test(value) ? value : "";
 }
 
 function clubMatchesCourtType(club: Club, courtTypeFilter: CourtTypeFilter): boolean {
@@ -1391,6 +1707,19 @@ function reenioBookingUrl(date: string): string {
   return `https://areal-cisarska-louka.reenio.cz/cs/service/hriste-padel-48086/${date};viewMode=7-days`;
 }
 
+function rogerOnlineUrl(date: string): string {
+  const [year, month, day] = date.split("-").map(Number);
+  const params = new URLSearchParams({
+    rok: String(year),
+    mesic: String(month),
+    den: String(day),
+    klub: "197",
+    set: "3"
+  });
+
+  return `https://www.rogeronline.cz/v2/?${params.toString()}`;
+}
+
 function clubsHref(date: string): string {
   const params = new URLSearchParams({ date });
   return `?${params.toString()}`;
@@ -1466,6 +1795,19 @@ function previousTimeOption(time: string, options: string[]): string | undefined
 function toComparableTime(time: string): number {
   const [hours, minutes] = time.split(":").map(Number);
   return hours * 60 + minutes;
+}
+
+function formatCheckedTime(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "recently";
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Prague"
+  }).format(date);
 }
 
 function pragueDateInputValue(date: Date): string {

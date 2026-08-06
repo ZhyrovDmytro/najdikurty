@@ -6,6 +6,7 @@ const DEFAULT_URL = "https://teniscentrum.isportsystem.cz/?op=tab-id-13";
 const PADEL_SPORT_ID = "13";
 const DEFAULT_BROWSER_PROFILE_DIR = ".mamekurt/browser-profiles/isportsystem";
 const DEFAULT_BROWSER_TIMEOUT_MS = 90_000;
+const CLOUDFLARE_DETECTION_TIMEOUT_MS = 8_000;
 
 export interface ISportSystemFetchOptions {
   url?: string;
@@ -22,6 +23,7 @@ export interface ISportSystemBrowserOptions {
   channel?: string;
   executablePath?: string;
   headless?: boolean;
+  signal?: AbortSignal;
   timeoutMs?: number;
   renderer?: ISportSystemBrowserRenderer;
 }
@@ -33,6 +35,7 @@ export interface ISportSystemBrowserRenderOptions {
   channel?: string;
   executablePath?: string;
   headless: boolean;
+  signal?: AbortSignal;
   timeoutMs: number;
 }
 
@@ -76,7 +79,7 @@ export async function fetchISportSystemAvailability(options: ISportSystemFetchOp
   const browserOptions = normalizeBrowserOptions(options.browser);
   if (!browserOptions) {
     throw new Error(
-      "Head Tenis Centrum uses iSportSystem behind Cloudflare; direct HTTP scraping is blocked. Enable the browser-backed iSportSystem fetcher."
+      `${options.clubSlug} uses iSportSystem behind Cloudflare; direct HTTP scraping is blocked. Enable the browser-backed iSportSystem fetcher.`
     );
   }
 
@@ -88,12 +91,13 @@ export async function fetchISportSystemAvailability(options: ISportSystemFetchOp
     channel: browserOptions.channel,
     executablePath: browserOptions.executablePath,
     headless: browserOptions.headless ?? false,
+    signal: browserOptions.signal,
     timeoutMs: browserOptions.timeoutMs ?? DEFAULT_BROWSER_TIMEOUT_MS
   });
 
   if (isCloudflareChallenge(rendered.html)) {
     throw new Error(
-      "Head Tenis Centrum still rendered a Cloudflare challenge in the browser-backed fetcher. Open the persistent browser profile once, pass the check, then retry."
+      `${options.clubSlug} still rendered a Cloudflare challenge in the browser-backed fetcher. Open the persistent browser profile once, pass the check, then retry.`
     );
   }
 
@@ -116,6 +120,7 @@ function normalizeBrowserOptions(options: ISportSystemFetchOptions["browser"]): 
 async function fetchRenderedHtmlWithBrowser(
   options: ISportSystemBrowserRenderOptions
 ): Promise<ISportSystemRenderedHtml> {
+  throwIfAborted(options.signal);
   const { chromium } = await import("playwright-core");
   const context = await chromium.launchPersistentContext(options.userDataDir, {
     channel: options.channel ?? (options.executablePath ? undefined : "chrome"),
@@ -123,13 +128,15 @@ async function fetchRenderedHtmlWithBrowser(
     headless: options.headless,
     viewport: { width: 1600, height: 1200 }
   });
+  const removeAbortListener = closeContextOnAbort(context, options.signal);
 
   try {
+    throwIfAborted(options.signal);
     const page = context.pages()[0] ?? (await context.newPage());
     page.setDefaultTimeout(options.timeoutMs);
 
     await page.goto(options.url, { waitUntil: "domcontentloaded", timeout: options.timeoutMs });
-    await page.waitForSelector("table.schema_sport_13", { timeout: options.timeoutMs });
+    await waitForTimetableOrChallenge(page, options.timeoutMs);
 
     const ajaxHtml = await fetchTimetableHtmlFromPage(page, options.date);
     if (ajaxHtml && !isCloudflareChallenge(ajaxHtml.html)) {
@@ -141,8 +148,42 @@ async function fetchRenderedHtmlWithBrowser(
       sourceUrl: page.url()
     };
   } finally {
-    await context.close();
+    removeAbortListener();
+    await context.close().catch(() => undefined);
   }
+}
+
+function closeContextOnAbort(context: import("playwright-core").BrowserContext, signal?: AbortSignal): () => void {
+  if (!signal) return () => undefined;
+
+  const close = () => {
+    void context.close().catch(() => undefined);
+  };
+  signal.addEventListener("abort", close, { once: true });
+  return () => signal.removeEventListener("abort", close);
+}
+
+function throwIfAborted(signal?: AbortSignal): void {
+  if (signal?.aborted) {
+    throw signal.reason instanceof Error ? signal.reason : new Error("iSportSystem request aborted");
+  }
+}
+
+async function waitForTimetableOrChallenge(page: import("playwright-core").Page, timeoutMs: number): Promise<void> {
+  const earlyTimetable = await page
+    .waitForSelector("table.schema_sport_13", { timeout: Math.min(timeoutMs, CLOUDFLARE_DETECTION_TIMEOUT_MS) })
+    .then(() => true)
+    .catch(() => false);
+
+  if (earlyTimetable) {
+    return;
+  }
+
+  if (isCloudflareChallenge(await page.content())) {
+    throw new Error("iSportSystem rendered a Cloudflare challenge in the browser-backed fetcher.");
+  }
+
+  await page.waitForSelector("table.schema_sport_13", { timeout: timeoutMs });
 }
 
 async function fetchTimetableHtmlFromPage(
@@ -195,6 +236,9 @@ function isCloudflareChallenge(html: string, response?: Response): boolean {
     response?.headers.get("cf-mitigated") === "challenge" ||
     html.includes("challenges.cloudflare.com") ||
     html.includes("Just a moment") ||
+    html.includes("Verify you are human") ||
+    html.includes("Performing security verification") ||
+    html.includes("not a bot") ||
     html.includes("cf-mitigated")
   );
 }

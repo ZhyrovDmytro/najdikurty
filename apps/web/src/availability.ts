@@ -19,6 +19,13 @@ export interface AvailabilityResult {
   durationAvailability?: Record<string, CourtAvailability[]>;
   sport: string;
   courts: CourtAvailability[];
+  cache?: {
+    state: "live" | "fresh" | "stale";
+    cachedAt: string;
+    ageSeconds: number;
+    stale: boolean;
+    error?: string;
+  };
 }
 
 export interface BookableSlot extends TimeRange {

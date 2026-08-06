@@ -75,6 +75,7 @@ export async function fetchJdemeNaToAvailability(options: JdemeNaToFetchOptions)
       headless: browserOptions.headless ?? true,
       logger: browserOptions.logger,
       proxy: browserOptions.proxy,
+      signal: browserOptions.signal,
       sport: options.sport,
       timeoutMs: browserOptions.timeoutMs ?? DEFAULT_BROWSER_TIMEOUT_MS,
       userDataDir: browserOptions.userDataDir ?? DEFAULT_BROWSER_PROFILE_DIR
@@ -194,6 +195,7 @@ async function fetchJdemeNaToPortalSearchAvailabilityWithBrowser(
   });
 
   const { chromium } = await import("playwright-core");
+  throwIfAborted(browserOptions.signal);
   const context = await chromium.launchPersistentContext(browserOptions.userDataDir ?? DEFAULT_BROWSER_PROFILE_DIR, {
     args: ["--no-sandbox", "--disable-dev-shm-usage"],
     channel: browserOptions.channel,
@@ -203,8 +205,10 @@ async function fetchJdemeNaToPortalSearchAvailabilityWithBrowser(
     timeout: timeoutMs,
     viewport: { width: 1440, height: 1000 }
   });
+  const removeAbortListener = closeContextOnAbort(context, browserOptions.signal);
 
   try {
+    throwIfAborted(browserOptions.signal);
     browserOptions.logger?.("portal.browser.launch.success", {
       durationMs: Date.now() - startedAt
     });
@@ -248,7 +252,8 @@ async function fetchJdemeNaToPortalSearchAvailabilityWithBrowser(
       sport: options.sport
     });
   } finally {
-    await context.close();
+    removeAbortListener();
+    await context.close().catch(() => undefined);
   }
 }
 
@@ -258,6 +263,7 @@ export interface JdemeNaToBrowserOptions {
   channel?: string;
   executablePath?: string;
   headless?: boolean;
+  signal?: AbortSignal;
   timeoutMs?: number;
   httpTimeoutMs?: number;
   proxy?: JdemeNaToBrowserProxy;
@@ -282,6 +288,7 @@ export interface JdemeNaToBrowserRenderOptions {
   executablePath?: string;
   headless: boolean;
   timeoutMs: number;
+  signal?: AbortSignal;
   proxy?: JdemeNaToBrowserProxy;
   logger?: JdemeNaToBrowserLogger;
 }
@@ -522,6 +529,7 @@ async function fetchRenderedHtmlWithBrowser(options: JdemeNaToBrowserRenderOptio
   });
 
   const { chromium } = await import("playwright-core");
+  throwIfAborted(options.signal);
   let context: Awaited<ReturnType<typeof chromium.launchPersistentContext>>;
 
   try {
@@ -542,7 +550,10 @@ async function fetchRenderedHtmlWithBrowser(options: JdemeNaToBrowserRenderOptio
     throw error;
   }
 
+  const removeAbortListener = closeContextOnAbort(context, options.signal);
+
   try {
+    throwIfAborted(options.signal);
     options.logger?.("browser.launch.success", {
       durationMs: Date.now() - startedAt
     });
@@ -600,7 +611,24 @@ async function fetchRenderedHtmlWithBrowser(options: JdemeNaToBrowserRenderOptio
       sourceUrl: page.url()
     };
   } finally {
-    await context.close();
+    removeAbortListener();
+    await context.close().catch(() => undefined);
+  }
+}
+
+function closeContextOnAbort(context: import("playwright-core").BrowserContext, signal?: AbortSignal): () => void {
+  if (!signal) return () => undefined;
+
+  const close = () => {
+    void context.close().catch(() => undefined);
+  };
+  signal.addEventListener("abort", close, { once: true });
+  return () => signal.removeEventListener("abort", close);
+}
+
+function throwIfAborted(signal?: AbortSignal): void {
+  if (signal?.aborted) {
+    throw signal.reason instanceof Error ? signal.reason : new Error("JdemeNaTo request aborted");
   }
 }
 
