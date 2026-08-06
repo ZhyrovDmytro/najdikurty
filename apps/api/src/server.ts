@@ -23,6 +23,7 @@ const DEFAULT_AVAILABILITY_TIMEOUT_MS = 25_000;
 const DEFAULT_TK_SPARTA_AVAILABILITY_TIMEOUT_MS = 60_000;
 const DEFAULT_JDEMENATO_BROWSER_TIMEOUT_MS = 45_000;
 const DEFAULT_ISPORTSYSTEM_BROWSER_TIMEOUT_MS = 90_000;
+const DEFAULT_PADEL_SLAVIA_BROWSER_TIMEOUT_MS = 45_000;
 const DEFAULT_AVAILABILITY_CACHE_TTL_MS = 2 * 60_000;
 const DEFAULT_AVAILABILITY_STALE_TTL_MS = 6 * 60 * 60_000;
 const DEFAULT_AVAILABILITY_CACHE_MAX_ENTRIES = 300;
@@ -201,6 +202,7 @@ async function fetchAvailabilityByClub(query: z.infer<typeof querySchema>, signa
 
   if (query.club === "sk-slavia-praha-padel") {
     return fetchPadelSlaviaAvailability({
+      browser: padelSlaviaBrowserOptions(query.live, signal),
       clubSlug: query.club,
       credentials: padelSlaviaCredentials(),
       date: query.date,
@@ -331,6 +333,26 @@ function padelSlaviaCredentials() {
   }
 
   return { email: email.trim(), password: password.trim() };
+}
+
+function padelSlaviaBrowserOptions(live?: string, signal?: AbortSignal) {
+  if (process.env.PADEL_SLAVIA_BROWSER === "0") {
+    return false;
+  }
+
+  if (process.env.PADEL_SLAVIA_BROWSER !== "1" && live !== "1") {
+    return undefined;
+  }
+
+  return {
+    enabled: true,
+    userDataDir: process.env.PADEL_SLAVIA_BROWSER_PROFILE_DIR,
+    channel: process.env.PADEL_SLAVIA_BROWSER_CHANNEL,
+    executablePath: process.env.PADEL_SLAVIA_BROWSER_EXECUTABLE_PATH,
+    headless: process.env.PADEL_SLAVIA_BROWSER_HEADLESS !== "false",
+    signal,
+    timeoutMs: optionalNumber(process.env.PADEL_SLAVIA_BROWSER_TIMEOUT_MS) ?? DEFAULT_PADEL_SLAVIA_BROWSER_TIMEOUT_MS
+  };
 }
 
 function tkSpartaCredentials() {

@@ -10,12 +10,50 @@ export interface PadelSlaviaFetchOptions {
   sport?: string;
   credentials?: PadelSlaviaCredentials;
   fetchImpl?: typeof fetch;
+  browser?: PadelSlaviaBrowserOptions | false;
 }
 
 export interface PadelSlaviaCredentials {
   email: string;
   password: string;
 }
+
+export interface PadelSlaviaBrowserOptions {
+  enabled?: boolean;
+  userDataDir?: string;
+  channel?: string;
+  executablePath?: string;
+  headless?: boolean;
+  signal?: AbortSignal;
+  timeoutMs?: number;
+  renderer?: PadelSlaviaBrowserRenderer;
+}
+
+export interface PadelSlaviaBrowserRenderOptions {
+  baseUrl: string;
+  channel?: string;
+  credentials?: PadelSlaviaCredentials;
+  date: string;
+  executablePath?: string;
+  headless: boolean;
+  requiresLogin: boolean;
+  signal?: AbortSignal;
+  sport?: string;
+  timeoutMs: number;
+  userDataDir: string;
+}
+
+export interface PadelSlaviaRenderedHtml {
+  html: string;
+  sourceUrl: string;
+}
+
+export type PadelSlaviaBrowserRenderer = (
+  options: PadelSlaviaBrowserRenderOptions
+) => Promise<PadelSlaviaRenderedHtml>;
+
+const DEFAULT_BROWSER_PROFILE_DIR = ".mamekurt/browser-profiles/padelslavia";
+const DEFAULT_BROWSER_TIMEOUT_MS = 45_000;
 
 export async function fetchPadelSlaviaAvailability(options: PadelSlaviaFetchOptions): Promise<AvailabilityResult> {
   const baseUrl = options.baseUrl ?? "https://rezervace.padelslavia.cz";
@@ -29,25 +67,126 @@ export async function fetchPadelSlaviaAvailability(options: PadelSlaviaFetchOpti
 
   const requiresLogin = date !== today;
 
-  if (requiresLogin && options.credentials) {
-    await login(session, baseUrl, options.credentials);
+  try {
+    if (requiresLogin && options.credentials) {
+      await login(session, baseUrl, options.credentials);
+    }
+
+    const url = requiresLogin
+      ? new URL(`/cs/rezervace/index/${sportPath(options.sport)}/${date}`, baseUrl)
+      : new URL("/cs/rezervace", baseUrl);
+    const response = await session.fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ${url.toString()}: ${response.status} ${response.statusText}`);
+    }
+
+    const html = await response.text();
+    return parsePadelSlaviaAvailability(html, {
+      sourceUrl: response.url || url.toString(),
+      clubSlug: options.clubSlug,
+      date,
+      sport: options.sport
+    });
+  } catch (error) {
+    const browserOptions = normalizeBrowserOptions(options.browser);
+    if (!browserOptions) {
+      throw error;
+    }
+
+    const rendered = await (browserOptions.renderer ?? fetchRenderedHtmlWithBrowser)({
+      baseUrl,
+      channel: browserOptions.channel,
+      credentials: options.credentials,
+      date,
+      executablePath: browserOptions.executablePath,
+      headless: browserOptions.headless ?? true,
+      requiresLogin,
+      signal: browserOptions.signal,
+      sport: options.sport,
+      timeoutMs: browserOptions.timeoutMs ?? DEFAULT_BROWSER_TIMEOUT_MS,
+      userDataDir: browserOptions.userDataDir ?? DEFAULT_BROWSER_PROFILE_DIR
+    });
+
+    return parsePadelSlaviaAvailability(rendered.html, {
+      sourceUrl: rendered.sourceUrl,
+      clubSlug: options.clubSlug,
+      date,
+      sport: options.sport
+    });
+  }
+}
+
+function normalizeBrowserOptions(options: PadelSlaviaFetchOptions["browser"]): PadelSlaviaBrowserOptions | undefined {
+  if (options === undefined || options === false || options.enabled === false) {
+    return undefined;
   }
 
-  const url = requiresLogin
-    ? new URL(`/cs/rezervace/index/${sportPath(options.sport)}/${date}`, baseUrl)
-    : new URL("/cs/rezervace", baseUrl);
-  const response = await session.fetch(url);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${url.toString()}: ${response.status} ${response.statusText}`);
-  }
+  return options;
+}
 
-  const html = await response.text();
-  return parsePadelSlaviaAvailability(html, {
-    sourceUrl: response.url || url.toString(),
-    clubSlug: options.clubSlug,
-    date,
-    sport: options.sport
+async function fetchRenderedHtmlWithBrowser(options: PadelSlaviaBrowserRenderOptions): Promise<PadelSlaviaRenderedHtml> {
+  throwIfAborted(options.signal);
+  const { chromium } = await import("playwright-core");
+  const context = await chromium.launchPersistentContext(options.userDataDir, {
+    channel: options.channel,
+    executablePath: options.executablePath,
+    headless: options.headless,
+    viewport: { width: 1440, height: 1000 }
   });
+  const removeAbortListener = closeContextOnAbort(context, options.signal);
+
+  try {
+    throwIfAborted(options.signal);
+    const page = context.pages()[0] ?? (await context.newPage());
+    page.setDefaultTimeout(options.timeoutMs);
+
+    if (options.requiresLogin) {
+      if (!options.credentials) {
+        throw new Error("Padel Slavia browser login requires credentials");
+      }
+
+      await page.goto(new URL("/cs/prihlaseni", options.baseUrl).toString(), {
+        waitUntil: "domcontentloaded",
+        timeout: options.timeoutMs
+      });
+      await page.fill('input[name="email"]', options.credentials.email);
+      await page.fill('input[name="password"]', options.credentials.password);
+      await Promise.all([
+        page.waitForURL("**/cs/rezervace**", { timeout: options.timeoutMs }),
+        page.click('button[type="submit"], input[type="submit"], .form-signin button.btn-success')
+      ]);
+    }
+
+    const url = options.requiresLogin
+      ? new URL(`/cs/rezervace/index/${sportPath(options.sport)}/${options.date}`, options.baseUrl)
+      : new URL("/cs/rezervace", options.baseUrl);
+    await page.goto(url.toString(), { waitUntil: "domcontentloaded", timeout: options.timeoutMs });
+    await page.waitForSelector(".tabulka-rezervace table", { timeout: options.timeoutMs });
+
+    return {
+      html: await page.content(),
+      sourceUrl: page.url()
+    };
+  } finally {
+    removeAbortListener();
+    await context.close().catch(() => undefined);
+  }
+}
+
+function closeContextOnAbort(context: import("playwright-core").BrowserContext, signal?: AbortSignal): () => void {
+  if (!signal) return () => undefined;
+
+  const close = () => {
+    void context.close().catch(() => undefined);
+  };
+  signal.addEventListener("abort", close, { once: true });
+  return () => signal.removeEventListener("abort", close);
+}
+
+function throwIfAborted(signal?: AbortSignal): void {
+  if (signal?.aborted) {
+    throw signal.reason instanceof Error ? signal.reason : new Error("Padel Slavia request aborted");
+  }
 }
 
 async function login(session: CookieSession, baseUrl: string, credentials: PadelSlaviaCredentials): Promise<void> {

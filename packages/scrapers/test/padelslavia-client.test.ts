@@ -84,4 +84,24 @@ describe("fetchPadelSlaviaAvailability", () => {
     expect(requests.map((request) => request.url)).toEqual(["https://rezervace.padelslavia.cz/cs/rezervace"]);
     expect(requests[0]?.init?.method).toBeUndefined();
   });
+
+  it("falls back to browser rendering when the public page is rejected", async () => {
+    const html = readFileSync(new URL("./fixtures/padelslavia.html", import.meta.url), "utf8");
+    const result = await fetchPadelSlaviaAvailability({
+      baseUrl: "https://rezervace.padelslavia.cz",
+      browser: {
+        renderer: async ({ requiresLogin }) => {
+          expect(requiresLogin).toBe(false);
+          return {
+            html,
+            sourceUrl: "https://rezervace.padelslavia.cz/cs/rezervace"
+          };
+        }
+      },
+      clubSlug: "sk-slavia-praha-padel",
+      fetchImpl: (async () => new Response("Unauthorized", { status: 401, statusText: "Unauthorized" })) as typeof fetch
+    });
+
+    expect(result.courts).toHaveLength(4);
+  });
 });
