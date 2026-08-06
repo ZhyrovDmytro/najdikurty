@@ -62,4 +62,26 @@ describe("fetchPadelSlaviaAvailability", () => {
       })
     ).rejects.toThrow("requires login credentials");
   });
+
+  it("does not log in for the public current-day page even when credentials exist", async () => {
+    const html = readFileSync(new URL("./fixtures/padelslavia.html", import.meta.url), "utf8");
+    const requests: Array<{ url: string; init?: RequestInit }> = [];
+    const fetchImpl = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      requests.push({ url: input.toString(), init });
+      return new Response(html);
+    }) as typeof fetch;
+
+    await fetchPadelSlaviaAvailability({
+      baseUrl: "https://rezervace.padelslavia.cz",
+      clubSlug: "sk-slavia-praha-padel",
+      credentials: {
+        email: "player@example.com",
+        password: "secret"
+      },
+      fetchImpl
+    });
+
+    expect(requests.map((request) => request.url)).toEqual(["https://rezervace.padelslavia.cz/cs/rezervace"]);
+    expect(requests[0]?.init?.method).toBeUndefined();
+  });
 });

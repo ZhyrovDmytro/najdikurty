@@ -27,11 +27,13 @@ export async function fetchPadelSlaviaAvailability(options: PadelSlaviaFetchOpti
     throw new Error("Padel Slavia requires login credentials for non-current dates");
   }
 
-  if (options.credentials) {
+  const requiresLogin = date !== today;
+
+  if (requiresLogin && options.credentials) {
     await login(session, baseUrl, options.credentials);
   }
 
-  const url = options.credentials
+  const url = requiresLogin
     ? new URL(`/cs/rezervace/index/${sportPath(options.sport)}/${date}`, baseUrl)
     : new URL("/cs/rezervace", baseUrl);
   const response = await session.fetch(url);
