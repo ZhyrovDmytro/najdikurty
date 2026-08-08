@@ -56,8 +56,10 @@ type Page = "clubs" | "allClubs" | "about" | "privacy" | "terms" | "cookies";
 type CourtType = "indoor" | "outdoor";
 type CourtTypeFilter = CourtType | "all";
 type ClubSort = "name" | "price" | "multisport";
+type FindCourtSort = "name" | "priceAsc" | "priceDesc" | "multisport" | "indoor" | "outdoor";
 type SortDirection = "asc" | "desc";
 const TIME_PICKER_RANGE: TimeRange = { start: "00:00", end: "23:59" };
+const AVAILABILITY_REQUEST_TIMEOUT_MS = 15_000;
 const initialPage: Page = pageFromParam(initialParams.get("page"));
 
 interface Club {
@@ -90,6 +92,7 @@ const CLUBS: Club[] = [
     courtTypes: ["outdoor"],
     courtTypeLabel: "2 outdoor courts",
     acceptsMultisport: true,
+    availabilityEnabled: false,
     bookingUrl: (date: string) =>
       `https://jdemenato.cz/reservation/myportalorganizationcalendar.navigation.daynavigationbar:selectdayinternal/${date}`
   },
@@ -144,6 +147,7 @@ const CLUBS: Club[] = [
     courtCount: 4,
     courtTypes: ["outdoor"],
     courtTypeLabel: "4 outdoor courts",
+    availabilityEnabled: false,
     bookingUrl: (date: string) => `https://rezervace.padelslavia.cz/cs/rezervace/index/padel/${date}`
   },
   {
@@ -174,6 +178,7 @@ const CLUBS: Club[] = [
     courtTypes: ["outdoor"],
     courtTypeLabel: "3 outdoor courts",
     acceptsMultisport: true,
+    availabilityEnabled: false,
     bookingUrl: () => "https://padelradotin.isportsystem.cz/"
   },
   {
@@ -187,6 +192,7 @@ const CLUBS: Club[] = [
     courtCount: 2,
     courtTypes: ["indoor"],
     courtTypeLabel: "2 indoor courts",
+    availabilityEnabled: false,
     bookingUrl: () => "https://padelautomat.isportsystem.cz/"
   },
   {
@@ -230,6 +236,19 @@ const CLUBS: Club[] = [
     courtTypeLabel: "8 indoor courts",
     acceptsMultisport: true,
     bookingUrl: () => padelosCompanyUrl()
+  },
+  {
+    slug: "one-padel",
+    name: "One Padel",
+    sport: "padel",
+    imageUrl: assetPath("clubs/one-padel.png"),
+    address: "Ringhofferova 115, 155 21 Praha 17-Zličín",
+    phone: "Not published",
+    priceInfo: "1 h: from 850 Kč.",
+    courtCount: 9,
+    courtTypes: ["indoor"],
+    courtTypeLabel: "9 indoor courts",
+    bookingUrl: () => "https://onepadel.cz/book"
   },
   {
     slug: "cisarska-louka-padel",
@@ -291,6 +310,23 @@ async function parseAvailabilityResponse(response: Response): Promise<Availabili
   );
 }
 
+async function fetchAvailabilityRequest(url: string): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), AVAILABILITY_REQUEST_TIMEOUT_MS);
+
+  try {
+    return await fetch(url, { signal: controller.signal });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new Error(`Availability request timed out after ${Math.round(AVAILABILITY_REQUEST_TIMEOUT_MS / 1000)}s`);
+    }
+
+    throw error;
+  } finally {
+    window.clearTimeout(timeout);
+  }
+}
+
 function App() {
   const [page, setPage] = useState<Page>(initialPage);
   const [date, setDate] = useState(today);
@@ -304,6 +340,7 @@ function App() {
   const [selectedClubSlug, setSelectedClubSlug] = useState<string | null>(initialPage === "clubs" ? initialParams.get("club") : null);
   const [clubSort, setClubSort] = useState<ClubSort>("name");
   const [clubSortDirection, setClubSortDirection] = useState<SortDirection>("asc");
+  const [findCourtSort, setFindCourtSort] = useState<FindCourtSort>("name");
   const [theme, setTheme] = useState<"light" | "dark">(initialTheme);
   const [isShortInfoMode, setIsShortInfoMode] = useState(initialShortInfoMode);
   const [expandedCompactClubSlugs, setExpandedCompactClubSlugs] = useState<Set<string>>(() => new Set());
@@ -344,7 +381,7 @@ function App() {
         targetClubs.map(async (club) => {
           const params = new URLSearchParams({ club: club.slug, sport: club.sport, date });
           try {
-            const response = await fetch(`${API_BASE_URL}/api/availability?${params}`);
+            const response = await fetchAvailabilityRequest(`${API_BASE_URL}/api/availability?${params}`);
             const payload = await parseAvailabilityResponse(response);
 
             if (!response.ok) {
@@ -504,8 +541,9 @@ function App() {
     });
   }, [availabilityByClub, duration, courtsNeeded, timeWindow, now]);
 
-  const visibleClubResults = clubResults.filter(
-    (result) => result.bookableSlots.length > 0 && clubMatchesCourtType(result.club, courtTypeFilter)
+  const visibleClubResults = sortClubResults(
+    clubResults.filter((result) => result.bookableSlots.length > 0 && clubMatchesCourtType(result.club, courtTypeFilter)),
+    findCourtSort
   );
   const selectedSlots =
     selectedClub && selectedAvailability && clubMatchesCourtType(selectedClub, courtTypeFilter)
@@ -529,7 +567,7 @@ function App() {
       <nav className="topbar" aria-label="Page navigation">
         <a className="brandMark" href={clubsHref(date)} onClick={(event) => handleInternalNavigation(event, () => navigateToClubs("push"))}>
           <img src={assetPath("logo.png")} alt="" />
-          HLEDATKURTY
+          HLEDEJKURTY
         </a>
         {page !== "clubs" || selectedClub ? (
           <Breadcrumbs page={page} selectedClub={selectedClub} onHome={() => navigateToClubs("push")} />
@@ -661,6 +699,22 @@ function App() {
         <div className="resultActions">
           {!selectedClub ? (
             <>
+              <div className="resultSortControl">
+                <ListOrdered size={16} aria-hidden="true" />
+                <Select
+                  aria-label="Sort matching clubs"
+                  className="resultSortSelect"
+                  value={findCourtSort}
+                  onChange={(event) => setFindCourtSort(event.target.value as FindCourtSort)}
+                >
+                  <option value="name">Name</option>
+                  <option value="priceAsc">Lowest price</option>
+                  <option value="priceDesc">Highest price</option>
+                  <option value="multisport">Multisport</option>
+                  <option value="indoor">Indoor first</option>
+                  <option value="outdoor">Outdoor first</option>
+                </Select>
+              </div>
               {isShortInfoMode && visibleClubSlugs.length > 0 ? (
                 <Button
                   aria-label={areAllCompactRowsExpanded ? "Hide slots" : "Show slots"}
@@ -873,7 +927,7 @@ function SiteFooter({
       <div className="footerBrand">
         <a className="footerLogo" href={clubsHref(date)} onClick={(event) => handleInternalNavigation(event, onNavigateToClubs)}>
           <img src={assetPath("logo.png")} alt="" />
-          <span>HLEDATKURTY</span>
+          <span>HLEDEJKURTY</span>
         </a>
         <p>Independent padel court availability finder for Prague, Czech Republic.</p>
       </div>
@@ -906,7 +960,6 @@ function SiteFooter({
       </nav>
 
       <div className="footerMeta">
-        <span>Operator: Dmytro Zhyrov, Prague, Czech Republic.</span>
         <a href="mailto:dmytrozhyrov@gmail.com">dmytrozhyrov@gmail.com</a>
         <span>Availability and prices are informational.</span>
         <span>Book only through each club's official booking system.</span>
@@ -972,7 +1025,7 @@ function AllClubsPage({
                 </div>
                 <CourtTypeBadges courtTypes={club.courtTypes} />
                 <span className="trackedClubPrice">
-                  from <strong>{formatCzk(priceFrom)}</strong>/h
+                  from <strong>{formatCzkPerHour(priceFrom)}</strong>
                 </span>
               </div>
             </button>
@@ -994,7 +1047,7 @@ function AboutPage({ onBrowseClubs }: { onBrowseClubs: () => void }) {
         <Badge tone="green">About us</Badge>
         <h1 id="about-title">Find a free padel court without opening every booking system.</h1>
         <p>
-          HLEDATKURTY gathers available padel slots from club booking systems around Prague and shows the clubs that match your
+          HLEDEJKURTY gathers available padel slots from club booking systems around Prague and shows the clubs that match your
           date, duration, court count, time window, and indoor/outdoor preference.
         </p>
         <Button icon={<SearchCheck size={17} />} onClick={onBrowseClubs}>
@@ -1029,12 +1082,11 @@ function PrivacyPage() {
       badgeIcon={<ShieldCheck size={16} />}
       badgeText="Legal"
       title="Privacy Policy"
-      intro="This policy explains what data HLEDATKURTY uses while helping visitors find padel court availability in Prague."
+      intro="This policy explains what data HLEDEJKURTY uses while helping visitors find padel court availability in Prague."
     >
       <LegalSection title="Who operates this service">
         <p>
-          Website operator and data controller: Dmytro Zhyrov, Prague, Czech Republic. Contact:
-          <a href="mailto:dmytrozhyrov@gmail.com"> dmytrozhyrov@gmail.com</a>.
+          Contact: <a href="mailto:dmytrozhyrov@gmail.com">dmytrozhyrov@gmail.com</a>.
         </p>
       </LegalSection>
       <LegalSection title="What we process">
@@ -1071,11 +1123,11 @@ function TermsPage() {
       badgeIcon={<Scale size={16} />}
       badgeText="Terms"
       title="Terms of Use"
-      intro="These terms describe how to use HLEDATKURTY and what limits apply to the availability information shown here."
+      intro="These terms describe how to use HLEDEJKURTY and what limits apply to the availability information shown here."
     >
       <LegalSection title="Service scope">
         <p>
-          HLEDATKURTY aggregates publicly reachable or operator-authorized padel court availability from third-party booking
+          HLEDEJKURTY aggregates publicly reachable or operator-authorized padel court availability from third-party booking
           systems. It helps you discover possible time slots, but it does not sell, reserve, or confirm court bookings.
         </p>
       </LegalSection>
@@ -1107,11 +1159,11 @@ function CookiePolicyPage() {
       badgeIcon={<Cookie size={16} />}
       badgeText="Cookies"
       title="Cookie Policy"
-      intro="This page explains browser storage used by HLEDATKURTY."
+      intro="This page explains browser storage used by HLEDEJKURTY."
     >
       <LegalSection title="Current cookie use">
         <p>
-          HLEDATKURTY currently does not set analytics, advertising, or marketing cookies. The app stores only your theme choice
+          HLEDEJKURTY currently does not set analytics, advertising, or marketing cookies. The app stores only your theme choice
           in browser local storage so dark mode or light mode persists across visits.
         </p>
       </LegalSection>
@@ -1277,7 +1329,7 @@ function ClubList({
                 <div className="clubCompactToggle">
                   <div className="clubCompactMeta">
                     <span className="trackedClubPrice">
-                      from <strong>{formatCzk(lowestPrice(club.priceInfo))}</strong>/h
+                      from <strong>{formatCzkPerHour(lowestPrice(club.priceInfo))}</strong>
                     </span>
                     {club.acceptsMultisport ? <span className="multisportBadge">Multisport</span> : null}
                     <CourtTypeBadges courtTypes={club.courtTypes} />
@@ -1362,7 +1414,7 @@ function ClubList({
                 </div>
                 <div className="clubCardMetaRow">
                   <span className="trackedClubPrice">
-                    from <strong>{formatCzk(lowestPrice(club.priceInfo))}</strong>/h
+                    from <strong>{formatCzkPerHour(lowestPrice(club.priceInfo))}</strong>
                   </span>
                   {club.acceptsMultisport ? <span className="multisportBadge">Multisport</span> : null}
                 </div>
@@ -1659,6 +1711,33 @@ function sortTrackedClubs(clubs: TrackedClub[], sort: ClubSort, direction: SortD
   });
 }
 
+function sortClubResults<T extends { club: Club }>(results: T[], sort: FindCourtSort): T[] {
+  return [...results].sort((firstResult, secondResult) => {
+    const firstClub = firstResult.club;
+    const secondClub = secondResult.club;
+    const nameComparison = firstClub.name.localeCompare(secondClub.name);
+
+    if (sort === "priceAsc" || sort === "priceDesc") {
+      const priceComparison = lowestPrice(firstClub.priceInfo) - lowestPrice(secondClub.priceInfo);
+      return (sort === "priceAsc" ? priceComparison : -priceComparison) || nameComparison;
+    }
+
+    if (sort === "multisport") {
+      return Boolean(secondClub.acceptsMultisport) === Boolean(firstClub.acceptsMultisport)
+        ? nameComparison
+        : Number(Boolean(secondClub.acceptsMultisport)) - Number(Boolean(firstClub.acceptsMultisport));
+    }
+
+    if (sort === "indoor" || sort === "outdoor") {
+      const firstHasType = firstClub.courtTypes.includes(sort);
+      const secondHasType = secondClub.courtTypes.includes(sort);
+      return firstHasType === secondHasType ? nameComparison : Number(secondHasType) - Number(firstHasType);
+    }
+
+    return nameComparison;
+  });
+}
+
 function lowestPrice(priceInfo: string): number {
   const prices = Array.from(priceInfo.matchAll(/(\d+)(?:-\d+)?\s*Kč/g), (match) => Number(match[1]));
   return Math.min(...prices);
@@ -1666,6 +1745,10 @@ function lowestPrice(priceInfo: string): number {
 
 function formatCzk(price: number): string {
   return Number.isFinite(price) ? `${price} Kč` : "Price unknown";
+}
+
+function formatCzkPerHour(price: number): string {
+  return Number.isFinite(price) ? `${price} Kč/h` : "Price unknown";
 }
 
 function skySportCityTimelineUrl(date: string): string {

@@ -3,6 +3,7 @@ import express from "express";
 import { z } from "zod";
 import {
   fetchBookaballAvailability,
+  fetchCourtyOneAvailability,
   fetchISportSystemAvailability,
   fetchJdemeNaToAvailability,
   fetchJdemeNaToPortalSearchAvailability,
@@ -261,6 +262,15 @@ async function fetchAvailabilityByClub(query: z.infer<typeof querySchema>, signa
       clubSlug: query.club,
       clubId: "216927",
       companyId: "217",
+      date: query.date,
+      fetchImpl,
+      sport: query.sport
+    });
+  }
+
+  if (query.club === "one-padel") {
+    return fetchCourtyOneAvailability({
+      clubSlug: query.club,
       date: query.date,
       fetchImpl,
       sport: query.sport

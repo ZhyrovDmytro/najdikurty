@@ -830,6 +830,24 @@ a {
   flex: 0 0 auto;
 }
 
+.resultSortControl {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: 132px;
+  color: var(--text-muted);
+}
+
+.resultSortControl svg {
+  flex: 0 0 auto;
+}
+
+.resultSortControl .uiControl {
+  min-height: 38px;
+  padding: 8px 10px;
+  font-size: 0.9rem;
+}
+
 .loadProgressBadge {
   display: inline-flex;
   align-items: center;
@@ -1808,6 +1826,14 @@ a.detailInfoRow:hover {
   .resultActions {
     gap: 6px;
     max-width: none;
+  }
+
+  .resultSortControl {
+    width: 138px;
+  }
+
+  .resultSortControl .uiControl {
+    min-height: 40px;
   }
 
   .resultBar .uiButton {

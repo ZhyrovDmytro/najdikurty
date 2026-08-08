@@ -13,6 +13,7 @@ export * from "./providers/reservanto/client.js";
 export * from "./providers/reservanto/parser.js";
 export * from "./providers/bookaball/client.js";
 export * from "./providers/padelos/client.js";
+export * from "./providers/courtyone/client.js";
 export * from "./providers/reenio/client.js";
 export * from "./providers/reenio/parser.js";
 export * from "./providers/rogeronline/client.js";

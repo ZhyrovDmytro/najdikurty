@@ -13,6 +13,7 @@ The first integrations target:
 - Padel Neride on Reservanto: https://padelneride.cz/rezervace/
 - Padel Džus on Bookaball: https://padeldzus.bookaball.com/cs/bookings/create
 - Padel Powers Smíchov on Padelos: https://player.padelos.co/company/217?clubIds=216927&locale=cs
+- One Padel on CourtyONE: https://onepadel.cz/book
 
 ## Why HTML parsing first
 
@@ -105,4 +106,5 @@ curl "http://localhost:4000/api/availability?club=head-tenis-centrum-vestec&date
 curl "http://localhost:4000/api/availability?club=padel-neride&date=2026-08-04&sport=padel"
 curl "http://localhost:4000/api/availability?club=padel-dzus&date=2026-08-04&sport=padel"
 curl "http://localhost:4000/api/availability?club=padel-powers-smichov&date=2026-08-04&sport=padel"
+curl "http://localhost:4000/api/availability?club=one-padel&date=2026-08-10&sport=padel"
 ```
