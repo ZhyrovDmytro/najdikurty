@@ -469,6 +469,124 @@ a {
   cursor: pointer;
 }
 
+.datePicker {
+  position: relative;
+}
+
+.datePickerButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.datePickerButton svg {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+}
+
+.datePickerPopover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 20;
+  width: min(328px, calc(100vw - 48px));
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-card);
+}
+
+.datePickerHeader {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 34px;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.datePickerHeader strong {
+  text-align: center;
+}
+
+.datePickerNavButton,
+.datePickerDay {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.datePickerNavButton {
+  width: 34px;
+  height: 34px;
+}
+
+.datePickerNavButton:hover:not(:disabled),
+.datePickerDay:hover:not(:disabled) {
+  background: var(--surface-muted);
+  border-color: var(--border);
+}
+
+.datePickerNavButton:focus,
+.datePickerDay:focus {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 4px var(--focus-ring);
+  outline: 0;
+}
+
+.datePickerNavButton:disabled,
+.datePickerDay:disabled {
+  color: var(--text-subtle);
+  cursor: not-allowed;
+  background: var(--surface-muted);
+  opacity: 0.45;
+}
+
+.datePickerWeekdays,
+.datePickerGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.datePickerWeekdays {
+  margin-bottom: 4px;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.datePickerDay,
+.datePickerDaySpacer {
+  aspect-ratio: 1;
+}
+
+.datePickerDay {
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.datePickerDay-selected {
+  color: #ffffff;
+  background: var(--brand);
+  border-color: var(--brand);
+}
+
+.datePickerDay-selected:hover:not(:disabled) {
+  background: var(--brand-strong);
+  border-color: var(--brand-strong);
+}
+
 .uiSkeleton {
   display: block;
   overflow: hidden;
@@ -498,6 +616,7 @@ a {
     minmax(120px, 0.65fr)
     minmax(120px, 0.65fr);
   gap: 14px;
+  overflow: visible;
   padding: 16px;
 }
 
@@ -682,14 +801,32 @@ a {
   width: min(220px, 100%);
 }
 
+.pageHeaderControls .uiButton-icon {
+  flex: 0 0 auto;
+}
+
 .trackedClubList {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;
 }
 
+.trackedClubList > .emptyState {
+  grid-column: 1 / -1;
+}
+
+.trackedClubList-compact {
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
 .trackedClubCard {
   display: grid;
+}
+
+.trackedClubCard-compact {
+  grid-template-columns: minmax(0, 1fr) minmax(220px, auto);
+  align-items: center;
 }
 
 .trackedClubSelect {
@@ -715,11 +852,27 @@ a {
   background: var(--surface-muted);
 }
 
+.trackedClubCard-compact .trackedClubSelect {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+}
+
+.trackedClubCard-compact .trackedClubSelect img {
+  display: none;
+}
+
 .trackedClubBody {
   display: grid;
   gap: 12px;
   min-width: 0;
   padding: 16px;
+}
+
+.trackedClubCard-compact .trackedClubBody {
+  grid-template-columns: minmax(160px, 1.2fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
 }
 
 .trackedClubBody h2 {
@@ -741,11 +894,27 @@ a {
 
 .trackedClubBadges {
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-.courtCountBadge,
+.trackedClubBadges .courtTypeBadges {
+  display: contents;
+}
+
+.trackedClubCard-compact .trackedClubBadges {
+  flex-wrap: nowrap;
+}
+
+.trackedClubCard-compact .addressLink {
+  align-self: stretch;
+  align-items: center;
+  max-width: 320px;
+  padding: 10px 12px;
+  border-left: 1px solid var(--border);
+}
+
 .multisportBadge {
   display: inline-flex;
   align-items: center;
@@ -757,12 +926,6 @@ a {
   line-height: 1.35;
   border: 1px solid transparent;
   border-radius: 999px;
-}
-
-.courtCountBadge {
-  color: var(--text);
-  background: var(--surface-muted);
-  border-color: var(--border);
 }
 
 .multisportBadge {
@@ -804,7 +967,6 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-top: 16px;
   padding: 14px 0;
 }
 
@@ -833,13 +995,8 @@ a {
 .resultSortControl {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
   width: 132px;
   color: var(--text-muted);
-}
-
-.resultSortControl svg {
-  flex: 0 0 auto;
 }
 
 .resultSortControl .uiControl {
@@ -913,7 +1070,6 @@ a {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;
-  margin-top: 10px;
 }
 
 .clubCard {
@@ -923,7 +1079,19 @@ a {
 .clubCompactList {
   display: grid;
   gap: 8px;
-  margin-top: 10px;
+}
+
+.clubResultsToolbar {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.clubResultsToolbar .loadProgressBadge {
+  flex: 0 0 auto;
 }
 
 .clubCompactRow {
@@ -1284,11 +1452,6 @@ a.detailInfoRow:hover {
   background: var(--brand-soft);
   border: 1px solid var(--brand-border);
   border-radius: 999px;
-}
-
-.detailTopActions {
-  display: flex;
-  margin-top: 8px;
 }
 
 .clubDetail {
@@ -1748,6 +1911,7 @@ a.detailInfoRow:hover {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: stretch;
     gap: 10px;
+    width: 100%;
   }
 
   .pageHeaderControls .uiField {
@@ -1755,8 +1919,54 @@ a.detailInfoRow:hover {
     width: 100%;
   }
 
+  .allClubsPage .pageHeaderControls {
+    grid-template-columns: minmax(0, 1fr) 44px;
+    align-items: end;
+  }
+
+  .allClubsSearchField {
+    grid-column: 1 / -1;
+  }
+
+  .allClubsPage .resultSortControl {
+    grid-column: 1;
+    align-self: end;
+    width: 100%;
+  }
+
+  .allClubsPage .resultSortControl .uiControl,
+  .allClubsViewButton {
+    min-height: 44px;
+  }
+
+  .allClubsViewButton {
+    grid-column: 2;
+    align-self: end;
+    justify-self: end;
+    width: 44px;
+    height: 44px;
+  }
+
   .trackedClubList {
     grid-template-columns: 1fr;
+  }
+
+  .trackedClubCard-compact {
+    grid-template-columns: 1fr;
+  }
+
+  .trackedClubCard-compact .trackedClubBody {
+    grid-template-columns: 1fr;
+  }
+
+  .trackedClubCard-compact .trackedClubBadges {
+    flex-wrap: wrap;
+  }
+
+  .trackedClubCard-compact .addressLink {
+    max-width: none;
+    padding: 0 12px 12px;
+    border-left: 0;
   }
 
   .searchPanel,
@@ -1768,7 +1978,6 @@ a.detailInfoRow:hover {
   .searchPanel {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
-    overflow: hidden;
     padding: 14px;
   }
 
@@ -1807,14 +2016,6 @@ a.detailInfoRow:hover {
     font-size: 0.92rem;
   }
 
-  .searchField input[type="date"] {
-    display: block;
-    -webkit-appearance: none;
-    appearance: none;
-    min-width: 0;
-    max-width: 100%;
-  }
-
   .resultBar {
     gap: 10px;
   }
@@ -1828,6 +2029,18 @@ a.detailInfoRow:hover {
     max-width: none;
   }
 
+  .clubResultsToolbar {
+    flex-wrap: wrap;
+  }
+
+  .clubResultsToolbar .resultActions {
+    flex: 1 1 auto;
+  }
+
+  .loadProgressLabel {
+    display: none;
+  }
+
   .resultSortControl {
     width: 138px;
   }
@@ -1836,7 +2049,7 @@ a.detailInfoRow:hover {
     min-height: 40px;
   }
 
-  .resultBar .uiButton {
+  .resultActions .uiButton {
     flex: 0 0 auto;
   }
 

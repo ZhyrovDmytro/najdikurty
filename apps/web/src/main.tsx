@@ -2,9 +2,12 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   AlertCircle,
-  ArrowLeft,
   CalendarDays,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsDownUp,
+  ChevronsUpDown,
   Clock3,
   CloudSun,
   Cookie,
@@ -45,7 +48,8 @@ const initialParams = new URLSearchParams(window.location.search);
 const initialCurrentDate = pragueDateInputValue(new Date());
 const today = selectableDate(initialParams.get("date"), initialCurrentDate);
 const initialTheme = localStorage.getItem("mamekurt-theme") === "dark" ? "dark" : "light";
-const initialShortInfoMode = localStorage.getItem("mamekurt-results-view") === "compact";
+const initialResultsView = localStorage.getItem("mamekurt-results-view");
+const initialShortInfoMode = initialResultsView === "cards" ? false : true;
 const CONFIGURED_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const GITHUB_PAGES_API_BASE_URL = "https://najdikurty.onrender.com";
 const API_BASE_URL = (
@@ -55,12 +59,11 @@ const API_BASE_URL = (
 type Page = "clubs" | "allClubs" | "about" | "privacy" | "terms" | "cookies";
 type CourtType = "indoor" | "outdoor";
 type CourtTypeFilter = CourtType | "all";
-type ClubSort = "name" | "price" | "multisport";
 type FindCourtSort = "name" | "priceAsc" | "priceDesc" | "multisport" | "indoor" | "outdoor";
-type SortDirection = "asc" | "desc";
 const TIME_PICKER_RANGE: TimeRange = { start: "00:00", end: "23:59" };
 const AVAILABILITY_REQUEST_TIMEOUT_MS = 15_000;
 const initialPage: Page = pageFromParam(initialParams.get("page"));
+const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 interface Club {
   slug: string;
@@ -338,8 +341,7 @@ function App() {
   const [now, setNow] = useState(() => new Date());
   const [availabilityByClub, setAvailabilityByClub] = useState<AvailabilityByClub>({});
   const [selectedClubSlug, setSelectedClubSlug] = useState<string | null>(initialPage === "clubs" ? initialParams.get("club") : null);
-  const [clubSort, setClubSort] = useState<ClubSort>("name");
-  const [clubSortDirection, setClubSortDirection] = useState<SortDirection>("asc");
+  const [allClubsSort, setAllClubsSort] = useState<FindCourtSort>("name");
   const [findCourtSort, setFindCourtSort] = useState<FindCourtSort>("name");
   const [theme, setTheme] = useState<"light" | "dark">(initialTheme);
   const [isShortInfoMode, setIsShortInfoMode] = useState(initialShortInfoMode);
@@ -351,12 +353,17 @@ function App() {
   const [loadProgress, setLoadProgress] = useState<LoadProgress>({ completed: 0, total: 0 });
   const loadSequenceRef = useRef(0);
   const currentPragueDate = pragueDateInputValue(now);
-  const trackedClubs = useMemo(() => sortTrackedClubs(buildTrackedClubs(CLUBS), clubSort, clubSortDirection), [clubSort, clubSortDirection]);
+  const trackedClubs = useMemo(() => sortTrackedClubs(buildTrackedClubs(CLUBS), allClubsSort), [allClubsSort]);
 
   async function loadAvailability() {
     const targetClubs = selectedClubSlug
-      ? CLUBS.filter((club) => club.slug === selectedClubSlug && club.availabilityEnabled !== false)
-      : FETCHABLE_CLUBS;
+      ? CLUBS.filter(
+          (club) =>
+            club.slug === selectedClubSlug &&
+            club.availabilityEnabled !== false &&
+            clubMatchesCourtType(club, courtTypeFilter)
+        )
+      : FETCHABLE_CLUBS.filter((club) => clubMatchesCourtType(club, courtTypeFilter));
     const loadId = loadSequenceRef.current + 1;
     loadSequenceRef.current = loadId;
 
@@ -426,7 +433,7 @@ function App() {
   useEffect(() => {
     if (page !== "clubs") return;
     void loadAvailability();
-  }, [date, page, selectedClubSlug]);
+  }, [courtTypeFilter, date, page, selectedClubSlug]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 30_000);
@@ -481,6 +488,7 @@ function App() {
   const isSelectedClubSlotsLoading =
     selectedClub !== null &&
     selectedClub.availabilityEnabled !== false &&
+    clubMatchesCourtType(selectedClub, courtTypeFilter) &&
     !selectedAvailability &&
     !selectedClubFailure;
 
@@ -561,6 +569,59 @@ function App() {
   const visibleClubSlugs = useMemo(() => visibleClubResults.map((result) => result.club.slug), [visibleClubResults]);
   const areAllCompactRowsExpanded =
     visibleClubSlugs.length > 0 && visibleClubSlugs.every((clubSlug) => expandedCompactClubSlugs.has(clubSlug));
+  const refreshAvailabilityButton = (
+    <Button
+      aria-label="Refresh availability"
+      icon={<RefreshCw size={18} />}
+      onClick={loadAvailability}
+      size="icon"
+      title="Refresh availability"
+      variant="secondary"
+      disabled={isLoading}
+    />
+  );
+  const clubResultActions = (
+    <div className="resultActions">
+      <div className="resultSortControl">
+        <Select
+          aria-label="Sort matching clubs"
+          className="resultSortSelect"
+          value={findCourtSort}
+          onChange={(event) => setFindCourtSort(event.target.value as FindCourtSort)}
+        >
+          <option value="name">Name</option>
+          <option value="priceAsc">Lowest price</option>
+          <option value="priceDesc">Highest price</option>
+          <option value="multisport">Multisport</option>
+          <option value="indoor">Indoor first</option>
+          <option value="outdoor">Outdoor first</option>
+        </Select>
+      </div>
+      {isShortInfoMode && visibleClubSlugs.length > 0 ? (
+        <Button
+          aria-label={areAllCompactRowsExpanded ? "Hide slots" : "Show slots"}
+          icon={areAllCompactRowsExpanded ? <ChevronsDownUp size={18} /> : <ChevronsUpDown size={18} />}
+          onClick={() =>
+            setExpandedCompactClubSlugs(
+              areAllCompactRowsExpanded ? new Set() : new Set(visibleClubSlugs)
+            )
+          }
+          size="icon"
+          title={areAllCompactRowsExpanded ? "Hide slots" : "Show slots"}
+          variant="secondary"
+        />
+      ) : null}
+      <Button
+        aria-label={isShortInfoMode ? "Show club cards" : "Show compact club list"}
+        icon={isShortInfoMode ? <LayoutGrid size={18} /> : <ListOrdered size={18} />}
+        onClick={() => setIsShortInfoMode((currentMode) => !currentMode)}
+        size="icon"
+        title={isShortInfoMode ? "Show cards" : "Show compact list"}
+        variant="secondary"
+      />
+      {refreshAvailabilityButton}
+    </div>
+  );
 
   return (
     <main className="appShell">
@@ -618,26 +679,22 @@ function App() {
       ) : page === "allClubs" ? (
         <AllClubsPage
           clubs={trackedClubs}
-          sort={clubSort}
-          direction={clubSortDirection}
-          onSortChange={setClubSort}
-          onDirectionChange={setClubSortDirection}
+          sort={allClubsSort}
+          onSortChange={setAllClubsSort}
           onSelectClub={(club) => updateSelectedClub(club.slug)}
         />
       ) : (
         <>
-          {selectedClub ? (
-        <div className="detailTopActions">
-          <Button icon={<ArrowLeft size={16} />} onClick={() => navigateToClubs("replace")} size="sm" variant="secondary">
-            Back to clubs
-          </Button>
-        </div>
-          ) : null}
-
           <Card className="searchPanel">
-        <Field icon={<CalendarDays size={16} />} label="Date" className="searchField searchField-date">
-          <Input type="date" min={currentPragueDate} value={date} onChange={(event) => updateDate(event.target.value)} />
-        </Field>
+        <div className="uiField searchField searchField-date">
+          <span className="uiFieldLabel">
+            <span className="uiFieldIcon">
+              <CalendarDays size={16} />
+            </span>
+            Date
+          </span>
+          <DateCalendarPicker value={date} minDate={currentPragueDate} onChange={updateDate} />
+        </div>
         <Field icon={<UsersRound size={16} />} label="Courts needed" className="searchField">
           <Select value={courtsNeeded} onChange={(event) => setCourtsNeeded(Number(event.target.value))}>
             {Array.from({ length: maxCourtCount }, (_, index) => index + 1).map((count) => (
@@ -689,66 +746,8 @@ function App() {
           <strong>
             {selectedClub ? `${selectedSlots.length} bookable slots` : `${visibleClubResults.length} matching clubs`}
           </strong>
-          {loadProgress.total > 0 ? (
-            <span className={isLoading ? "loadProgressBadge loadProgressBadge-loading" : "loadProgressBadge"}>
-              {isLoading ? <span className="loadProgressSpinner" aria-hidden="true" /> : null}
-              {loadProgress.completed}/{loadProgress.total} checked
-            </span>
-          ) : null}
         </div>
-        <div className="resultActions">
-          {!selectedClub ? (
-            <>
-              <div className="resultSortControl">
-                <ListOrdered size={16} aria-hidden="true" />
-                <Select
-                  aria-label="Sort matching clubs"
-                  className="resultSortSelect"
-                  value={findCourtSort}
-                  onChange={(event) => setFindCourtSort(event.target.value as FindCourtSort)}
-                >
-                  <option value="name">Name</option>
-                  <option value="priceAsc">Lowest price</option>
-                  <option value="priceDesc">Highest price</option>
-                  <option value="multisport">Multisport</option>
-                  <option value="indoor">Indoor first</option>
-                  <option value="outdoor">Outdoor first</option>
-                </Select>
-              </div>
-              {isShortInfoMode && visibleClubSlugs.length > 0 ? (
-                <Button
-                  aria-label={areAllCompactRowsExpanded ? "Hide slots" : "Show slots"}
-                  onClick={() =>
-                    setExpandedCompactClubSlugs(
-                      areAllCompactRowsExpanded ? new Set() : new Set(visibleClubSlugs)
-                    )
-                  }
-                  size="sm"
-                  variant="secondary"
-                >
-                  {areAllCompactRowsExpanded ? "Hide slots" : "Show slots"}
-                </Button>
-              ) : null}
-              <Button
-                aria-label={isShortInfoMode ? "Show club cards" : "Show compact club list"}
-                icon={isShortInfoMode ? <LayoutGrid size={18} /> : <ListOrdered size={18} />}
-                onClick={() => setIsShortInfoMode((currentMode) => !currentMode)}
-                size="icon"
-                title={isShortInfoMode ? "Show cards" : "Show compact list"}
-                variant="secondary"
-              />
-            </>
-          ) : null}
-          <Button
-            aria-label="Refresh availability"
-            icon={<RefreshCw size={18} />}
-            onClick={loadAvailability}
-            size="icon"
-            title="Refresh availability"
-            variant="secondary"
-            disabled={isLoading}
-          />
-        </div>
+        {selectedClub ? <div className="resultActions">{refreshAvailabilityButton}</div> : null}
           </section>
 
           {loadError ? <Alert icon={<AlertCircle size={18} />} title={loadError} /> : null}
@@ -783,6 +782,8 @@ function App() {
             <ClubList
               results={visibleClubResults}
               isLoading={isLoading}
+              loadProgress={loadProgress}
+              actions={clubResultActions}
               compact={isShortInfoMode}
               expandedClubSlugs={expandedCompactClubSlugs}
               onExpandedClubSlugsChange={setExpandedCompactClubSlugs}
@@ -971,62 +972,89 @@ function SiteFooter({
 function AllClubsPage({
   clubs,
   sort,
-  direction,
   onSortChange,
-  onDirectionChange,
   onSelectClub
 }: {
   clubs: TrackedClub[];
-  sort: ClubSort;
-  direction: SortDirection;
-  onSortChange: (sort: ClubSort) => void;
-  onDirectionChange: (direction: SortDirection) => void;
+  sort: FindCourtSort;
+  onSortChange: (sort: FindCourtSort) => void;
   onSelectClub: (club: Club) => void;
 }) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isCompactMode, setIsCompactMode] = useState(false);
+  const normalizedSearchQuery = normalizeSearchText(searchQuery);
+  const visibleClubs = normalizedSearchQuery
+    ? clubs.filter(({ club }) => normalizeSearchText(club.name).includes(normalizedSearchQuery))
+    : clubs;
+
   return (
     <section className="allClubsPage" aria-labelledby="all-clubs-title">
       <div className="pageHeader">
         <div>
-          <Badge tone="green">{clubs.length} clubs tracked</Badge>
+          <Badge tone="green">
+            {visibleClubs.length === clubs.length ? `${clubs.length} clubs tracked` : `${visibleClubs.length}/${clubs.length} clubs`}
+          </Badge>
           <h1 id="all-clubs-title">All clubs</h1>
         </div>
         <div className="pageHeaderControls">
-          <Field icon={<ListOrdered size={16} />} label="Sort by">
-            <Select value={sort} onChange={(event) => onSortChange(event.target.value as ClubSort)}>
+          <Field icon={<Search size={16} />} label="Search" className="allClubsSearchField">
+            <Input
+              aria-label="Search clubs by name"
+              placeholder="Club name"
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+            />
+          </Field>
+          <div className="resultSortControl">
+            <Select
+              aria-label="Sort clubs"
+              className="resultSortSelect"
+              value={sort}
+              onChange={(event) => onSortChange(event.target.value as FindCourtSort)}
+            >
               <option value="name">Name</option>
-              <option value="price">Price</option>
+              <option value="priceAsc">Lowest price</option>
+              <option value="priceDesc">Highest price</option>
               <option value="multisport">Multisport</option>
+              <option value="indoor">Indoor first</option>
+              <option value="outdoor">Outdoor first</option>
             </Select>
-          </Field>
-          <Field icon={<SlidersHorizontal size={16} />} label="Order">
-            <Select value={direction} onChange={(event) => onDirectionChange(event.target.value as SortDirection)}>
-              <option value="asc">Ascending</option>
-              <option value="desc">Descending</option>
-            </Select>
-          </Field>
+          </div>
+          <Button
+            aria-label={isCompactMode ? "Show club cards" : "Show compact club list"}
+            className="allClubsViewButton"
+            icon={isCompactMode ? <LayoutGrid size={18} /> : <ListOrdered size={18} />}
+            onClick={() => setIsCompactMode((currentMode) => !currentMode)}
+            size="icon"
+            title={isCompactMode ? "Show cards" : "Show compact list"}
+            variant="secondary"
+          />
         </div>
       </div>
 
-      <section className="trackedClubList" aria-label="Tracked clubs">
-        {clubs.map(({ club, priceFrom }) => (
-          <Card className="trackedClubCard" interactive key={club.slug}>
+      <section className={isCompactMode ? "trackedClubList trackedClubList-compact" : "trackedClubList"} aria-label="Tracked clubs">
+        {visibleClubs.length > 0 ? (
+          visibleClubs.map(({ club, priceFrom }) => (
+          <Card className={isCompactMode ? "trackedClubCard trackedClubCard-compact" : "trackedClubCard"} interactive key={club.slug}>
             <button className="trackedClubSelect" type="button" onClick={() => onSelectClub(club)}>
               <img src={club.imageUrl} alt={`${club.name} padel courts`} />
               <div className="trackedClubBody">
                 <div>
                   <h2>{club.name}</h2>
-                  <p>{club.courtTypeLabel}</p>
+                  <p>
+                    {club.courtCount} {club.courtCount === 1 ? "court" : "courts"}
+                  </p>
                 </div>
                 <div className="trackedClubBadges">
-                  <span className="courtCountBadge">
-                    {club.courtCount} {club.courtCount === 1 ? "court" : "courts"} total
+                  {club.acceptsMultisport ? (
+                    <span className="multisportBadge">Multisport</span>
+                  ) : null}
+                  <CourtTypeBadges courtTypes={club.courtTypes} />
+                  <span className="trackedClubPrice">
+                    from <strong>{formatCzkPerHour(priceFrom)}</strong>
                   </span>
-                  {club.acceptsMultisport ? <span className="multisportBadge">Multisport</span> : null}
                 </div>
-                <CourtTypeBadges courtTypes={club.courtTypes} />
-                <span className="trackedClubPrice">
-                  from <strong>{formatCzkPerHour(priceFrom)}</strong>
-                </span>
               </div>
             </button>
             <a className="addressLink" href={googleMapsUrl(club.address)} target="_blank" rel="noreferrer">
@@ -1034,7 +1062,10 @@ function AllClubsPage({
               <span>{club.address}</span>
             </a>
           </Card>
-        ))}
+          ))
+        ) : (
+          <EmptyState title="No clubs found">Try another club name.</EmptyState>
+        )}
       </section>
     </section>
   );
@@ -1244,6 +1275,8 @@ function FailedClubAlert({ failedClubs, date, title }: { failedClubs: FailedClub
 function ClubList({
   results,
   isLoading,
+  loadProgress,
+  actions,
   compact,
   expandedClubSlugs,
   onExpandedClubSlugsChange,
@@ -1251,14 +1284,24 @@ function ClubList({
 }: {
   results: Array<{ club: Club; availability?: AvailabilityResult; bookableSlots: BookableSlot[] }>;
   isLoading: boolean;
+  loadProgress: { completed: number; total: number };
+  actions: React.ReactNode;
   compact: boolean;
   expandedClubSlugs: Set<string>;
   onExpandedClubSlugsChange: React.Dispatch<React.SetStateAction<Set<string>>>;
   onSelectClub: (club: Club) => void;
 }) {
+  const resultsToolbar = (
+    <div className="clubResultsToolbar">
+      <LoadProgressBadge isLoading={isLoading} loadProgress={loadProgress} />
+      {actions}
+    </div>
+  );
+
   if (isLoading && results.length === 0) {
     return (
       <section className={compact ? "clubCompactList" : "clubGrid"} aria-label="Loading clubs">
+        {resultsToolbar}
         {Array.from({ length: 6 }, (_, index) => (
           compact ? (
             <Card className="clubCompactRow loadingCard" key={index}>
@@ -1283,6 +1326,7 @@ function ClubList({
   if (compact) {
     return (
       <section className="clubCompactList" aria-label="Matching clubs">
+        {resultsToolbar}
         {results.length > 0 ? (
           results.map(({ club, availability, bookableSlots }) => {
             const isExpanded = expandedClubSlugs.has(club.slug);
@@ -1378,6 +1422,7 @@ function ClubList({
 
   return (
     <section className="clubGrid" aria-label="Matching clubs">
+      {resultsToolbar}
       {results.length > 0 ? (
         results.map(({ club, availability, bookableSlots }) => (
           <Card className="clubCard" interactive key={club.slug}>
@@ -1438,6 +1483,127 @@ function ClubList({
         </EmptyState>
       )}
     </section>
+  );
+}
+
+function LoadProgressBadge({
+  isLoading,
+  loadProgress
+}: {
+  isLoading: boolean;
+  loadProgress: { completed: number; total: number };
+}) {
+  if (loadProgress.total === 0) {
+    return null;
+  }
+
+  return (
+    <span className={isLoading ? "loadProgressBadge loadProgressBadge-loading" : "loadProgressBadge"}>
+      {isLoading ? <span className="loadProgressSpinner" aria-hidden="true" /> : null}
+      {loadProgress.completed}/{loadProgress.total} <span className="loadProgressLabel">checked</span>
+    </span>
+  );
+}
+
+function DateCalendarPicker({
+  value,
+  minDate,
+  onChange
+}: {
+  value: string;
+  minDate: string;
+  onChange: (date: string) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [visibleMonth, setVisibleMonth] = useState(() => monthInputValue(value));
+  const pickerRef = useRef<HTMLDivElement>(null);
+  const calendarDays = useMemo(() => buildCalendarDays(visibleMonth), [visibleMonth]);
+  const previousMonth = addMonthsToMonthInput(visibleMonth, -1);
+  const nextMonth = addMonthsToMonthInput(visibleMonth, 1);
+  const isPreviousMonthDisabled = monthEndDate(previousMonth) < minDate;
+
+  useEffect(() => {
+    if (isOpen) return;
+    setVisibleMonth(monthInputValue(value));
+  }, [isOpen, value]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    function handlePointerDown(event: PointerEvent) {
+      if (!pickerRef.current?.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [isOpen]);
+
+  return (
+    <div className="datePicker" ref={pickerRef}>
+      <button
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
+        className="uiControl datePickerButton"
+        type="button"
+        onClick={() => setIsOpen((currentValue) => !currentValue)}
+      >
+        <span>{formatSelectedDateLabel(value, minDate)}</span>
+        <ChevronDown size={17} aria-hidden="true" />
+      </button>
+      {isOpen ? (
+        <div className="datePickerPopover" role="dialog" aria-label="Choose date">
+          <div className="datePickerHeader">
+            <button
+              aria-label="Previous month"
+              className="datePickerNavButton"
+              disabled={isPreviousMonthDisabled}
+              type="button"
+              onClick={() => setVisibleMonth(previousMonth)}
+            >
+              <ChevronLeft size={18} aria-hidden="true" />
+            </button>
+            <strong>{formatMonthLabel(visibleMonth)}</strong>
+            <button
+              aria-label="Next month"
+              className="datePickerNavButton"
+              type="button"
+              onClick={() => setVisibleMonth(nextMonth)}
+            >
+              <ChevronRight size={18} aria-hidden="true" />
+            </button>
+          </div>
+          <div className="datePickerWeekdays" aria-hidden="true">
+            {WEEKDAY_LABELS.map((weekday) => (
+              <span key={weekday}>{weekday}</span>
+            ))}
+          </div>
+          <div className="datePickerGrid">
+            {calendarDays.map((day, index) =>
+              day ? (
+                <button
+                  aria-current={day === minDate ? "date" : undefined}
+                  aria-pressed={day === value}
+                  className={day === value ? "datePickerDay datePickerDay-selected" : "datePickerDay"}
+                  disabled={day < minDate}
+                  key={day}
+                  type="button"
+                  onClick={() => {
+                    onChange(day);
+                    setIsOpen(false);
+                  }}
+                >
+                  {Number(day.slice(-2))}
+                </button>
+              ) : (
+                <span className="datePickerDaySpacer" key={`spacer-${index}`} aria-hidden="true" />
+              )
+            )}
+          </div>
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -1693,22 +1859,37 @@ function buildTrackedClubs(clubs: Club[]): TrackedClub[] {
   }));
 }
 
-function sortTrackedClubs(clubs: TrackedClub[], sort: ClubSort, direction: SortDirection): TrackedClub[] {
+function sortTrackedClubs(clubs: TrackedClub[], sort: FindCourtSort): TrackedClub[] {
   return [...clubs].sort((firstClub, secondClub) => {
-    const directionMultiplier = direction === "asc" ? 1 : -1;
     const nameComparison = firstClub.club.name.localeCompare(secondClub.club.name);
-    let comparison: number;
 
-    if (sort === "price") {
-      comparison = firstClub.priceFrom - secondClub.priceFrom || nameComparison;
-    } else if (sort === "multisport") {
-      comparison = Number(Boolean(firstClub.club.acceptsMultisport)) - Number(Boolean(secondClub.club.acceptsMultisport)) || nameComparison;
-    } else {
-      comparison = nameComparison;
+    if (sort === "priceAsc" || sort === "priceDesc") {
+      const priceComparison = firstClub.priceFrom - secondClub.priceFrom;
+      return (sort === "priceAsc" ? priceComparison : -priceComparison) || nameComparison;
     }
 
-    return comparison * directionMultiplier;
+    if (sort === "multisport") {
+      return Boolean(secondClub.club.acceptsMultisport) === Boolean(firstClub.club.acceptsMultisport)
+        ? nameComparison
+        : Number(Boolean(secondClub.club.acceptsMultisport)) - Number(Boolean(firstClub.club.acceptsMultisport));
+    }
+
+    if (sort === "indoor" || sort === "outdoor") {
+      const firstHasType = firstClub.club.courtTypes.includes(sort);
+      const secondHasType = secondClub.club.courtTypes.includes(sort);
+      return firstHasType === secondHasType ? nameComparison : Number(secondHasType) - Number(firstHasType);
+    }
+
+    return nameComparison;
   });
+}
+
+function normalizeSearchText(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLocaleLowerCase();
 }
 
 function sortClubResults<T extends { club: Club }>(results: T[], sort: FindCourtSort): T[] {
@@ -1844,6 +2025,77 @@ function pageToParam(page: Page): string {
 function selectableDate(date: string | null | undefined, currentDate: string): string {
   if (!date || date < currentDate) return currentDate;
   return date;
+}
+
+function formatSelectedDateLabel(date: string, currentDate: string): string {
+  if (date === currentDate) {
+    return `Today, ${formatDateLabel(date)}`;
+  }
+
+  if (date === addDaysToDateInput(currentDate, 1)) {
+    return `Tomorrow, ${formatDateLabel(date)}`;
+  }
+
+  return formatDateLabel(date);
+}
+
+function formatDateLabel(date: string): string {
+  const [year, month, day] = date.split("-").map(Number);
+  return new Intl.DateTimeFormat("en", {
+    day: "numeric",
+    month: "short",
+    timeZone: "Europe/Prague",
+    weekday: "short"
+  }).format(new Date(Date.UTC(year, month - 1, day, 12)));
+}
+
+function formatMonthLabel(month: string): string {
+  const [year, monthIndex] = month.split("-").map(Number);
+  return new Intl.DateTimeFormat("en", {
+    month: "long",
+    timeZone: "Europe/Prague",
+    year: "numeric"
+  }).format(new Date(Date.UTC(year, monthIndex - 1, 1, 12)));
+}
+
+function buildCalendarDays(month: string): Array<string | null> {
+  const [year, monthIndex] = month.split("-").map(Number);
+  const firstDay = new Date(Date.UTC(year, monthIndex - 1, 1, 12));
+  const leadingEmptyDays = (firstDay.getUTCDay() + 6) % 7;
+  const daysInMonth = new Date(Date.UTC(year, monthIndex, 0, 12)).getUTCDate();
+  const days: Array<string | null> = Array.from({ length: leadingEmptyDays }, () => null);
+
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    days.push(dateInputValue(year, monthIndex, day));
+  }
+
+  return days;
+}
+
+function addDaysToDateInput(date: string, days: number): string {
+  const [year, month, day] = date.split("-").map(Number);
+  const nextDate = new Date(Date.UTC(year, month - 1, day + days, 12));
+  return nextDate.toISOString().slice(0, 10);
+}
+
+function addMonthsToMonthInput(month: string, months: number): string {
+  const [year, monthIndex] = month.split("-").map(Number);
+  const nextMonth = new Date(Date.UTC(year, monthIndex - 1 + months, 1, 12));
+  return nextMonth.toISOString().slice(0, 7);
+}
+
+function monthInputValue(date: string): string {
+  return date.slice(0, 7);
+}
+
+function monthEndDate(month: string): string {
+  const [year, monthIndex] = month.split("-").map(Number);
+  const lastDay = new Date(Date.UTC(year, monthIndex, 0, 12)).getUTCDate();
+  return dateInputValue(year, monthIndex, lastDay);
+}
+
+function dateInputValue(year: number, month: number, day: number): string {
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
 function writeUrl({
