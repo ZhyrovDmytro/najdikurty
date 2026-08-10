@@ -40,7 +40,7 @@ const resources = {
         switchToLightMode: "Switch to light mode"
       },
       brand: {
-        name: "FIND COURTS"
+        name: "HLEDEJKURTY"
       },
       allClubs: {
         emptyBody: "Try another club name.",
@@ -202,7 +202,7 @@ const resources = {
         switchToLightMode: "Перемкнути на світлу тему"
       },
       brand: {
-        name: "ЗНАЙТИ КОРТИ"
+        name: "HLEDEJKURTY"
       },
       allClubs: {
         emptyBody: "Спробуйте іншу назву клубу.",
@@ -364,7 +364,7 @@ const resources = {
         switchToLightMode: "Přepnout na světlý režim"
       },
       brand: {
-        name: "HLEDEJ KURTY"
+        name: "HLEDEJKURTY"
       },
       allClubs: {
         emptyBody: "Zkuste jiný název klubu.",
