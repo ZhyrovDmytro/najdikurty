@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { useTranslation } from "react-i18next";
 import {
   AlertCircle,
   CalendarDays,
@@ -42,12 +43,15 @@ import {
   type TimeRange
 } from "./availability";
 import { Alert, Badge, Button, Card, EmptyState, Field, Input, Select, Skeleton } from "./ui";
+import i18n, { LANGUAGE_OPTIONS, LANGUAGE_STORAGE_KEY, type LanguageCode } from "./i18n";
+import { captureEvent, capturePageView, isAnalyticsEnabled } from "./posthog";
 import "./styles.css";
 
 const initialParams = new URLSearchParams(window.location.search);
 const initialCurrentDate = pragueDateInputValue(new Date());
 const today = selectableDate(initialParams.get("date"), initialCurrentDate);
 const initialTheme = localStorage.getItem("mamekurt-theme") === "dark" ? "dark" : "light";
+const initialLanguage = i18n.language as LanguageCode;
 const initialResultsView = localStorage.getItem("mamekurt-results-view");
 const initialShortInfoMode = initialResultsView === "cards" ? false : true;
 const CONFIGURED_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -63,7 +67,11 @@ type FindCourtSort = "name" | "priceAsc" | "priceDesc" | "multisport" | "indoor"
 const TIME_PICKER_RANGE: TimeRange = { start: "00:00", end: "23:59" };
 const AVAILABILITY_REQUEST_TIMEOUT_MS = 15_000;
 const initialPage: Page = pageFromParam(initialParams.get("page"));
-const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const localeByLanguage: Record<LanguageCode, string> = {
+  cz: "cs",
+  en: "en",
+  ua: "uk"
+};
 
 interface Club {
   slug: string;
@@ -308,7 +316,7 @@ async function parseAvailabilityResponse(response: Response): Promise<Availabili
   const text = await response.text();
   throw new Error(
     response.ok
-      ? "Availability response was not JSON"
+      ? i18n.t("availability.failedJson")
       : `Availability request failed with ${response.status} ${response.statusText || text.slice(0, 120)}`
   );
 }
@@ -321,7 +329,7 @@ async function fetchAvailabilityRequest(url: string): Promise<Response> {
     return await fetch(url, { signal: controller.signal });
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") {
-      throw new Error(`Availability request timed out after ${Math.round(AVAILABILITY_REQUEST_TIMEOUT_MS / 1000)}s`);
+      throw new Error(i18n.t("availability.timeout", { seconds: Math.round(AVAILABILITY_REQUEST_TIMEOUT_MS / 1000) }));
     }
 
     throw error;
@@ -331,6 +339,7 @@ async function fetchAvailabilityRequest(url: string): Promise<Response> {
 }
 
 function App() {
+  const { t } = useTranslation();
   const [page, setPage] = useState<Page>(initialPage);
   const [date, setDate] = useState(today);
   const [courtsNeeded, setCourtsNeeded] = useState(1);
@@ -344,6 +353,7 @@ function App() {
   const [allClubsSort, setAllClubsSort] = useState<FindCourtSort>("name");
   const [findCourtSort, setFindCourtSort] = useState<FindCourtSort>("name");
   const [theme, setTheme] = useState<"light" | "dark">(initialTheme);
+  const [language, setLanguage] = useState<LanguageCode>(initialLanguage);
   const [isShortInfoMode, setIsShortInfoMode] = useState(initialShortInfoMode);
   const [expandedCompactClubSlugs, setExpandedCompactClubSlugs] = useState<Set<string>>(() => new Set());
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -406,7 +416,7 @@ function App() {
               ...currentFailedClubs,
               {
                 club,
-                reason: error instanceof Error ? error.message : "Could not be checked"
+                reason: error instanceof Error ? error.message : t("availability.unknownCheckFailure")
               }
             ]);
           } finally {
@@ -421,7 +431,7 @@ function App() {
       );
     } catch (loadError) {
       if (loadSequenceRef.current === loadId) {
-        setLoadError(loadError instanceof Error ? loadError.message : "Failed to load availability");
+        setLoadError(loadError instanceof Error ? loadError.message : t("availability.failedLoad"));
       }
     } finally {
       if (loadSequenceRef.current === loadId) {
@@ -444,6 +454,12 @@ function App() {
     document.documentElement.dataset.theme = theme;
     localStorage.setItem("mamekurt-theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    document.documentElement.lang = localeByLanguage[language];
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+    void i18n.changeLanguage(language);
+  }, [language]);
 
   useEffect(() => {
     localStorage.setItem("mamekurt-results-view", isShortInfoMode ? "compact" : "cards");
@@ -563,19 +579,40 @@ function App() {
   const maxCourtCount = selectedClub
     ? selectedClub.courtCount
     : Math.max(...Object.values(availabilityByClub).map((availability) => availability.courts.length), 2);
-  const durationLabel = formatDuration(duration, selectedAvailability?.dayRange ?? Object.values(availabilityByClub)[0]?.dayRange);
   const startTimeOptions = timeOptions.filter((time) => time < timeWindow.end);
   const endTimeOptions = timeOptions.filter((time) => time > timeWindow.start);
   const visibleClubSlugs = useMemo(() => visibleClubResults.map((result) => result.club.slug), [visibleClubResults]);
   const areAllCompactRowsExpanded =
     visibleClubSlugs.length > 0 && visibleClubSlugs.every((clubSlug) => expandedCompactClubSlugs.has(clubSlug));
+
+  useEffect(() => {
+    capturePageView({
+      analytics_enabled: isAnalyticsEnabled(),
+      club_slug: selectedClubSlug,
+      date: page === "clubs" ? date : undefined,
+      language,
+      page,
+      path: window.location.pathname,
+      search: window.location.search
+    });
+  }, [date, page, selectedClubSlug]);
+
   const refreshAvailabilityButton = (
-    <Button
-      aria-label="Refresh availability"
+      <Button
+      aria-label={t("actions.refreshAvailability")}
       icon={<RefreshCw size={18} />}
-      onClick={loadAvailability}
+      onClick={() => {
+        captureEvent("availability_refreshed", {
+          club_slug: selectedClubSlug,
+          court_type: courtTypeFilter,
+          date,
+          duration_minutes: duration,
+          selected_club: selectedClubSlug !== null
+        });
+        void loadAvailability();
+      }}
       size="icon"
-      title="Refresh availability"
+      title={t("actions.refreshAvailability")}
       variant="secondary"
       disabled={isLoading}
     />
@@ -584,39 +621,50 @@ function App() {
     <div className="resultActions">
       <div className="resultSortControl">
         <Select
-          aria-label="Sort matching clubs"
+          aria-label={t("sort.labelMatching")}
           className="resultSortSelect"
           value={findCourtSort}
-          onChange={(event) => setFindCourtSort(event.target.value as FindCourtSort)}
+          onChange={(event) => {
+            const nextSort = event.target.value as FindCourtSort;
+            captureEvent("matching_clubs_sorted", { sort: nextSort });
+            setFindCourtSort(nextSort);
+          }}
         >
-          <option value="name">Name</option>
-          <option value="priceAsc">Lowest price</option>
-          <option value="priceDesc">Highest price</option>
-          <option value="multisport">Multisport</option>
-          <option value="indoor">Indoor first</option>
-          <option value="outdoor">Outdoor first</option>
+          <option value="name">{t("sort.name")}</option>
+          <option value="priceAsc">{t("sort.lowestPrice")}</option>
+          <option value="priceDesc">{t("sort.highestPrice")}</option>
+          <option value="multisport">{t("sort.multisport")}</option>
+          <option value="indoor">{t("sort.indoorFirst")}</option>
+          <option value="outdoor">{t("sort.outdoorFirst")}</option>
         </Select>
       </div>
       {isShortInfoMode && visibleClubSlugs.length > 0 ? (
         <Button
-          aria-label={areAllCompactRowsExpanded ? "Hide slots" : "Show slots"}
+          aria-label={areAllCompactRowsExpanded ? t("actions.hideSlots") : t("actions.showSlots")}
           icon={areAllCompactRowsExpanded ? <ChevronsDownUp size={18} /> : <ChevronsUpDown size={18} />}
-          onClick={() =>
+          onClick={() => {
+            captureEvent("compact_slots_toggled", {
+              action: areAllCompactRowsExpanded ? "collapse_all" : "expand_all",
+              club_count: visibleClubSlugs.length
+            });
             setExpandedCompactClubSlugs(
               areAllCompactRowsExpanded ? new Set() : new Set(visibleClubSlugs)
-            )
-          }
+            );
+          }}
           size="icon"
-          title={areAllCompactRowsExpanded ? "Hide slots" : "Show slots"}
+          title={areAllCompactRowsExpanded ? t("actions.hideSlots") : t("actions.showSlots")}
           variant="secondary"
         />
       ) : null}
       <Button
-        aria-label={isShortInfoMode ? "Show club cards" : "Show compact club list"}
+        aria-label={isShortInfoMode ? t("actions.showClubCards") : t("actions.showCompactList")}
         icon={isShortInfoMode ? <LayoutGrid size={18} /> : <ListOrdered size={18} />}
-        onClick={() => setIsShortInfoMode((currentMode) => !currentMode)}
+        onClick={() => {
+          captureEvent("results_view_changed", { view: isShortInfoMode ? "cards" : "compact" });
+          setIsShortInfoMode((currentMode) => !currentMode);
+        }}
         size="icon"
-        title={isShortInfoMode ? "Show cards" : "Show compact list"}
+        title={isShortInfoMode ? t("actions.showCards") : t("actions.showCompactList")}
         variant="secondary"
       />
       {refreshAvailabilityButton}
@@ -625,44 +673,67 @@ function App() {
 
   return (
     <main className="appShell">
-      <nav className="topbar" aria-label="Page navigation">
+      <nav className="topbar" aria-label={t("nav.pageNavigation")}>
         <a className="brandMark" href={clubsHref(date)} onClick={(event) => handleInternalNavigation(event, () => navigateToClubs("push"))}>
           <img src={assetPath("logo.png")} alt="" />
-          HLEDEJKURTY
+          {t("brand.name")}
         </a>
         {page !== "clubs" || selectedClub ? (
           <Breadcrumbs page={page} selectedClub={selectedClub} onHome={() => navigateToClubs("push")} />
         ) : (
           <span className="topbarSpacer" aria-hidden="true" />
         )}
-        <div className={isMobileMenuOpen ? "topbarNav topbarNavOpen" : "topbarNav"} aria-label="Primary navigation">
+        <div className={isMobileMenuOpen ? "topbarNav topbarNavOpen" : "topbarNav"} aria-label={t("nav.primaryNavigation")}>
           <a className={page === "clubs" ? "topbarNavLink active" : "topbarNavLink"} href={clubsHref(date)} onClick={(event) => handleInternalNavigation(event, () => navigateToClubs("push"))}>
-            Find court
+            {t("nav.findCourt")}
           </a>
           <a className={page === "allClubs" ? "topbarNavLink active" : "topbarNavLink"} href={allClubsHref()} onClick={(event) => handleInternalNavigation(event, () => navigateToAllClubs("push"))}>
-            All clubs
+            {t("nav.allClubs")}
           </a>
           <a className={page === "about" ? "topbarNavLink active" : "topbarNavLink"} href={aboutHref()} onClick={(event) => handleInternalNavigation(event, () => navigateToAbout("push"))}>
-            About us
+            {t("nav.about")}
           </a>
         </div>
         <div className="topbarActions">
+          <label className="languageSwitch">
+            <span className="visuallyHidden">{t("actions.language")}</span>
+            <Select
+              aria-label={t("actions.language")}
+              className="languageSelect"
+              value={language}
+              onChange={(event) => {
+                const nextLanguage = event.target.value as LanguageCode;
+                captureEvent("language_changed", { language: nextLanguage, previous_language: language });
+                setLanguage(nextLanguage);
+              }}
+            >
+              {LANGUAGE_OPTIONS.map((option) => (
+                <option value={option.code} key={option.code}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
+          </label>
           <Button
-            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            aria-label={theme === "dark" ? t("actions.switchToLightMode") : t("actions.switchToDarkMode")}
             icon={theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-            onClick={() => setTheme((currentTheme) => (currentTheme === "dark" ? "light" : "dark"))}
+            onClick={() => {
+              const nextTheme = theme === "dark" ? "light" : "dark";
+              captureEvent("theme_changed", { theme: nextTheme });
+              setTheme(nextTheme);
+            }}
             size="icon"
-            title={theme === "dark" ? "Light mode" : "Dark mode"}
+            title={theme === "dark" ? t("actions.lightMode") : t("actions.darkMode")}
             variant="secondary"
           />
           <Button
             aria-expanded={isMobileMenuOpen}
-            aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-label={isMobileMenuOpen ? t("actions.closeMenu") : t("actions.openMenu")}
             className="mobileMenuButton"
             icon={<Menu size={18} />}
             onClick={() => setIsMobileMenuOpen((isOpen) => !isOpen)}
             size="icon"
-            title={isMobileMenuOpen ? "Close menu" : "Open menu"}
+            title={isMobileMenuOpen ? t("actions.closeMenu") : t("actions.openMenu")}
             variant="secondary"
           />
         </div>
@@ -691,21 +762,45 @@ function App() {
             <span className="uiFieldIcon">
               <CalendarDays size={16} />
             </span>
-            Date
+            {t("club.date")}
           </span>
-          <DateCalendarPicker value={date} minDate={currentPragueDate} onChange={updateDate} />
+          <DateCalendarPicker value={date} minDate={currentPragueDate} language={language} onChange={updateDate} />
         </div>
-        <Field icon={<UsersRound size={16} />} label="Courts needed" className="searchField">
-          <Select value={courtsNeeded} onChange={(event) => setCourtsNeeded(Number(event.target.value))}>
+        <Field icon={<UsersRound size={16} />} label={t("club.needed")} className="searchField">
+          <Select
+            value={courtsNeeded}
+            onChange={(event) => {
+              const nextCourtsNeeded = Number(event.target.value);
+              captureEvent("filters_changed", {
+                club_slug: selectedClubSlug,
+                date,
+                filter: "courts_needed",
+                value: nextCourtsNeeded
+              });
+              setCourtsNeeded(nextCourtsNeeded);
+            }}
+          >
             {Array.from({ length: maxCourtCount }, (_, index) => index + 1).map((count) => (
               <option value={count} key={count}>
-                {count} {count === 1 ? "court" : "courts"}
+                {count} {t("club.court", { count })}
               </option>
             ))}
           </Select>
         </Field>
-        <Field icon={<SlidersHorizontal size={16} />} label="Duration" className="searchField">
-          <Select value={duration} onChange={(event) => setDuration(Number(event.target.value))}>
+        <Field icon={<SlidersHorizontal size={16} />} label={t("club.duration")} className="searchField">
+          <Select
+            value={duration}
+            onChange={(event) => {
+              const nextDuration = Number(event.target.value);
+              captureEvent("filters_changed", {
+                club_slug: selectedClubSlug,
+                date,
+                filter: "duration",
+                value: nextDuration
+              });
+              setDuration(nextDuration);
+            }}
+          >
             {durationOptions.map((minutes) => (
               <option value={minutes} key={minutes}>
                 {formatDuration(minutes, selectedAvailability?.dayRange ?? Object.values(availabilityByClub)[0]?.dayRange)}
@@ -713,14 +808,26 @@ function App() {
             ))}
           </Select>
         </Field>
-        <Field icon={<CloudSun size={16} />} label="Court type" className="searchField searchField-courtType">
-          <Select value={courtTypeFilter} onChange={(event) => setCourtTypeFilter(event.target.value as CourtTypeFilter)}>
-            <option value="all">All courts</option>
-            <option value="indoor">Indoor</option>
-            <option value="outdoor">Outdoor</option>
+        <Field icon={<CloudSun size={16} />} label={t("club.courtType")} className="searchField searchField-courtType">
+          <Select
+            value={courtTypeFilter}
+            onChange={(event) => {
+              const nextCourtType = event.target.value as CourtTypeFilter;
+              captureEvent("filters_changed", {
+                club_slug: selectedClubSlug,
+                date,
+                filter: "court_type",
+                value: nextCourtType
+              });
+              setCourtTypeFilter(nextCourtType);
+            }}
+          >
+            <option value="all">{t("club.allCourts")}</option>
+            <option value="indoor">{t("club.indoor")}</option>
+            <option value="outdoor">{t("club.outdoor")}</option>
           </Select>
         </Field>
-        <Field icon={<Timer size={16} />} label="Start time" className="searchField searchField-startTime">
+        <Field icon={<Timer size={16} />} label={t("club.startTime")} className="searchField searchField-startTime">
           <Select value={timeWindow.start} onChange={(event) => updateStartTime(event.target.value)} disabled={timeOptions.length === 0}>
             {startTimeOptions.map((time) => (
               <option value={time} key={time}>
@@ -729,7 +836,7 @@ function App() {
             ))}
           </Select>
         </Field>
-        <Field icon={<Timer size={16} />} label="End time" className="searchField searchField-endTime">
+        <Field icon={<Timer size={16} />} label={t("club.endTime")} className="searchField searchField-endTime">
           <Select value={timeWindow.end} onChange={(event) => updateEndTime(event.target.value)} disabled={timeOptions.length === 0}>
             {endTimeOptions.map((time) => (
               <option value={time} key={time}>
@@ -744,7 +851,7 @@ function App() {
         <div>
           <Search size={18} />
           <strong>
-            {selectedClub ? `${selectedSlots.length} bookable slots` : `${visibleClubResults.length} matching clubs`}
+            {selectedClub ? t("club.slots", { count: selectedSlots.length }) : t("club.matchingClubs", { count: visibleClubResults.length })}
           </strong>
         </div>
         {selectedClub ? <div className="resultActions">{refreshAvailabilityButton}</div> : null}
@@ -805,11 +912,22 @@ function App() {
 
   function updateDate(nextDate: string) {
     const nextSelectableDate = selectableDate(nextDate, currentPragueDate);
+    captureEvent("filters_changed", {
+      club_slug: selectedClubSlug,
+      filter: "date",
+      value: nextSelectableDate
+    });
     setDate(nextSelectableDate);
     writeUrl({ date: nextSelectableDate, clubSlug: selectedClubSlug, mode: "replace" });
   }
 
   function updateStartTime(nextStartTime: string) {
+    captureEvent("filters_changed", {
+      club_slug: selectedClubSlug,
+      date,
+      filter: "start_time",
+      value: nextStartTime
+    });
     setCustomStartTime(nextStartTime);
     if (toComparableTime(nextStartTime) >= toComparableTime(timeWindow.end)) {
       setCustomEndTime(nextTimeOption(nextStartTime, timeOptions) ?? timeWindow.end);
@@ -817,6 +935,12 @@ function App() {
   }
 
   function updateEndTime(nextEndTime: string) {
+    captureEvent("filters_changed", {
+      club_slug: selectedClubSlug,
+      date,
+      filter: "end_time",
+      value: nextEndTime
+    });
     setCustomEndTime(nextEndTime);
     if (toComparableTime(nextEndTime) <= toComparableTime(timeWindow.start)) {
       setCustomStartTime(previousTimeOption(nextEndTime, timeOptions) ?? timeWindow.start);
@@ -824,6 +948,13 @@ function App() {
   }
 
   function updateSelectedClub(nextClubSlug: string | null) {
+    if (nextClubSlug) {
+      captureEvent("club_selected", {
+        club_slug: nextClubSlug,
+        date,
+        source_page: page
+      });
+    }
     setPage("clubs");
     setSelectedClubSlug(nextClubSlug);
     setFailedClubs([]);
@@ -867,11 +998,13 @@ function handleInternalNavigation(event: React.MouseEvent<HTMLAnchorElement>, na
 }
 
 function Breadcrumbs({ page, selectedClub, onHome }: { page: Page; selectedClub: Club | null; onHome: () => void }) {
+  const { t } = useTranslation();
+
   return (
     <ol className="breadcrumbs">
       <li>
         <button type="button" onClick={onHome}>
-          Clubs
+          {t("nav.clubs")}
         </button>
       </li>
       {selectedClub ? (
@@ -881,27 +1014,27 @@ function Breadcrumbs({ page, selectedClub, onHome }: { page: Page; selectedClub:
       ) : null}
       {page === "about" ? (
         <li aria-current="page">
-          <span>About us</span>
+          <span>{t("nav.about")}</span>
         </li>
       ) : null}
       {page === "privacy" ? (
         <li aria-current="page">
-          <span>Privacy Policy</span>
+          <span>{t("nav.privacy")}</span>
         </li>
       ) : null}
       {page === "terms" ? (
         <li aria-current="page">
-          <span>Terms of Use</span>
+          <span>{t("nav.terms")}</span>
         </li>
       ) : null}
       {page === "cookies" ? (
         <li aria-current="page">
-          <span>Cookie Policy</span>
+          <span>{t("nav.cookies")}</span>
         </li>
       ) : null}
       {page === "allClubs" ? (
         <li aria-current="page">
-          <span>All clubs</span>
+          <span>{t("nav.allClubs")}</span>
         </li>
       ) : null}
     </ol>
@@ -923,47 +1056,49 @@ function SiteFooter({
   onNavigateToAbout: () => void;
   onNavigateToLegalPage: (page: "privacy" | "terms" | "cookies") => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <footer className="siteFooter">
       <div className="footerBrand">
         <a className="footerLogo" href={clubsHref(date)} onClick={(event) => handleInternalNavigation(event, onNavigateToClubs)}>
           <img src={assetPath("logo.png")} alt="" />
-          <span>HLEDEJKURTY</span>
+          <span>{t("brand.name")}</span>
         </a>
-        <p>Independent padel court availability finder for Prague, Czech Republic.</p>
+        <p>{t("footer.description")}</p>
       </div>
 
-      <nav className="footerNav" aria-label="Footer navigation">
+      <nav className="footerNav" aria-label={t("nav.primaryNavigation")}>
         <div>
-          <h2>Service</h2>
+          <h2>{t("footer.service")}</h2>
           <a href={clubsHref(date)} aria-current={currentPage === "clubs" ? "page" : undefined} onClick={(event) => handleInternalNavigation(event, onNavigateToClubs)}>
-            Find court
+            {t("nav.findCourt")}
           </a>
           <a href={allClubsHref()} aria-current={currentPage === "allClubs" ? "page" : undefined} onClick={(event) => handleInternalNavigation(event, onNavigateToAllClubs)}>
-            All clubs
+            {t("nav.allClubs")}
           </a>
           <a href={aboutHref()} aria-current={currentPage === "about" ? "page" : undefined} onClick={(event) => handleInternalNavigation(event, onNavigateToAbout)}>
-            About us
+            {t("nav.about")}
           </a>
         </div>
         <div>
-          <h2>Legal</h2>
+          <h2>{t("footer.legal")}</h2>
           <a href={legalHref("privacy")} aria-current={currentPage === "privacy" ? "page" : undefined} onClick={(event) => handleInternalNavigation(event, () => onNavigateToLegalPage("privacy"))}>
-            Privacy Policy
+            {t("nav.privacy")}
           </a>
           <a href={legalHref("terms")} aria-current={currentPage === "terms" ? "page" : undefined} onClick={(event) => handleInternalNavigation(event, () => onNavigateToLegalPage("terms"))}>
-            Terms of Use
+            {t("nav.terms")}
           </a>
           <a href={legalHref("cookies")} aria-current={currentPage === "cookies" ? "page" : undefined} onClick={(event) => handleInternalNavigation(event, () => onNavigateToLegalPage("cookies"))}>
-            Cookie Policy
+            {t("nav.cookies")}
           </a>
         </div>
       </nav>
 
       <div className="footerMeta">
         <a href="mailto:dmytrozhyrov@gmail.com">dmytrozhyrov@gmail.com</a>
-        <span>Availability and prices are informational.</span>
-        <span>Book only through each club's official booking system.</span>
+        <span>{t("footer.availabilityNotice")}</span>
+        <span>{t("footer.bookingNotice")}</span>
       </div>
     </footer>
   );
@@ -980,6 +1115,7 @@ function AllClubsPage({
   onSortChange: (sort: FindCourtSort) => void;
   onSelectClub: (club: Club) => void;
 }) {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [isCompactMode, setIsCompactMode] = useState(false);
   const normalizedSearchQuery = normalizeSearchText(searchQuery);
@@ -987,20 +1123,33 @@ function AllClubsPage({
     ? clubs.filter(({ club }) => normalizeSearchText(club.name).includes(normalizedSearchQuery))
     : clubs;
 
+  useEffect(() => {
+    if (!normalizedSearchQuery) return;
+
+    const timeout = window.setTimeout(() => {
+      captureEvent("all_clubs_searched", {
+        query_length: searchQuery.trim().length,
+        result_count: visibleClubs.length
+      });
+    }, 700);
+
+    return () => window.clearTimeout(timeout);
+  }, [normalizedSearchQuery, searchQuery, visibleClubs.length]);
+
   return (
     <section className="allClubsPage" aria-labelledby="all-clubs-title">
       <div className="pageHeader">
         <div>
           <Badge tone="green">
-            {visibleClubs.length === clubs.length ? `${clubs.length} clubs tracked` : `${visibleClubs.length}/${clubs.length} clubs`}
+            {visibleClubs.length === clubs.length ? t("allClubs.tracked", { count: clubs.length }) : `${visibleClubs.length}/${clubs.length} ${t("nav.clubs").toLocaleLowerCase()}`}
           </Badge>
-          <h1 id="all-clubs-title">All clubs</h1>
+          <h1 id="all-clubs-title">{t("nav.allClubs")}</h1>
         </div>
         <div className="pageHeaderControls">
-          <Field icon={<Search size={16} />} label="Search" className="allClubsSearchField">
+          <Field icon={<Search size={16} />} label={t("allClubs.searchLabel")} className="allClubsSearchField">
             <Input
-              aria-label="Search clubs by name"
-              placeholder="Club name"
+              aria-label={t("allClubs.searchAria")}
+              placeholder={t("allClubs.searchPlaceholder")}
               type="search"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
@@ -1008,26 +1157,33 @@ function AllClubsPage({
           </Field>
           <div className="resultSortControl">
             <Select
-              aria-label="Sort clubs"
+              aria-label={t("sort.labelClubs")}
               className="resultSortSelect"
               value={sort}
-              onChange={(event) => onSortChange(event.target.value as FindCourtSort)}
+              onChange={(event) => {
+                const nextSort = event.target.value as FindCourtSort;
+                captureEvent("all_clubs_sorted", { sort: nextSort });
+                onSortChange(nextSort);
+              }}
             >
-              <option value="name">Name</option>
-              <option value="priceAsc">Lowest price</option>
-              <option value="priceDesc">Highest price</option>
-              <option value="multisport">Multisport</option>
-              <option value="indoor">Indoor first</option>
-              <option value="outdoor">Outdoor first</option>
+              <option value="name">{t("sort.name")}</option>
+              <option value="priceAsc">{t("sort.lowestPrice")}</option>
+              <option value="priceDesc">{t("sort.highestPrice")}</option>
+              <option value="multisport">{t("sort.multisport")}</option>
+              <option value="indoor">{t("sort.indoorFirst")}</option>
+              <option value="outdoor">{t("sort.outdoorFirst")}</option>
             </Select>
           </div>
           <Button
-            aria-label={isCompactMode ? "Show club cards" : "Show compact club list"}
+            aria-label={isCompactMode ? t("actions.showClubCards") : t("actions.showCompactList")}
             className="allClubsViewButton"
             icon={isCompactMode ? <LayoutGrid size={18} /> : <ListOrdered size={18} />}
-            onClick={() => setIsCompactMode((currentMode) => !currentMode)}
+            onClick={() => {
+              captureEvent("all_clubs_view_changed", { view: isCompactMode ? "cards" : "compact" });
+              setIsCompactMode((currentMode) => !currentMode);
+            }}
             size="icon"
-            title={isCompactMode ? "Show cards" : "Show compact list"}
+            title={isCompactMode ? t("actions.showCards") : t("actions.showCompactList")}
             variant="secondary"
           />
         </div>
@@ -1038,33 +1194,39 @@ function AllClubsPage({
           visibleClubs.map(({ club, priceFrom }) => (
           <Card className={isCompactMode ? "trackedClubCard trackedClubCard-compact" : "trackedClubCard"} interactive key={club.slug}>
             <button className="trackedClubSelect" type="button" onClick={() => onSelectClub(club)}>
-              <img src={club.imageUrl} alt={`${club.name} padel courts`} />
+              <img src={club.imageUrl} alt={`${club.name} padel`} />
               <div className="trackedClubBody">
                 <div>
                   <h2>{club.name}</h2>
                   <p>
-                    {club.courtCount} {club.courtCount === 1 ? "court" : "courts"}
+                    {club.courtCount} {t("club.court", { count: club.courtCount })}
                   </p>
                 </div>
                 <div className="trackedClubBadges">
                   {club.acceptsMultisport ? (
-                    <span className="multisportBadge">Multisport</span>
+                    <span className="multisportBadge">{t("club.multisport")}</span>
                   ) : null}
                   <CourtTypeBadges courtTypes={club.courtTypes} />
                   <span className="trackedClubPrice">
-                    from <strong>{formatCzkPerHour(priceFrom)}</strong>
+                    {t("club.from")} <strong>{formatCzkPerHour(priceFrom)}</strong>
                   </span>
                 </div>
               </div>
             </button>
-            <a className="addressLink" href={googleMapsUrl(club.address)} target="_blank" rel="noreferrer">
+            <a
+              className="addressLink"
+              href={googleMapsUrl(club.address)}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => captureEvent("map_opened", { club_slug: club.slug, source: "all_clubs" })}
+            >
               <MapPin size={15} />
               <span>{club.address}</span>
             </a>
           </Card>
           ))
         ) : (
-          <EmptyState title="No clubs found">Try another club name.</EmptyState>
+          <EmptyState title={t("allClubs.emptyTitle")}>{t("allClubs.emptyBody")}</EmptyState>
         )}
       </section>
     </section>
@@ -1072,35 +1234,34 @@ function AllClubsPage({
 }
 
 function AboutPage({ onBrowseClubs }: { onBrowseClubs: () => void }) {
+  const { t } = useTranslation();
+
   return (
     <section className="aboutPage" aria-labelledby="about-title">
       <div className="aboutHero">
-        <Badge tone="green">About us</Badge>
-        <h1 id="about-title">Find a free padel court without opening every booking system.</h1>
-        <p>
-          HLEDEJKURTY gathers available padel slots from club booking systems around Prague and shows the clubs that match your
-          date, duration, court count, time window, and indoor/outdoor preference.
-        </p>
+        <Badge tone="green">{t("nav.about")}</Badge>
+        <h1 id="about-title">{t("about.title")}</h1>
+        <p>{t("about.body")}</p>
         <Button icon={<SearchCheck size={17} />} onClick={onBrowseClubs}>
-          Find Court
+          {t("actions.findCourt")}
         </Button>
       </div>
 
       <div className="aboutGrid">
         <Card className="aboutCard">
           <SearchCheck size={22} />
-          <h2>One search</h2>
-          <p>Instead of checking many calendars manually, filter once and see which clubs currently have matching slots.</p>
+          <h2>{t("about.cardSearchTitle")}</h2>
+          <p>{t("about.cardSearchBody")}</p>
         </Card>
         <Card className="aboutCard">
           <Link2 size={22} />
-          <h2>Book at the club</h2>
-          <p>When you find a suitable slot, the Book action opens the official booking system for that club.</p>
+          <h2>{t("about.cardBookTitle")}</h2>
+          <p>{t("about.cardBookBody")}</p>
         </Card>
         <Card className="aboutCard">
           <ShieldCheck size={22} />
-          <h2>Transparent limits</h2>
-          <p>Availability and prices are informational. The club booking page is always the final source before reservation.</p>
+          <h2>{t("about.cardLimitsTitle")}</h2>
+          <p>{t("about.cardLimitsBody")}</p>
         </Card>
       </div>
     </section>
@@ -1108,113 +1269,83 @@ function AboutPage({ onBrowseClubs }: { onBrowseClubs: () => void }) {
 }
 
 function PrivacyPage() {
+  const { t } = useTranslation();
+
   return (
     <LegalPage
       badgeIcon={<ShieldCheck size={16} />}
-      badgeText="Legal"
-      title="Privacy Policy"
-      intro="This policy explains what data HLEDEJKURTY uses while helping visitors find padel court availability in Prague."
+      badgeText={t("legal.badgeLegal")}
+      title={t("legal.privacyTitle")}
+      intro={t("legal.privacyIntro")}
     >
-      <LegalSection title="Who operates this service">
+      <LegalSection title={t("legal.privacySection1Title")}>
         <p>
-          Contact: <a href="mailto:dmytrozhyrov@gmail.com">dmytrozhyrov@gmail.com</a>.
+          {t("legal.contact")} <a href="mailto:dmytrozhyrov@gmail.com">dmytrozhyrov@gmail.com</a>.
         </p>
       </LegalSection>
-      <LegalSection title="What we process">
+      <LegalSection title={t("legal.privacySection2Title")}>
         <p>
-          The app does not create user accounts, take payments, or accept bookings. Your selected date, duration, court count,
-          court type, and time window are used to request availability. The theme preference is stored in your browser as
-          local storage under <code>mamekurt-theme</code>.
+          {t("legal.privacySection2Body1")} <code>mamekurt-theme</code> / <code>{LANGUAGE_STORAGE_KEY}</code>.
         </p>
-        <p>
-          Hosting and API infrastructure may process standard technical logs such as IP address, request URL, browser user agent,
-          timestamps, and error diagnostics for security and operation.
-        </p>
+        <p>{t("legal.privacySection2Body2")}</p>
       </LegalSection>
-      <LegalSection title="Why we process it">
-        <p>
-          Data is used to provide the search feature, keep the app secure, diagnose errors, and remember basic interface
-          preferences. Club booking pages opened from this app are external services with their own privacy rules.
-        </p>
+      <LegalSection title={t("legal.privacySection3Title")}>
+        <p>{t("legal.privacySection3Body")}</p>
       </LegalSection>
-      <LegalSection title="Retention and rights">
-        <p>
-          The app itself does not store visitor profiles. Technical logs, if enabled by hosting infrastructure, should be kept
-          only for a limited operational period. Visitors in the EU can request access, correction, deletion, restriction, or
-          objection under GDPR once the production operator contact is published.
-        </p>
+      <LegalSection title={t("legal.privacySection4Title")}>
+        <p>{t("legal.privacySection4Body")}</p>
       </LegalSection>
     </LegalPage>
   );
 }
 
 function TermsPage() {
+  const { t } = useTranslation();
+
   return (
     <LegalPage
       badgeIcon={<Scale size={16} />}
-      badgeText="Terms"
-      title="Terms of Use"
-      intro="These terms describe how to use HLEDEJKURTY and what limits apply to the availability information shown here."
+      badgeText={t("legal.badgeTerms")}
+      title={t("legal.termsTitle")}
+      intro={t("legal.termsIntro")}
     >
-      <LegalSection title="Service scope">
-        <p>
-          HLEDEJKURTY aggregates publicly reachable or operator-authorized padel court availability from third-party booking
-          systems. It helps you discover possible time slots, but it does not sell, reserve, or confirm court bookings.
-        </p>
+      <LegalSection title={t("legal.termsSection1Title")}>
+        <p>{t("legal.termsSection1Body")}</p>
       </LegalSection>
-      <LegalSection title="Availability and prices">
-        <p>
-          Availability, prices, court types, phone numbers, and Multisport labels are informational and may be delayed or
-          incomplete. The official club booking system is always the final source before you reserve or pay.
-        </p>
+      <LegalSection title={t("legal.termsSection2Title")}>
+        <p>{t("legal.termsSection2Body")}</p>
       </LegalSection>
-      <LegalSection title="External booking systems">
-        <p>
-          Booking buttons and club links open third-party websites. Their terms, privacy policies, booking rules, cancellation
-          rules, and payment flows apply separately.
-        </p>
+      <LegalSection title={t("legal.termsSection3Title")}>
+        <p>{t("legal.termsSection3Body")}</p>
       </LegalSection>
-      <LegalSection title="Fair use">
-        <p>
-          Do not use the service to overload booking systems, automate abusive traffic, bypass access controls, or copy data for
-          a competing service without permission.
-        </p>
+      <LegalSection title={t("legal.termsSection4Title")}>
+        <p>{t("legal.termsSection4Body")}</p>
       </LegalSection>
     </LegalPage>
   );
 }
 
 function CookiePolicyPage() {
+  const { t } = useTranslation();
+
   return (
     <LegalPage
       badgeIcon={<Cookie size={16} />}
-      badgeText="Cookies"
-      title="Cookie Policy"
-      intro="This page explains browser storage used by HLEDEJKURTY."
+      badgeText={t("legal.badgeCookies")}
+      title={t("legal.cookiesTitle")}
+      intro={t("legal.cookiesIntro")}
     >
-      <LegalSection title="Current cookie use">
-        <p>
-          HLEDEJKURTY currently does not set analytics, advertising, or marketing cookies. The app stores only your theme choice
-          in browser local storage so dark mode or light mode persists across visits.
-        </p>
+      <LegalSection title={t("legal.cookiesSection1Title")}>
+        <p>{t("legal.cookiesSection1Body")}</p>
       </LegalSection>
-      <LegalSection title="Strictly necessary storage">
-        <p>
-          The theme preference is functional storage and is not used to track you across websites. You can clear it at any time
-          from your browser settings.
-        </p>
+      <LegalSection title={t("legal.cookiesSection2Title")}>
+        <p>{t("legal.cookiesSection2Body")}</p>
       </LegalSection>
-      <LegalSection title="Third-party websites">
-        <p>
-          When you open a club booking system, that external website may use its own cookies or similar technologies. Check the
-          club or booking provider's cookie information before booking there.
-        </p>
+      <LegalSection title={t("legal.cookiesSection3Title")}>
+        <p>{t("legal.cookiesSection3Body")}</p>
       </LegalSection>
-      <LegalSection title="Future changes">
-        <p>
-          If analytics, advertising, or other non-essential cookies are added later, the app should request consent before those
-          cookies are used.
-        </p>
+      <LegalSection title={t("legal.cookiesSection4Title")}>
+        <p>{t("legal.cookiesSection4Body")}</p>
       </LegalSection>
     </LegalPage>
   );
@@ -1233,6 +1364,8 @@ function LegalPage({
   intro: string;
   children: React.ReactNode;
 }) {
+  const { t } = useTranslation();
+
   return (
     <section className="legalPage" aria-labelledby="legal-title">
       <div className="legalHero">
@@ -1242,7 +1375,7 @@ function LegalPage({
         </Badge>
         <h1 id="legal-title">{title}</h1>
         <p>{intro}</p>
-        <span>Last updated: August 5, 2026</span>
+        <span>{t("legal.lastUpdated")}</span>
       </div>
       <Card className="legalContent">{children}</Card>
     </section>
@@ -1259,11 +1392,19 @@ function LegalSection({ children, title }: { children: React.ReactNode; title: s
 }
 
 function FailedClubAlert({ failedClubs, date, title }: { failedClubs: FailedClub[]; date: string; title?: string }) {
+  const { t } = useTranslation();
+
   return (
-    <Alert aria-label="Unchecked clubs" icon={<AlertCircle size={18} />} title={title ?? `${failedClubs.length} clubs were not checked`}>
+    <Alert aria-label={t("availability.uncheckedClubs", { count: failedClubs.length })} icon={<AlertCircle size={18} />} title={title ?? t("availability.uncheckedClubs", { count: failedClubs.length })}>
       <div className="failedLinks">
         {failedClubs.map(({ club }) => (
-          <a href={club.bookingUrl(date)} key={club.slug} target="_blank" rel="noreferrer">
+          <a
+            href={club.bookingUrl(date)}
+            key={club.slug}
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => captureBookingSystemOpened(club, "availability_error", date)}
+          >
             {club.name}
           </a>
         ))}
@@ -1291,6 +1432,7 @@ function ClubList({
   onExpandedClubSlugsChange: React.Dispatch<React.SetStateAction<Set<string>>>;
   onSelectClub: (club: Club) => void;
 }) {
+  const { t } = useTranslation();
   const resultsToolbar = (
     <div className="clubResultsToolbar">
       <LoadProgressBadge isLoading={isLoading} loadProgress={loadProgress} />
@@ -1300,7 +1442,7 @@ function ClubList({
 
   if (isLoading && results.length === 0) {
     return (
-      <section className={compact ? "clubCompactList" : "clubGrid"} aria-label="Loading clubs">
+      <section className={compact ? "clubCompactList" : "clubGrid"} aria-label={t("nav.clubs")}>
         {resultsToolbar}
         {Array.from({ length: 6 }, (_, index) => (
           compact ? (
@@ -1325,12 +1467,16 @@ function ClubList({
 
   if (compact) {
     return (
-      <section className="clubCompactList" aria-label="Matching clubs">
+      <section className="clubCompactList" aria-label={t("club.matchingClubs", { count: results.length })}>
         {resultsToolbar}
         {results.length > 0 ? (
           results.map(({ club, availability, bookableSlots }) => {
             const isExpanded = expandedClubSlugs.has(club.slug);
             const toggleExpanded = () => {
+              captureEvent("compact_club_expanded", {
+                action: isExpanded ? "collapse" : "expand",
+                club_slug: club.slug
+              });
               onExpandedClubSlugsChange((currentSlugs) => {
                 const nextSlugs = new Set(currentSlugs);
                 if (nextSlugs.has(club.slug)) {
@@ -1368,14 +1514,14 @@ function ClubList({
                   >
                     {club.name}
                   </button>
-                  <span>{bookableSlots.length} slots</span>
+                  <span>{t("club.slots", { count: bookableSlots.length })}</span>
                 </div>
                 <div className="clubCompactToggle">
                   <div className="clubCompactMeta">
                     <span className="trackedClubPrice">
-                      from <strong>{formatCzkPerHour(lowestPrice(club.priceInfo))}</strong>
+                      {t("club.from")} <strong>{formatCzkPerHour(lowestPrice(club.priceInfo))}</strong>
                     </span>
-                    {club.acceptsMultisport ? <span className="multisportBadge">Multisport</span> : null}
+                    {club.acceptsMultisport ? <span className="multisportBadge">{t("club.multisport")}</span> : null}
                     <CourtTypeBadges courtTypes={club.courtTypes} />
                     <span className="clubMeta">
                       <Clock3 size={15} />
@@ -1395,13 +1541,14 @@ function ClubList({
                       key={`${club.slug}-${slot.start}-${slot.end}-${slot.courts.join("-")}`}
                       target="_blank"
                       rel="noreferrer"
+                      onClick={() => captureBookingSystemOpened(club, "matching_slot", availability?.date ?? today, slot)}
                     >
                       <strong>
                         {slot.start} - {slot.end}
                       </strong>
-                      <span>{slot.courts.join(" + ")}</span>
+                      <span>{formatCourtNames(slot.courts).join(" + ")}</span>
                       <small>
-                        Book
+                        {t("actions.book")}
                         <ExternalLink size={13} />
                       </small>
                     </a>
@@ -1412,16 +1559,14 @@ function ClubList({
             );
           })
         ) : (
-          <EmptyState title="No matching clubs">
-            Try a shorter duration, fewer courts, or another day.
-          </EmptyState>
+          <EmptyState title={t("club.noMatchingTitle")}>{t("club.noMatchingBody")}</EmptyState>
         )}
       </section>
     );
   }
 
   return (
-    <section className="clubGrid" aria-label="Matching clubs">
+    <section className="clubGrid" aria-label={t("club.matchingClubs", { count: results.length })}>
       {resultsToolbar}
       {results.length > 0 ? (
         results.map(({ club, availability, bookableSlots }) => (
@@ -1438,7 +1583,7 @@ function ClubList({
               role="button"
               tabIndex={0}
             >
-              <img src={club.imageUrl} alt={`${club.name} padel courts`} />
+              <img src={club.imageUrl} alt={`${club.name} padel`} />
               <div className="clubBody">
                 <div className="clubTitleRow">
                   <div>
@@ -1446,7 +1591,10 @@ function ClubList({
                       <a
                         className="clubExternalTitle"
                         href={club.bookingUrl(availability?.date ?? today)}
-                        onClick={(event) => event.stopPropagation()}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          captureBookingSystemOpened(club, "club_card", availability?.date ?? today);
+                        }}
                         target="_blank"
                         rel="noreferrer"
                       >
@@ -1454,14 +1602,14 @@ function ClubList({
                         <ExternalLink size={15} />
                       </a>
                     </h2>
-                    <p>{bookableSlots.length} matching slots</p>
+                    <p>{t("club.matchingSlots", { count: bookableSlots.length })}</p>
                   </div>
                 </div>
                 <div className="clubCardMetaRow">
                   <span className="trackedClubPrice">
-                    from <strong>{formatCzkPerHour(lowestPrice(club.priceInfo))}</strong>
+                    {t("club.from")} <strong>{formatCzkPerHour(lowestPrice(club.priceInfo))}</strong>
                   </span>
-                  {club.acceptsMultisport ? <span className="multisportBadge">Multisport</span> : null}
+                  {club.acceptsMultisport ? <span className="multisportBadge">{t("club.multisport")}</span> : null}
                 </div>
                 <span className="clubMeta">
                   <Clock3 size={15} />
@@ -1471,16 +1619,20 @@ function ClubList({
                 <CourtTypeBadges courtTypes={club.courtTypes} />
               </div>
             </div>
-            <a className="addressLink" href={googleMapsUrl(club.address)} target="_blank" rel="noreferrer">
+            <a
+              className="addressLink"
+              href={googleMapsUrl(club.address)}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => captureEvent("map_opened", { club_slug: club.slug, source: "matching_clubs" })}
+            >
               <MapPin size={15} />
               <span>{club.address}</span>
             </a>
           </Card>
         ))
       ) : (
-        <EmptyState title="No matching clubs">
-          Try a shorter duration, fewer courts, or another day.
-        </EmptyState>
+        <EmptyState title={t("club.noMatchingTitle")}>{t("club.noMatchingBody")}</EmptyState>
       )}
     </section>
   );
@@ -1493,6 +1645,8 @@ function LoadProgressBadge({
   isLoading: boolean;
   loadProgress: { completed: number; total: number };
 }) {
+  const { t } = useTranslation();
+
   if (loadProgress.total === 0) {
     return null;
   }
@@ -1500,7 +1654,7 @@ function LoadProgressBadge({
   return (
     <span className={isLoading ? "loadProgressBadge loadProgressBadge-loading" : "loadProgressBadge"}>
       {isLoading ? <span className="loadProgressSpinner" aria-hidden="true" /> : null}
-      {loadProgress.completed}/{loadProgress.total} <span className="loadProgressLabel">checked</span>
+      {loadProgress.completed}/{loadProgress.total} <span className="loadProgressLabel">{t("availability.checkedCount")}</span>
     </span>
   );
 }
@@ -1508,12 +1662,15 @@ function LoadProgressBadge({
 function DateCalendarPicker({
   value,
   minDate,
+  language,
   onChange
 }: {
   value: string;
   minDate: string;
+  language: LanguageCode;
   onChange: (date: string) => void;
 }) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [visibleMonth, setVisibleMonth] = useState(() => monthInputValue(value));
   const pickerRef = useRef<HTMLDivElement>(null);
@@ -1549,14 +1706,14 @@ function DateCalendarPicker({
         type="button"
         onClick={() => setIsOpen((currentValue) => !currentValue)}
       >
-        <span>{formatSelectedDateLabel(value, minDate)}</span>
+        <span>{formatSelectedDateLabel(value, minDate, language)}</span>
         <ChevronDown size={17} aria-hidden="true" />
       </button>
       {isOpen ? (
-        <div className="datePickerPopover" role="dialog" aria-label="Choose date">
+        <div className="datePickerPopover" role="dialog" aria-label={t("date.chooseDate")}>
           <div className="datePickerHeader">
             <button
-              aria-label="Previous month"
+              aria-label={t("date.previousMonth")}
               className="datePickerNavButton"
               disabled={isPreviousMonthDisabled}
               type="button"
@@ -1564,9 +1721,9 @@ function DateCalendarPicker({
             >
               <ChevronLeft size={18} aria-hidden="true" />
             </button>
-            <strong>{formatMonthLabel(visibleMonth)}</strong>
+            <strong>{formatMonthLabel(visibleMonth, language)}</strong>
             <button
-              aria-label="Next month"
+              aria-label={t("date.nextMonth")}
               className="datePickerNavButton"
               type="button"
               onClick={() => setVisibleMonth(nextMonth)}
@@ -1575,7 +1732,7 @@ function DateCalendarPicker({
             </button>
           </div>
           <div className="datePickerWeekdays" aria-hidden="true">
-            {WEEKDAY_LABELS.map((weekday) => (
+            {(t("date.weekdays", { returnObjects: true }) as string[]).map((weekday) => (
               <span key={weekday}>{weekday}</span>
             ))}
           </div>
@@ -1608,11 +1765,13 @@ function DateCalendarPicker({
 }
 
 function CourtTypeBadges({ courtTypes }: { courtTypes: CourtType[] }) {
+  const { t } = useTranslation();
+
   return (
-    <div className="courtTypeBadges" aria-label="Court types">
+    <div className="courtTypeBadges" aria-label={t("club.courtTypes")}>
       {courtTypes.map((courtType) => (
         <span className={`courtTypeBadge courtTypeBadge-${courtType}`} key={courtType}>
-          {courtType === "indoor" ? "Indoor" : "Outdoor"}
+          {courtType === "indoor" ? t("club.indoor") : t("club.outdoor")}
         </span>
       ))}
     </div>
@@ -1620,13 +1779,14 @@ function CourtTypeBadges({ courtTypes }: { courtTypes: CourtType[] }) {
 }
 
 function PhoneInfoRow({ phone }: { phone: string }) {
+  const { t } = useTranslation();
   const href = phoneHref(phone);
 
   if (!href) {
     return (
       <span className="detailInfoRow">
         <Phone size={16} />
-        <span>{phone}</span>
+        <span>{phone === "Not published" ? t("club.notPublished") : phone}</span>
       </span>
     );
   }
@@ -1658,26 +1818,34 @@ function ClubDetail({
   unavailableReason?: string;
   directBookingUrl?: string;
 }) {
+  const { t } = useTranslation();
+
   return (
     <>
       <Card className="clubDetail">
-        <img src={club.imageUrl} alt={`${club.name} padel courts`} />
+        <img src={club.imageUrl} alt={`${club.name} padel`} />
         <div className="clubDetailBody">
           <div>
             <h2>{club.name}</h2>
-            <a className="detailAddress" href={googleMapsUrl(club.address)} target="_blank" rel="noreferrer">
+            <a
+              className="detailAddress"
+              href={googleMapsUrl(club.address)}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => captureEvent("map_opened", { club_slug: club.slug, source: "club_detail" })}
+            >
               <MapPin size={16} />
               {club.address}
             </a>
             <div className="detailInfoList">
               <span className="detailInfoRow">
                 <CloudSun size={16} />
-                <span>{club.courtTypeLabel}</span>
+                <span>{formatCourtTypeSummary(club)}</span>
               </span>
               {club.acceptsMultisport ? (
                 <span className="detailInfoRow">
                   <WalletCards size={16} />
-                  <span className="multisportBadge">Multisport</span>
+                  <span className="multisportBadge">{t("club.multisport")}</span>
                 </span>
               ) : null}
               <PhoneInfoRow phone={club.phone} />
@@ -1685,15 +1853,21 @@ function ClubDetail({
                 <PhoneInfoRow phone={club.secondaryPhone} />
               ) : null}
               {directBookingUrl ? (
-                <a className="detailInfoRow detailBookingLink" href={directBookingUrl} target="_blank" rel="noreferrer">
+                <a
+                  className="detailInfoRow detailBookingLink"
+                  href={directBookingUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => captureBookingSystemOpened(club, "club_detail", availability?.date ?? today)}
+                >
                   <ExternalLink size={16} />
-                  <span>Open booking system</span>
+                  <span>{t("actions.openBookingSystem")}</span>
                 </a>
               ) : null}
               <FreshnessBadge availability={availability} />
               <span className="detailInfoRow priceInfoRow">
                 <WalletCards size={16} />
-                <span>{renderPriceInfo(club.priceInfo)}</span>
+                <span>{renderPriceInfo(formatPriceInfoText(club.priceInfo))}</span>
               </span>
             </div>
           </div>
@@ -1703,8 +1877,8 @@ function ClubDetail({
       <Card className="slotPanel">
         <div className="panelHeader">
           <div>
-            <Badge tone="green">{slots.length} slots</Badge>
-            <h2>Available times</h2>
+            <Badge tone="green">{t("club.slots", { count: slots.length })}</Badge>
+            <h2>{t("club.availableTimes")}</h2>
           </div>
           <ExternalLink size={18} />
         </div>
@@ -1719,16 +1893,17 @@ function ClubDetail({
                 key={`${slot.start}-${slot.end}-${slot.courts.join("-")}`}
                 target="_blank"
                 rel="noreferrer"
-                title="Open booking system"
+                title={t("actions.openBookingSystem")}
+                onClick={() => captureBookingSystemOpened(club, "club_detail_slot", availability?.date ?? today, slot)}
               >
                 <div>
                   <strong>
                     {slot.start} - {slot.end}
                   </strong>
-                  <span>{slot.courts.slice(0, courtsNeeded).join(" + ")}</span>
+                  <span>{formatCourtNames(slot.courts.slice(0, courtsNeeded)).join(" + ")}</span>
                 </div>
                 <small>
-                  Book
+                  {t("actions.book")}
                   <ExternalLink size={13} />
                 </small>
               </a>
@@ -1738,23 +1913,25 @@ function ClubDetail({
           <div className="availabilityWarning" role="status">
             <TriangleAlert size={22} />
             <div>
-              <strong>Court availability is not loaded</strong>
+              <strong>{t("availability.notLoaded")}</strong>
               <p>
-                {unavailableReason ?? "We could not check free slots for this club right now."} Open the official booking system to
-                check and book directly.
+                {unavailableReason ?? t("availability.unavailableReason")} {t("availability.unavailableSuffix")}
               </p>
               {directBookingUrl ? (
-                <a href={directBookingUrl} target="_blank" rel="noreferrer">
-                  Open booking system
+                <a
+                  href={directBookingUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => captureBookingSystemOpened(club, "availability_unavailable", availability?.date ?? today)}
+                >
+                  {t("actions.openBookingSystem")}
                   <ExternalLink size={14} />
                 </a>
               ) : null}
             </div>
           </div>
         ) : (
-          <EmptyState title="No slots for this club">
-            Change the filters or go back to see other matching clubs.
-          </EmptyState>
+          <EmptyState title={t("club.noSlotsTitle")}>{t("club.noSlotsBody")}</EmptyState>
         )}
       </Card>
     </>
@@ -1762,8 +1939,10 @@ function ClubDetail({
 }
 
 function SlotListSkeleton() {
+  const { t } = useTranslation();
+
   return (
-    <div className="slotList" aria-label="Loading available times">
+    <div className="slotList" aria-label={t("club.availableTimes")}>
       {Array.from({ length: 6 }, (_, index) => (
         <div className="slot slotSkeleton" key={index}>
           <div>
@@ -1778,9 +1957,11 @@ function SlotListSkeleton() {
 }
 
 function ClubDetailSkeleton() {
+  const { t } = useTranslation();
+
   return (
     <>
-      <Card className="clubDetail detailSkeleton" aria-label="Loading club availability">
+      <Card className="clubDetail detailSkeleton" aria-label={t("availability.notLoaded")}>
         <Skeleton className="detailImageSkeleton" />
         <div className="clubDetailBody">
           <div className="detailSkeletonStack">
@@ -1809,6 +1990,8 @@ function ClubDetailSkeleton() {
 }
 
 function FreshnessBadge({ availability }: { availability?: AvailabilityResult }) {
+  const { t } = useTranslation();
+
   if (!availability) {
     return null;
   }
@@ -1820,9 +2003,18 @@ function FreshnessBadge({ availability }: { availability?: AvailabilityResult })
   return (
     <span className={isStale ? "freshnessBadge freshnessBadge-stale" : "freshnessBadge"}>
       {isStale ? <TriangleAlert size={14} /> : <SearchCheck size={14} />}
-      {isStale ? "Stale" : "Checked"} {formatCheckedTime(checkedAt)}
+      {isStale ? t("availability.stale") : t("availability.checked")} {formatCheckedTime(checkedAt)}
     </span>
   );
+}
+
+function captureBookingSystemOpened(club: Club, source: string, date: string, slot?: BookableSlot) {
+  captureEvent("booking_system_opened", {
+    club_slug: club.slug,
+    date,
+    source,
+    ...(slot ? { court_count: slot.courts.length, slot_end: slot.end, slot_start: slot.start } : {})
+  });
 }
 
 function googleMapsUrl(address: string): string {
@@ -1836,6 +2028,36 @@ function phoneHref(phone: string): string {
 
 function clubMatchesCourtType(club: Club, courtTypeFilter: CourtTypeFilter): boolean {
   return courtTypeFilter === "all" || club.courtTypes.includes(courtTypeFilter);
+}
+
+function formatCourtTypeSummary(club: Club): string {
+  const indoorCount = club.courtTypes.includes("indoor") ? club.courtTypeLabel.match(/(\d+) indoor/)?.[1] : undefined;
+  const outdoorCount = club.courtTypes.includes("outdoor") ? club.courtTypeLabel.match(/(\d+) outdoor/)?.[1] : undefined;
+  const parts = [
+    indoorCount ? `${indoorCount} ${i18n.t("club.indoor").toLocaleLowerCase()} ${i18n.t("club.court", { count: Number(indoorCount) })}` : null,
+    outdoorCount ? `${outdoorCount} ${i18n.t("club.outdoor").toLocaleLowerCase()} ${i18n.t("club.court", { count: Number(outdoorCount) })}` : null
+  ].filter(Boolean);
+
+  return parts.join(" + ");
+}
+
+function formatCourtNames(courts: string[]): string[] {
+  return courts.map((court) => court.replace(/^Kurt\b/i, i18n.t("club.providerCourtPrefix")));
+}
+
+function formatPriceInfoText(priceInfo: string): string {
+  const language = i18n.language as LanguageCode;
+  const replacements: Array<[RegExp, string]> = [
+    [/1 h:/g, language === "ua" ? "1 год:" : "1 h:"],
+    [/Po-Pá/g, language === "en" ? "Mon-Fri" : language === "ua" ? "Пн-Пт" : "Po-Pá"],
+    [/víkend/g, language === "en" ? "weekend" : language === "ua" ? "вихідні" : "víkend"],
+    [/léto/g, language === "en" ? "summer" : language === "ua" ? "літо" : "léto"],
+    [/zima/g, language === "en" ? "winter" : language === "ua" ? "зима" : "zima"],
+    [/from/g, language === "en" ? "from" : language === "ua" ? "від" : "od"],
+    [/price not published/g, language === "en" ? "price not published" : language === "ua" ? "ціна не опублікована" : "cena nezveřejněna"]
+  ];
+
+  return replacements.reduce((text, [pattern, replacement]) => text.replace(pattern, replacement), priceInfo);
 }
 
 function renderPriceInfo(priceInfo: string) {
@@ -1925,11 +2147,11 @@ function lowestPrice(priceInfo: string): number {
 }
 
 function formatCzk(price: number): string {
-  return Number.isFinite(price) ? `${price} Kč` : "Price unknown";
+  return Number.isFinite(price) ? `${price} Kč` : i18n.t("club.priceUnknown");
 }
 
 function formatCzkPerHour(price: number): string {
-  return Number.isFinite(price) ? `${price} Kč/h` : "Price unknown";
+  return Number.isFinite(price) ? `${price} Kč/h` : i18n.t("club.priceUnknown");
 }
 
 function skySportCityTimelineUrl(date: string): string {
@@ -2027,21 +2249,21 @@ function selectableDate(date: string | null | undefined, currentDate: string): s
   return date;
 }
 
-function formatSelectedDateLabel(date: string, currentDate: string): string {
+function formatSelectedDateLabel(date: string, currentDate: string, language: LanguageCode): string {
   if (date === currentDate) {
-    return `Today, ${formatDateLabel(date)}`;
+    return i18n.t("date.today", { date: formatDateLabel(date, language) });
   }
 
   if (date === addDaysToDateInput(currentDate, 1)) {
-    return `Tomorrow, ${formatDateLabel(date)}`;
+    return i18n.t("date.tomorrow", { date: formatDateLabel(date, language) });
   }
 
-  return formatDateLabel(date);
+  return formatDateLabel(date, language);
 }
 
-function formatDateLabel(date: string): string {
+function formatDateLabel(date: string, language: LanguageCode): string {
   const [year, month, day] = date.split("-").map(Number);
-  return new Intl.DateTimeFormat("en", {
+  return new Intl.DateTimeFormat(localeByLanguage[language], {
     day: "numeric",
     month: "short",
     timeZone: "Europe/Prague",
@@ -2049,9 +2271,9 @@ function formatDateLabel(date: string): string {
   }).format(new Date(Date.UTC(year, month - 1, day, 12)));
 }
 
-function formatMonthLabel(month: string): string {
+function formatMonthLabel(month: string, language: LanguageCode): string {
   const [year, monthIndex] = month.split("-").map(Number);
-  return new Intl.DateTimeFormat("en", {
+  return new Intl.DateTimeFormat(localeByLanguage[language], {
     month: "long",
     timeZone: "Europe/Prague",
     year: "numeric"
@@ -2135,10 +2357,10 @@ function toComparableTime(time: string): number {
 function formatCheckedTime(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
-    return "recently";
+    return i18n.t("availability.recent");
   }
 
-  return new Intl.DateTimeFormat("en", {
+  return new Intl.DateTimeFormat(localeByLanguage[i18n.language as LanguageCode] ?? "en", {
     hour: "2-digit",
     minute: "2-digit",
     timeZone: "Europe/Prague"

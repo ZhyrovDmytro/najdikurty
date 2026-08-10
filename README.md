@@ -42,6 +42,20 @@ npm run dev:web
 
 The API defaults to `http://localhost:4000`. The web app defaults to `http://localhost:5173`.
 
+## Web analytics
+
+The web app uses PostHog only when `VITE_POSTHOG_KEY` is configured. The SDK is lazy-loaded and uses manual event capture only:
+page views, filter changes, language/theme changes, club selections, view-mode changes, map clicks, availability refreshes, and booking-link exits.
+Autocapture and session recording are disabled.
+
+For local development, copy `apps/web/.env.example` to `apps/web/.env.local` and set your PostHog project token.
+For GitHub Pages, set repository variables:
+
+```bash
+VITE_POSTHOG_KEY="phc_..."
+VITE_POSTHOG_HOST="https://eu.i.posthog.com"
+```
+
 Padel Slavia exposes future dates only after login. Configure credentials outside git before starting the API:
 
 ```bash
