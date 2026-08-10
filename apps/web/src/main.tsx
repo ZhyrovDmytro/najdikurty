@@ -41,6 +41,7 @@ import {
   type BookableSlot,
   type TimeRange
 } from "./availability";
+import posthog from "./posthog";
 import { Alert, Badge, Button, Card, EmptyState, Field, Input, Select, Skeleton } from "./ui";
 import "./styles.css";
 
@@ -573,7 +574,14 @@ function App() {
     <Button
       aria-label="Refresh availability"
       icon={<RefreshCw size={18} />}
-      onClick={loadAvailability}
+      onClick={() => {
+        posthog.capture("availability_refreshed", {
+          court_type: courtTypeFilter,
+          date,
+          selected_club: selectedClubSlug !== null
+        });
+        void loadAvailability();
+      }}
       size="icon"
       title="Refresh availability"
       variant="secondary"
@@ -824,6 +832,9 @@ function App() {
   }
 
   function updateSelectedClub(nextClubSlug: string | null) {
+    if (nextClubSlug) {
+      posthog.capture("club_selected", { club_slug: nextClubSlug });
+    }
     setPage("clubs");
     setSelectedClubSlug(nextClubSlug);
     setFailedClubs([]);
@@ -1263,7 +1274,13 @@ function FailedClubAlert({ failedClubs, date, title }: { failedClubs: FailedClub
     <Alert aria-label="Unchecked clubs" icon={<AlertCircle size={18} />} title={title ?? `${failedClubs.length} clubs were not checked`}>
       <div className="failedLinks">
         {failedClubs.map(({ club }) => (
-          <a href={club.bookingUrl(date)} key={club.slug} target="_blank" rel="noreferrer">
+          <a
+            href={club.bookingUrl(date)}
+            key={club.slug}
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => captureBookingSystemOpened(club, "availability_error", date)}
+          >
             {club.name}
           </a>
         ))}
@@ -1395,6 +1412,7 @@ function ClubList({
                       key={`${club.slug}-${slot.start}-${slot.end}-${slot.courts.join("-")}`}
                       target="_blank"
                       rel="noreferrer"
+                      onClick={() => captureBookingSystemOpened(club, "matching_slot", availability?.date ?? today, slot)}
                     >
                       <strong>
                         {slot.start} - {slot.end}
@@ -1446,7 +1464,10 @@ function ClubList({
                       <a
                         className="clubExternalTitle"
                         href={club.bookingUrl(availability?.date ?? today)}
-                        onClick={(event) => event.stopPropagation()}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          captureBookingSystemOpened(club, "club_card", availability?.date ?? today);
+                        }}
                         target="_blank"
                         rel="noreferrer"
                       >
@@ -1685,7 +1706,13 @@ function ClubDetail({
                 <PhoneInfoRow phone={club.secondaryPhone} />
               ) : null}
               {directBookingUrl ? (
-                <a className="detailInfoRow detailBookingLink" href={directBookingUrl} target="_blank" rel="noreferrer">
+                <a
+                  className="detailInfoRow detailBookingLink"
+                  href={directBookingUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => captureBookingSystemOpened(club, "club_detail", availability?.date ?? today)}
+                >
                   <ExternalLink size={16} />
                   <span>Open booking system</span>
                 </a>
@@ -1720,6 +1747,7 @@ function ClubDetail({
                 target="_blank"
                 rel="noreferrer"
                 title="Open booking system"
+                onClick={() => captureBookingSystemOpened(club, "club_detail_slot", availability?.date ?? today, slot)}
               >
                 <div>
                   <strong>
@@ -1744,7 +1772,12 @@ function ClubDetail({
                 check and book directly.
               </p>
               {directBookingUrl ? (
-                <a href={directBookingUrl} target="_blank" rel="noreferrer">
+                <a
+                  href={directBookingUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => captureBookingSystemOpened(club, "availability_unavailable", availability?.date ?? today)}
+                >
                   Open booking system
                   <ExternalLink size={14} />
                 </a>
@@ -1823,6 +1856,15 @@ function FreshnessBadge({ availability }: { availability?: AvailabilityResult })
       {isStale ? "Stale" : "Checked"} {formatCheckedTime(checkedAt)}
     </span>
   );
+}
+
+function captureBookingSystemOpened(club: Club, source: string, date: string, slot?: BookableSlot) {
+  posthog.capture("booking_system_opened", {
+    club_slug: club.slug,
+    date,
+    source,
+    ...(slot ? { court_count: slot.courts.length, slot_end: slot.end, slot_start: slot.start } : {})
+  });
 }
 
 function googleMapsUrl(address: string): string {
