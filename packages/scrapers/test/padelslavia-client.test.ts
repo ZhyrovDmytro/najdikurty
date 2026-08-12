@@ -53,22 +53,53 @@ describe("fetchPadelSlaviaAvailability", () => {
     expect(new Headers(requests[2]?.init?.headers).get("Cookie")).toBe("PHPSESSID=logged-in-session");
   });
 
-  it("requires credentials for non-current dates", async () => {
-    await expect(
-      fetchPadelSlaviaAvailability({
-        clubSlug: "sk-slavia-praha-padel",
-        date: "2099-01-01",
-        fetchImpl: (async () => new Response("")) as typeof fetch
-      })
-    ).rejects.toThrow("requires login credentials");
-  });
-
-  it("does not log in for the public current-day page even when credentials exist", async () => {
+  it("requires credentials when a public non-current date falls back to the active day", async () => {
     const html = readFileSync(new URL("./fixtures/padelslavia.html", import.meta.url), "utf8");
     const requests: Array<{ url: string; init?: RequestInit }> = [];
+
+    await expect(
+      fetchPadelSlaviaAvailability({
+        baseUrl: "https://rezervace.padelslavia.cz",
+        clubSlug: "sk-slavia-praha-padel",
+        date: "2099-01-01",
+        fetchImpl: (async (input: RequestInfo | URL, init?: RequestInit) => {
+          requests.push({ url: input.toString(), init });
+          return new Response(html);
+        }) as typeof fetch
+      })
+    ).rejects.toThrow("requires login credentials");
+
+    expect(requests.map((request) => request.url)).toEqual([
+      "https://rezervace.padelslavia.cz/cs/rezervace/index/padel/2099-01-01"
+    ]);
+    expect(requests[0]?.init?.method).toBeUndefined();
+  });
+
+  it("logs in and fetches the dated page when credentials exist and no date is supplied", async () => {
+    const html = readFileSync(new URL("./fixtures/padelslavia.html", import.meta.url), "utf8");
+    const requests: Array<{ url: string; init?: RequestInit }> = [];
+    const responses = [
+      new Response("<form></form>", {
+        headers: {
+          "set-cookie": "PHPSESSID=first-session; path=/; HttpOnly"
+        }
+      }),
+      new Response("", {
+        headers: {
+          location: "/cs/rezervace",
+          "set-cookie": "PHPSESSID=logged-in-session; path=/; HttpOnly"
+        },
+        status: 302
+      }),
+      new Response(html)
+    ];
     const fetchImpl = (async (input: RequestInfo | URL, init?: RequestInit) => {
       requests.push({ url: input.toString(), init });
-      return new Response(html);
+      const response = responses.shift();
+      if (!response) {
+        throw new Error("Unexpected extra request");
+      }
+      return response;
     }) as typeof fetch;
 
     await fetchPadelSlaviaAvailability({
@@ -81,8 +112,13 @@ describe("fetchPadelSlaviaAvailability", () => {
       fetchImpl
     });
 
-    expect(requests.map((request) => request.url)).toEqual(["https://rezervace.padelslavia.cz/cs/rezervace"]);
-    expect(requests[0]?.init?.method).toBeUndefined();
+    expect(requests.map((request) => request.url)).toEqual([
+      "https://rezervace.padelslavia.cz/cs/prihlaseni",
+      "https://rezervace.padelslavia.cz/cs/prihlaseni",
+      expect.stringMatching(/^https:\/\/rezervace\.padelslavia\.cz\/cs\/rezervace\/index\/padel\/\d{4}-\d{2}-\d{2}$/)
+    ]);
+    expect(requests[1]?.init?.method).toBe("POST");
+    expect(new Headers(requests[2]?.init?.headers).get("Cookie")).toBe("PHPSESSID=logged-in-session");
   });
 
   it("falls back to browser rendering when the public page is rejected", async () => {

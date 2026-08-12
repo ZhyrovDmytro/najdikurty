@@ -98,15 +98,24 @@ export BOOKABALL_EMAIL="your-email"
 export BOOKABALL_PASSWORD="your-password"
 ```
 
-Head Tenis Centrum runs iSportSystem behind Cloudflare. Normal API requests try plain HTTP only, so they will not open Chrome. Add `live=1` to a Head request when you intentionally want the persistent Chrome profile driven by Playwright:
+Padel Radotín uses Cloudflare protection on iSportSystem, so its availability is disabled. If you later add a club that can be checked safely in the background, enable the warmer with:
 
 ```bash
-export ISPORTSYSTEM_BROWSER_PROFILE_DIR=".mamekurt/browser-profiles/isportsystem"
-export ISPORTSYSTEM_BROWSER_HEADLESS="false"
-curl "http://localhost:4000/api/availability?club=head-tenis-centrum-vestec&date=2026-08-04&sport=padel&live=1"
+export PLAYWRIGHT_BROWSERS_PATH="0"
+export ISPORTSYSTEM_BROWSER="1"
+export ISPORTSYSTEM_BROWSER_HEADLESS="true"
+export ISPORTSYSTEM_BROWSER_PROFILE_DIR="/tmp/mamekurt-isportsystem"
+export ISPORTSYSTEM_AVAILABILITY_TIMEOUT_MS="90000"
+export AVAILABILITY_WARMER="1"
+export AVAILABILITY_WARMER_CLUBS="club-slug"
+export AVAILABILITY_BACKGROUND_ONLY_CLUBS="club-slug"
+export AVAILABILITY_WARMER_INTERVAL_MS="900000"
+export AVAILABILITY_WARMER_DAYS="2"
+export AVAILABILITY_CACHE_TTL_MS="900000"
+export AVAILABILITY_STALE_TTL_MS="21600000"
 ```
 
-Leave the browser profile directory out of git. On the first live run, Chrome may open so Cloudflare can be passed once; later live runs reuse that profile. Set `ISPORTSYSTEM_BROWSER=0` to disable this path entirely.
+The current cache is in memory. For fully reliable unattended scanning of protected booking systems, add persistent storage or use an authorized non-interactive route: ask the club or provider for API/feed access, a server IP allowlist, or another documented integration endpoint.
 
 ## API example
 

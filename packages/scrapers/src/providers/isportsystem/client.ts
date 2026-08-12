@@ -136,6 +136,12 @@ async function fetchRenderedHtmlWithBrowser(
     page.setDefaultTimeout(options.timeoutMs);
 
     await page.goto(options.url, { waitUntil: "domcontentloaded", timeout: options.timeoutMs });
+
+    const earlyAjaxHtml = await fetchTimetableHtmlFromPage(page, options.date);
+    if (earlyAjaxHtml && !isCloudflareChallenge(earlyAjaxHtml.html)) {
+      return earlyAjaxHtml;
+    }
+
     await waitForTimetableOrChallenge(page, options.timeoutMs);
 
     const ajaxHtml = await fetchTimetableHtmlFromPage(page, options.date);

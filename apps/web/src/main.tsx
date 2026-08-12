@@ -158,7 +158,6 @@ const CLUBS: Club[] = [
     courtCount: 4,
     courtTypes: ["outdoor"],
     courtTypeLabel: "4 outdoor courts",
-    availabilityEnabled: false,
     bookingUrl: (date: string) => `https://rezervace.padelslavia.cz/cs/rezervace/index/padel/${date}`
   },
   {
@@ -1396,6 +1395,7 @@ function FailedClubAlert({ failedClubs, date, title }: { failedClubs: FailedClub
 
   return (
     <Alert aria-label={t("availability.uncheckedClubs", { count: failedClubs.length })} icon={<AlertCircle size={18} />} title={title ?? t("availability.uncheckedClubs", { count: failedClubs.length })}>
+      <p>{t("availability.suggestion")}</p>
       <div className="failedLinks">
         {failedClubs.map(({ club }) => (
           <a

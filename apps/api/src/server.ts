@@ -25,9 +25,13 @@ const DEFAULT_TK_SPARTA_AVAILABILITY_TIMEOUT_MS = 60_000;
 const DEFAULT_JDEMENATO_BROWSER_TIMEOUT_MS = 45_000;
 const DEFAULT_ISPORTSYSTEM_BROWSER_TIMEOUT_MS = 90_000;
 const DEFAULT_PADEL_SLAVIA_BROWSER_TIMEOUT_MS = 45_000;
-const DEFAULT_AVAILABILITY_CACHE_TTL_MS = 2 * 60_000;
+const DEFAULT_AVAILABILITY_CACHE_TTL_MS = 15 * 60_000;
 const DEFAULT_AVAILABILITY_STALE_TTL_MS = 6 * 60 * 60_000;
 const DEFAULT_AVAILABILITY_CACHE_MAX_ENTRIES = 300;
+const DEFAULT_AVAILABILITY_WARMER_INTERVAL_MS = 15 * 60_000;
+const DEFAULT_AVAILABILITY_WARMER_START_DELAY_MS = 15_000;
+const DEFAULT_AVAILABILITY_WARMER_DAYS = 2;
+const DEFAULT_AVAILABILITY_WARMER_CLUBS: string[] = [];
 
 type AvailabilityPayload = Awaited<ReturnType<typeof fetchAvailabilityByClub>>;
 
@@ -86,6 +90,32 @@ app.get("/api/availability", async (request, response, next) => {
       return;
     }
 
+    if (!shouldForceLive && isBackgroundOnlyAvailabilityClub(query.club)) {
+      if (isStaleCacheEntry(cachedAvailability)) {
+        logInfo("availability.cache.backgroundOnlyStale", {
+          requestId,
+          club: query.club,
+          cacheKey,
+          ageSeconds: cacheAgeSeconds(cachedAvailability.cachedAt)
+        });
+
+        response.json(
+          withCacheInfo(
+            cachedAvailability.availability,
+            cachedAvailability.cachedAt,
+            "stale",
+            "Waiting for the next background refresh."
+          )
+        );
+        return;
+      }
+
+      response.status(503).json({
+        error: `${query.club} availability is warming in the background. Try again after the next refresh.`
+      });
+      return;
+    }
+
     let availability: AvailabilityPayload;
 
     try {
@@ -140,7 +170,79 @@ app.use((error: unknown, _request: express.Request, response: express.Response, 
 
 app.listen(port, host, () => {
   console.log(`Mamekurt API listening on http://${host}:${port}`);
+  startAvailabilityWarmer();
 });
+
+function startAvailabilityWarmer(): void {
+  if (!availabilityWarmerEnabled()) {
+    return;
+  }
+
+  const intervalMs = availabilityWarmerIntervalMs();
+  const startDelayMs = availabilityWarmerStartDelayMs();
+
+  logInfo("availability.warmer.enabled", {
+    clubs: availabilityWarmerClubs(),
+    days: availabilityWarmerDays(),
+    intervalMs,
+    startDelayMs
+  });
+
+  setTimeout(() => {
+    void warmAvailabilityCache();
+    setInterval(() => void warmAvailabilityCache(), intervalMs);
+  }, startDelayMs);
+}
+
+async function warmAvailabilityCache(): Promise<void> {
+  const clubs = availabilityWarmerClubs();
+  const dates = availabilityWarmerDates();
+
+  for (const club of clubs) {
+    for (const date of dates) {
+      const requestId = createRequestId();
+      const query: z.infer<typeof querySchema> = {
+        club,
+        date,
+        live: "1",
+        sport: "padel"
+      };
+      const cacheKey = availabilityCacheKey(query);
+      const startedAt = Date.now();
+
+      try {
+        logInfo("availability.warmer.start", {
+          requestId,
+          club,
+          date,
+          cacheKey
+        });
+
+        const availability = await loadAvailabilityPayload(query, providerTimeoutMs(club), cacheKey);
+        const cachedAt = Date.now();
+        storeAvailabilityCache(cacheKey, availability, cachedAt);
+
+        logInfo("availability.warmer.success", {
+          requestId,
+          club,
+          date,
+          cacheKey,
+          courts: availability.courts.length,
+          durationMs: Date.now() - startedAt,
+          sourceUrl: availability.sourceUrl
+        });
+      } catch (error) {
+        logError("availability.warmer.failure", error, {
+          requestId,
+          club,
+          date,
+          cacheKey,
+          durationMs: Date.now() - startedAt
+        });
+      }
+    }
+  }
+}
 
 async function loadAvailabilityPayload(
   query: z.infer<typeof querySchema>,
@@ -217,19 +319,12 @@ async function fetchAvailabilityByClub(query: z.infer<typeof querySchema>, signa
   }
 
   if (query.club === "padel-radotin") {
-    return fetchISportSystemAvailability({
-      browser: isportSystemBrowserOptions("1", signal),
-      clubSlug: query.club,
-      date: query.date,
-      fetchImpl,
-      sport: query.sport,
-      url: "https://padelradotin.isportsystem.cz/"
-    });
+    throw new Error("Padel Radotín availability is disabled because iSportSystem is Cloudflare protected");
   }
 
   if (query.club === "padel-cakovice") {
     return fetchISportSystemAvailability({
-      browser: isportSystemBrowserOptions("1", signal),
+      browser: isportSystemBrowserOptions(query.live, signal),
       clubSlug: query.club,
       date: query.date,
       fetchImpl,
@@ -419,7 +514,7 @@ function isportSystemBrowserOptions(live?: string, signal?: AbortSignal) {
     userDataDir: process.env.ISPORTSYSTEM_BROWSER_PROFILE_DIR,
     channel: process.env.ISPORTSYSTEM_BROWSER_CHANNEL,
     executablePath: process.env.ISPORTSYSTEM_BROWSER_EXECUTABLE_PATH,
-    headless: process.env.ISPORTSYSTEM_BROWSER_HEADLESS !== "false",
+    headless: process.env.ISPORTSYSTEM_BROWSER_HEADLESS === "true",
     signal,
     timeoutMs: optionalNumber(process.env.ISPORTSYSTEM_BROWSER_TIMEOUT_MS) ?? DEFAULT_ISPORTSYSTEM_BROWSER_TIMEOUT_MS
   };
@@ -508,7 +603,48 @@ function availabilityCacheMaxEntries(): number {
   return optionalNumber(process.env.AVAILABILITY_CACHE_MAX_ENTRIES) ?? DEFAULT_AVAILABILITY_CACHE_MAX_ENTRIES;
 }
 
-function pragueDateKey(): string {
+function availabilityWarmerEnabled(): boolean {
+  return process.env.AVAILABILITY_WARMER === "1" || process.env.AVAILABILITY_WARMER_ENABLED === "1";
+}
+
+function availabilityWarmerIntervalMs(): number {
+  return optionalNumber(process.env.AVAILABILITY_WARMER_INTERVAL_MS) ?? DEFAULT_AVAILABILITY_WARMER_INTERVAL_MS;
+}
+
+function availabilityWarmerStartDelayMs(): number {
+  return optionalNumber(process.env.AVAILABILITY_WARMER_START_DELAY_MS) ?? DEFAULT_AVAILABILITY_WARMER_START_DELAY_MS;
+}
+
+function availabilityWarmerDays(): number {
+  const days = optionalNumber(process.env.AVAILABILITY_WARMER_DAYS) ?? DEFAULT_AVAILABILITY_WARMER_DAYS;
+  return Math.max(1, Math.min(14, Math.floor(days)));
+}
+
+function availabilityWarmerClubs(): string[] {
+  const configuredClubs = process.env.AVAILABILITY_WARMER_CLUBS?.split(",")
+    .map((club) => club.trim())
+    .filter(Boolean);
+
+  return configuredClubs && configuredClubs.length > 0 ? configuredClubs : DEFAULT_AVAILABILITY_WARMER_CLUBS;
+}
+
+function isBackgroundOnlyAvailabilityClub(club: string): boolean {
+  return backgroundOnlyAvailabilityClubs().includes(club);
+}
+
+function backgroundOnlyAvailabilityClubs(): string[] {
+  const configuredClubs = process.env.AVAILABILITY_BACKGROUND_ONLY_CLUBS?.split(",")
+    .map((club) => club.trim())
+    .filter(Boolean);
+
+  return configuredClubs && configuredClubs.length > 0 ? configuredClubs : DEFAULT_AVAILABILITY_WARMER_CLUBS;
+}
+
+function availabilityWarmerDates(): string[] {
+  return Array.from({ length: availabilityWarmerDays() }, (_, dayOffset) => pragueDateKey(dayOffset));
+}
+
+function pragueDateKey(dayOffset = 0): string {
   const formatter = new Intl.DateTimeFormat("en-CA", {
     day: "2-digit",
     month: "2-digit",
@@ -516,7 +652,9 @@ function pragueDateKey(): string {
     year: "numeric"
   });
 
-  return formatter.format(new Date());
+  const date = new Date();
+  date.setUTCDate(date.getUTCDate() + dayOffset);
+  return formatter.format(date);
 }
 
 function abortableFetch(signal: AbortSignal): typeof fetch {

@@ -1,4 +1,4 @@
-import { parsePadelSlaviaAvailability } from "./parser.js";
+import { detectPadelSlaviaActiveDayMonth, parsePadelSlaviaAvailability } from "./parser.js";
 import type { AvailabilityResult } from "../../types.js";
 
 const PRAGUE_TIMEZONE = "Europe/Prague";
@@ -61,18 +61,16 @@ export async function fetchPadelSlaviaAvailability(options: PadelSlaviaFetchOpti
   const today = pragueDateInputValue(new Date());
   const session = new CookieSession(options.fetchImpl ?? fetch);
 
-  if (date !== today && !options.credentials) {
-    throw new Error("Padel Slavia requires login credentials for non-current dates");
-  }
-
-  const requiresLogin = date !== today;
+  const hasCredentials = Boolean(options.credentials);
+  const needsDatedPage = date !== today || hasCredentials;
+  const requiresLogin = hasCredentials;
 
   try {
     if (requiresLogin && options.credentials) {
       await login(session, baseUrl, options.credentials);
     }
 
-    const url = requiresLogin
+    const url = needsDatedPage
       ? new URL(`/cs/rezervace/index/${sportPath(options.sport)}/${date}`, baseUrl)
       : new URL("/cs/rezervace", baseUrl);
     const response = await session.fetch(url);
@@ -81,6 +79,10 @@ export async function fetchPadelSlaviaAvailability(options: PadelSlaviaFetchOpti
     }
 
     const html = await response.text();
+    if (needsDatedPage && !hasCredentials && !isRequestedDateVisible(html, date)) {
+      throw new Error("Padel Slavia requires login credentials for non-current dates");
+    }
+
     return parsePadelSlaviaAvailability(html, {
       sourceUrl: response.url || url.toString(),
       clubSlug: options.clubSlug,
@@ -88,6 +90,10 @@ export async function fetchPadelSlaviaAvailability(options: PadelSlaviaFetchOpti
       sport: options.sport
     });
   } catch (error) {
+    if (!options.credentials && isPadelSlaviaCredentialsRequired(error)) {
+      throw error;
+    }
+
     const browserOptions = normalizeBrowserOptions(options.browser);
     if (!browserOptions) {
       throw error;
@@ -114,6 +120,14 @@ export async function fetchPadelSlaviaAvailability(options: PadelSlaviaFetchOpti
       sport: options.sport
     });
   }
+}
+
+function isRequestedDateVisible(html: string, date: string): boolean {
+  return detectPadelSlaviaActiveDayMonth(html) === date.slice(5);
+}
+
+function isPadelSlaviaCredentialsRequired(error: unknown): boolean {
+  return error instanceof Error && error.message.includes("requires login credentials");
 }
 
 function normalizeBrowserOptions(options: PadelSlaviaFetchOptions["browser"]): PadelSlaviaBrowserOptions | undefined {

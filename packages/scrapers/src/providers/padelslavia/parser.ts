@@ -120,6 +120,15 @@ export function parsePadelSlaviaAvailability(html: string, options: ParseOptions
   };
 }
 
+export function detectPadelSlaviaActiveDayMonth(html: string): string | undefined {
+  const $ = cheerio.load(html);
+  const activeLabel = normalizeText($(".btn-outline-dark.active").first().text());
+  const match = /(\d{1,2})\.(\d{1,2})\./.exec(activeLabel);
+  if (!match) return undefined;
+
+  return `${match[2]?.padStart(2, "0")}-${match[1]?.padStart(2, "0")}`;
+}
+
 function mergeFreeSlotMinutes(slotMinutes: number[]): TimeRange[] {
   const ranges: TimeRange[] = [];
   let rangeStart: number | undefined;
