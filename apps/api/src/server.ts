@@ -32,7 +32,7 @@ const DEFAULT_AVAILABILITY_CACHE_MAX_ENTRIES = 300;
 const DEFAULT_AVAILABILITY_WARMER_INTERVAL_MS = 15 * 60_000;
 const DEFAULT_AVAILABILITY_WARMER_START_DELAY_MS = 15_000;
 const DEFAULT_AVAILABILITY_WARMER_DAYS = 2;
-const DEFAULT_AVAILABILITY_WARMER_CLUBS = ["cisarska-louka-padel"];
+const DEFAULT_AVAILABILITY_WARMER_CLUBS: string[] = [];
 
 type AvailabilityPayload = Awaited<ReturnType<typeof fetchAvailabilityByClub>>;
 
@@ -88,32 +88,6 @@ app.get("/api/availability", async (request, response, next) => {
       });
 
       response.json(withCacheInfo(cachedAvailability.availability, cachedAvailability.cachedAt, "fresh"));
-      return;
-    }
-
-    if (!shouldForceLive && isBackgroundOnlyAvailabilityClub(query.club)) {
-      if (isStaleCacheEntry(cachedAvailability)) {
-        logInfo("availability.cache.backgroundOnlyStale", {
-          requestId,
-          club: query.club,
-          cacheKey,
-          ageSeconds: cacheAgeSeconds(cachedAvailability.cachedAt)
-        });
-
-        response.json(
-          withCacheInfo(
-            cachedAvailability.availability,
-            cachedAvailability.cachedAt,
-            "stale",
-            "Waiting for the next background refresh."
-          )
-        );
-        return;
-      }
-
-      response.status(503).json({
-        error: `${query.club} availability is warming in the background. Try again after the next refresh.`
-      });
       return;
     }
 
@@ -625,18 +599,6 @@ function availabilityWarmerDays(): number {
 
 function availabilityWarmerClubs(): string[] {
   const configuredClubs = process.env.AVAILABILITY_WARMER_CLUBS?.split(",")
-    .map((club) => club.trim())
-    .filter(Boolean);
-
-  return configuredClubs && configuredClubs.length > 0 ? configuredClubs : DEFAULT_AVAILABILITY_WARMER_CLUBS;
-}
-
-function isBackgroundOnlyAvailabilityClub(club: string): boolean {
-  return backgroundOnlyAvailabilityClubs().includes(club);
-}
-
-function backgroundOnlyAvailabilityClubs(): string[] {
-  const configuredClubs = process.env.AVAILABILITY_BACKGROUND_ONLY_CLUBS?.split(",")
     .map((club) => club.trim())
     .filter(Boolean);
 
