@@ -65,7 +65,7 @@ type CourtType = "indoor" | "outdoor";
 type CourtTypeFilter = CourtType | "all";
 type FindCourtSort = "name" | "priceAsc" | "priceDesc" | "multisport" | "indoor" | "outdoor";
 const TIME_PICKER_RANGE: TimeRange = { start: "00:00", end: "23:59" };
-const AVAILABILITY_REQUEST_TIMEOUT_MS = 15_000;
+const AVAILABILITY_REQUEST_TIMEOUT_MS = 35_000;
 const initialPage: Page = pageFromParam(initialParams.get("page"));
 const localeByLanguage: Record<LanguageCode, string> = {
   cz: "cs",

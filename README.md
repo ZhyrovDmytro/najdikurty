@@ -61,6 +61,7 @@ Padel Slavia exposes future dates only after login. Configure credentials outsid
 ```bash
 export PADEL_SLAVIA_EMAIL="your-email"
 export PADEL_SLAVIA_PASSWORD="your-password"
+export PADEL_SLAVIA_AVAILABILITY_TIMEOUT_MS="45000"
 ```
 
 TK Sparta is fetched through the public JdemeNaTo portal search result first. The logged-in calendar/browser fallback is kept as a backup:

@@ -24,6 +24,7 @@ const DEFAULT_AVAILABILITY_TIMEOUT_MS = 25_000;
 const DEFAULT_TK_SPARTA_AVAILABILITY_TIMEOUT_MS = 60_000;
 const DEFAULT_JDEMENATO_BROWSER_TIMEOUT_MS = 45_000;
 const DEFAULT_ISPORTSYSTEM_BROWSER_TIMEOUT_MS = 90_000;
+const DEFAULT_PADEL_SLAVIA_AVAILABILITY_TIMEOUT_MS = 45_000;
 const DEFAULT_PADEL_SLAVIA_BROWSER_TIMEOUT_MS = 45_000;
 const DEFAULT_AVAILABILITY_CACHE_TTL_MS = 15 * 60_000;
 const DEFAULT_AVAILABILITY_STALE_TTL_MS = 6 * 60 * 60_000;
@@ -524,6 +525,8 @@ function providerTimeoutMs(clubSlug: string): number {
   const providerSpecificTimeout =
     clubSlug === "tk-sparta-praha"
       ? optionalNumber(process.env.TK_SPARTA_AVAILABILITY_TIMEOUT_MS) ?? DEFAULT_TK_SPARTA_AVAILABILITY_TIMEOUT_MS
+      : clubSlug === "sk-slavia-praha-padel"
+        ? optionalNumber(process.env.PADEL_SLAVIA_AVAILABILITY_TIMEOUT_MS) ?? DEFAULT_PADEL_SLAVIA_AVAILABILITY_TIMEOUT_MS
       : clubSlug === "padel-radotin" || clubSlug === "padel-cakovice"
         ? optionalNumber(process.env.ISPORTSYSTEM_AVAILABILITY_TIMEOUT_MS) ?? DEFAULT_ISPORTSYSTEM_BROWSER_TIMEOUT_MS
       : undefined;
