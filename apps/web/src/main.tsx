@@ -65,7 +65,9 @@ type CourtType = "indoor" | "outdoor";
 type CourtTypeFilter = CourtType | "all";
 type FindCourtSort = "name" | "priceAsc" | "priceDesc" | "multisport" | "indoor" | "outdoor";
 const TIME_PICKER_RANGE: TimeRange = { start: "00:00", end: "23:59" };
-const AVAILABILITY_REQUEST_TIMEOUT_MS = 35_000;
+const AVAILABILITY_REQUEST_TIMEOUT_MS = 60_000;
+const AVAILABILITY_REQUEST_MAX_ATTEMPTS = 2;
+const AVAILABILITY_REQUEST_RETRY_DELAY_MS = 1_000;
 const initialPage: Page = pageFromParam(initialParams.get("page"));
 const localeByLanguage: Record<LanguageCode, string> = {
   cz: "cs",
@@ -337,6 +339,33 @@ async function fetchAvailabilityRequest(url: string): Promise<Response> {
   }
 }
 
+async function fetchAvailabilityWithRetry(url: string, clubName: string): Promise<AvailabilityResult> {
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= AVAILABILITY_REQUEST_MAX_ATTEMPTS; attempt += 1) {
+    try {
+      const response = await fetchAvailabilityRequest(url);
+      const payload = await parseAvailabilityResponse(response);
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? `Failed to load ${clubName}`);
+      }
+
+      return payload;
+    } catch (error) {
+      lastError = error;
+      if (attempt === AVAILABILITY_REQUEST_MAX_ATTEMPTS) break;
+      await delay(AVAILABILITY_REQUEST_RETRY_DELAY_MS);
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error(i18n.t("availability.unknownCheckFailure"));
+}
+
+function delay(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+}
+
 function App() {
   const { t } = useTranslation();
   const [page, setPage] = useState<Page>(initialPage);
@@ -397,12 +426,7 @@ function App() {
         targetClubs.map(async (club) => {
           const params = new URLSearchParams({ club: club.slug, sport: club.sport, date });
           try {
-            const response = await fetchAvailabilityRequest(`${API_BASE_URL}/api/availability?${params}`);
-            const payload = await parseAvailabilityResponse(response);
-
-            if (!response.ok) {
-              throw new Error(payload.error ?? `Failed to load ${club.name}`);
-            }
+            const payload = await fetchAvailabilityWithRetry(`${API_BASE_URL}/api/availability?${params}`, club.name);
 
             if (loadSequenceRef.current !== loadId) return;
             setAvailabilityByClub((currentAvailability) => ({
