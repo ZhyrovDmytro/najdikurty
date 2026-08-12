@@ -5,6 +5,7 @@ const BASE_URL = "https://areal-cisarska-louka.reenio.cz";
 const SERVICE_ID = "48086";
 const SERVICE_TYPE = "3";
 const COURT_COUNT = 3;
+const NETWORK_RETRY_DELAY_MS = 2_000;
 
 export interface ReenioFetchOptions {
   clubSlug: string;
@@ -19,17 +20,7 @@ export async function fetchReenioAvailability(options: ReenioFetchOptions): Prom
   const date = options.date ?? pragueDateInputValue(new Date());
   const baseUrl = options.baseUrl ?? BASE_URL;
   const sourceUrl = reenioBookingUrl(baseUrl, date);
-  const response = await fetchImpl(`${baseUrl}/cs/api/Term/List`, {
-    method: "POST",
-    headers: {
-      Accept: "application/json, text/plain, */*",
-      "Accept-Language": "cs,en;q=0.8",
-      "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-      Origin: baseUrl,
-      Referer: sourceUrl
-    },
-    body: buildPayload(date).toString()
-  });
+  const response = await fetchTermListWithRetry(fetchImpl, baseUrl, date, sourceUrl);
   const payload = await response.json();
 
   if (!response.ok) {
@@ -43,6 +34,41 @@ export async function fetchReenioAvailability(options: ReenioFetchOptions): Prom
     sport: options.sport,
     courtCount: COURT_COUNT
   });
+}
+
+async function fetchTermListWithRetry(fetchImpl: typeof fetch, baseUrl: string, date: string, sourceUrl: string): Promise<Response> {
+  try {
+    return await fetchTermList(fetchImpl, baseUrl, date, sourceUrl);
+  } catch (error) {
+    if (!isFetchFailedError(error)) {
+      throw error;
+    }
+
+    await delay(NETWORK_RETRY_DELAY_MS);
+    return fetchTermList(fetchImpl, baseUrl, date, sourceUrl);
+  }
+}
+
+function fetchTermList(fetchImpl: typeof fetch, baseUrl: string, date: string, sourceUrl: string): Promise<Response> {
+  return fetchImpl(`${baseUrl}/cs/api/Term/List`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json, text/plain, */*",
+      "Accept-Language": "cs,en;q=0.8",
+      "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+      Origin: baseUrl,
+      Referer: sourceUrl
+    },
+    body: buildPayload(date).toString()
+  });
+}
+
+function isFetchFailedError(error: unknown): boolean {
+  return error instanceof TypeError && error.message === "fetch failed";
+}
+
+function delay(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
 function buildPayload(date: string): URLSearchParams {
