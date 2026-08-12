@@ -62,6 +62,44 @@ describe("fetchReenioAvailability", () => {
     expect(requestCount).toBe(2);
     expect(result.courts).toHaveLength(3);
   });
+
+  it("retries once after a temporary service response", async () => {
+    vi.useFakeTimers();
+    let requestCount = 0;
+
+    const request = fetchReenioAvailability({
+      baseUrl: "https://areal-cisarska-louka.reenio.cz",
+      clubSlug: "cisarska-louka-padel",
+      date: "2026-08-04",
+      fetchImpl: async () => {
+        requestCount += 1;
+        if (requestCount === 1) {
+          return new Response("Service unavailable", { status: 503, statusText: "Service Unavailable" });
+        }
+
+        return new Response(JSON.stringify(termListResponse()), {
+          headers: { "content-type": "application/json" }
+        });
+      }
+    });
+
+    await vi.advanceTimersByTimeAsync(2_000);
+    const result = await request;
+
+    expect(requestCount).toBe(2);
+    expect(result.courts).toHaveLength(3);
+  });
+
+  it("does not parse JSON from a final failed response", async () => {
+    await expect(
+      fetchReenioAvailability({
+        baseUrl: "https://areal-cisarska-louka.reenio.cz",
+        clubSlug: "cisarska-louka-padel",
+        date: "2026-08-04",
+        fetchImpl: async () => new Response("Not found", { status: 404, statusText: "Not Found" })
+      })
+    ).rejects.toThrow("Reenio availability request failed: 404 Not Found");
+  });
 });
 
 function termListResponse() {

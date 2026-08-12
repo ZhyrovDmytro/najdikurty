@@ -99,17 +99,11 @@ export BOOKABALL_EMAIL="your-email"
 export BOOKABALL_PASSWORD="your-password"
 ```
 
-Padel Radotín uses Cloudflare protection on iSportSystem, so its availability is disabled. If you later add a club that can be checked safely in the background, enable the warmer with:
+Padel Radotín uses Cloudflare protection on iSportSystem, so its availability is disabled. API-backed clubs such as Císařská louka can be checked safely in the background; enable the warmer with:
 
 ```bash
-export PLAYWRIGHT_BROWSERS_PATH="0"
-export ISPORTSYSTEM_BROWSER="1"
-export ISPORTSYSTEM_BROWSER_HEADLESS="true"
-export ISPORTSYSTEM_BROWSER_PROFILE_DIR="/tmp/mamekurt-isportsystem"
-export ISPORTSYSTEM_AVAILABILITY_TIMEOUT_MS="90000"
 export AVAILABILITY_WARMER="1"
-export AVAILABILITY_WARMER_CLUBS="club-slug"
-export AVAILABILITY_BACKGROUND_ONLY_CLUBS="club-slug"
+export AVAILABILITY_WARMER_CLUBS="cisarska-louka-padel"
 export AVAILABILITY_WARMER_INTERVAL_MS="900000"
 export AVAILABILITY_WARMER_DAYS="2"
 export AVAILABILITY_CACHE_TTL_MS="900000"

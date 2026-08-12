@@ -5,7 +5,9 @@ const BASE_URL = "https://areal-cisarska-louka.reenio.cz";
 const SERVICE_ID = "48086";
 const SERVICE_TYPE = "3";
 const COURT_COUNT = 3;
+const MAX_REQUEST_ATTEMPTS = 2;
 const NETWORK_RETRY_DELAY_MS = 2_000;
+const RETRYABLE_STATUS_CODES = new Set([502, 503, 504]);
 
 export interface ReenioFetchOptions {
   clubSlug: string;
@@ -21,12 +23,12 @@ export async function fetchReenioAvailability(options: ReenioFetchOptions): Prom
   const baseUrl = options.baseUrl ?? BASE_URL;
   const sourceUrl = reenioBookingUrl(baseUrl, date);
   const response = await fetchTermListWithRetry(fetchImpl, baseUrl, date, sourceUrl);
-  const payload = await response.json();
 
   if (!response.ok) {
     throw new Error(`Reenio availability request failed: ${response.status} ${response.statusText}`);
   }
 
+  const payload = await response.json();
   return parseReenioAvailability(payload, {
     sourceUrl,
     clubSlug: options.clubSlug,
@@ -37,16 +39,26 @@ export async function fetchReenioAvailability(options: ReenioFetchOptions): Prom
 }
 
 async function fetchTermListWithRetry(fetchImpl: typeof fetch, baseUrl: string, date: string, sourceUrl: string): Promise<Response> {
-  try {
-    return await fetchTermList(fetchImpl, baseUrl, date, sourceUrl);
-  } catch (error) {
-    if (!isFetchFailedError(error)) {
-      throw error;
+  let lastFetchFailedError: unknown;
+
+  for (let attempt = 1; attempt <= MAX_REQUEST_ATTEMPTS; attempt += 1) {
+    try {
+      const response = await fetchTermList(fetchImpl, baseUrl, date, sourceUrl);
+      if (!isRetryableStatus(response.status) || attempt === MAX_REQUEST_ATTEMPTS) {
+        return response;
+      }
+    } catch (error) {
+      if (!isFetchFailedError(error) || attempt === MAX_REQUEST_ATTEMPTS) {
+        throw error;
+      }
+
+      lastFetchFailedError = error;
     }
 
     await delay(NETWORK_RETRY_DELAY_MS);
-    return fetchTermList(fetchImpl, baseUrl, date, sourceUrl);
   }
+
+  throw lastFetchFailedError instanceof Error ? lastFetchFailedError : new Error("Reenio availability request failed");
 }
 
 function fetchTermList(fetchImpl: typeof fetch, baseUrl: string, date: string, sourceUrl: string): Promise<Response> {
@@ -65,6 +77,10 @@ function fetchTermList(fetchImpl: typeof fetch, baseUrl: string, date: string, s
 
 function isFetchFailedError(error: unknown): boolean {
   return error instanceof TypeError && error.message === "fetch failed";
+}
+
+function isRetryableStatus(status: number): boolean {
+  return RETRYABLE_STATUS_CODES.has(status);
 }
 
 function delay(milliseconds: number): Promise<void> {
