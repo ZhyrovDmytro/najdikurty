@@ -24,6 +24,7 @@ import {
   RefreshCw,
   Search,
   SearchCheck,
+  Share2,
   ShieldCheck,
   SlidersHorizontal,
   Scale,
@@ -389,6 +390,8 @@ function App() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [loadProgress, setLoadProgress] = useState<LoadProgress>({ completed: 0, total: 0 });
+  const [checkedClubSlugs, setCheckedClubSlugs] = useState<Set<string>>(() => new Set());
+  const [availabilityCheckClubs, setAvailabilityCheckClubs] = useState<Club[]>([]);
   const loadSequenceRef = useRef(0);
   const currentPragueDate = pragueDateInputValue(now);
   const trackedClubs = useMemo(() => sortTrackedClubs(buildTrackedClubs(CLUBS), allClubsSort), [allClubsSort]);
@@ -415,6 +418,8 @@ function App() {
     setFailedClubs([]);
     setLoadError(null);
     setLoadProgress({ completed: 0, total: targetClubs.length });
+    setCheckedClubSlugs(new Set());
+    setAvailabilityCheckClubs(targetClubs);
 
     if (targetClubs.length === 0) {
       setIsLoading(false);
@@ -444,6 +449,11 @@ function App() {
             ]);
           } finally {
             if (loadSequenceRef.current === loadId) {
+              setCheckedClubSlugs((currentSlugs) => {
+                const nextSlugs = new Set(currentSlugs);
+                nextSlugs.add(club.slug);
+                return nextSlugs;
+              });
               setLoadProgress((currentProgress) => ({
                 ...currentProgress,
                 completed: Math.min(currentProgress.completed + 1, currentProgress.total)
@@ -913,6 +923,9 @@ function App() {
               results={visibleClubResults}
               isLoading={isLoading}
               loadProgress={loadProgress}
+              checkedClubSlugs={checkedClubSlugs}
+              failedClubs={failedClubs}
+              availabilityCheckClubs={availabilityCheckClubs}
               actions={clubResultActions}
               compact={isShortInfoMode}
               expandedClubSlugs={expandedCompactClubSlugs}
@@ -1441,6 +1454,9 @@ function ClubList({
   results,
   isLoading,
   loadProgress,
+  checkedClubSlugs,
+  failedClubs,
+  availabilityCheckClubs,
   actions,
   compact,
   expandedClubSlugs,
@@ -1450,6 +1466,9 @@ function ClubList({
   results: Array<{ club: Club; availability?: AvailabilityResult; bookableSlots: BookableSlot[] }>;
   isLoading: boolean;
   loadProgress: { completed: number; total: number };
+  checkedClubSlugs: Set<string>;
+  failedClubs: FailedClub[];
+  availabilityCheckClubs: Club[];
   actions: React.ReactNode;
   compact: boolean;
   expandedClubSlugs: Set<string>;
@@ -1459,7 +1478,13 @@ function ClubList({
   const { t } = useTranslation();
   const resultsToolbar = (
     <div className="clubResultsToolbar">
-      <LoadProgressBadge isLoading={isLoading} loadProgress={loadProgress} />
+      <LoadProgressBadge
+        availabilityCheckClubs={availabilityCheckClubs}
+        checkedClubSlugs={checkedClubSlugs}
+        failedClubs={failedClubs}
+        isLoading={isLoading}
+        loadProgress={loadProgress}
+      />
       {actions}
     </div>
   );
@@ -1558,25 +1583,42 @@ function ClubList({
               </div>
               {isExpanded ? (
                 <div className="clubCompactSlots">
-                  {bookableSlots.map((slot) => (
-                    <a
-                      className="clubCompactSlot"
-                      href={slot.bookingUrl ?? club.bookingUrl(availability?.date ?? today)}
-                      key={`${club.slug}-${slot.start}-${slot.end}-${slot.courts.join("-")}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      onClick={() => captureBookingSystemOpened(club, "matching_slot", availability?.date ?? today, slot)}
-                    >
-                      <strong>
-                        {slot.start} - {slot.end}
-                      </strong>
-                      <span>{formatCourtNames(slot.courts).join(" + ")}</span>
-                      <small>
-                        {t("actions.book")}
-                        <ExternalLink size={13} />
-                      </small>
-                    </a>
-                  ))}
+                  {bookableSlots.map((slot) => {
+                    const slotDate = availability?.date ?? today;
+                    const bookingUrl = slot.bookingUrl ?? club.bookingUrl(slotDate);
+                    const courtNames = formatCourtNames(slot.courts);
+
+                    return (
+                      <div className="clubCompactSlot" key={`${club.slug}-${slot.start}-${slot.end}-${slot.courts.join("-")}`}>
+                        <div className="slotSummary">
+                          <strong>
+                            {slot.start} - {slot.end}
+                          </strong>
+                          <span>{courtNames.join(" + ")}</span>
+                        </div>
+                        <div className="slotActions">
+                          <button
+                            className="slotAction slotAction-share"
+                            type="button"
+                            onClick={() => shareSlot(club, slot, slotDate, bookingUrl, courtNames)}
+                          >
+                            {t("actions.share")}
+                            <Share2 size={13} />
+                          </button>
+                          <a
+                            className="slotAction slotAction-book"
+                            href={bookingUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={() => captureBookingSystemOpened(club, "matching_slot", slotDate, slot)}
+                          >
+                            {t("actions.book")}
+                            <ExternalLink size={13} />
+                          </a>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               ) : null}
               </Card>
@@ -1663,22 +1705,60 @@ function ClubList({
 }
 
 function LoadProgressBadge({
+  availabilityCheckClubs,
+  checkedClubSlugs,
+  failedClubs,
   isLoading,
   loadProgress
 }: {
+  availabilityCheckClubs: Club[];
+  checkedClubSlugs: Set<string>;
+  failedClubs: FailedClub[];
   isLoading: boolean;
   loadProgress: { completed: number; total: number };
 }) {
   const { t } = useTranslation();
+  const [isOpen, setIsOpen] = useState(false);
+  const failedClubSlugs = new Set(failedClubs.map(({ club }) => club.slug));
 
   if (loadProgress.total === 0) {
     return null;
   }
 
   return (
-    <span className={isLoading ? "loadProgressBadge loadProgressBadge-loading" : "loadProgressBadge"}>
-      {isLoading ? <span className="loadProgressSpinner" aria-hidden="true" /> : null}
-      {loadProgress.completed}/{loadProgress.total} <span className="loadProgressLabel">{t("availability.checkedCount")}</span>
+    <span className="loadProgressPopover">
+      <button
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
+        className={isLoading ? "loadProgressBadge loadProgressBadge-loading" : "loadProgressBadge"}
+        onClick={() => setIsOpen((current) => !current)}
+        type="button"
+      >
+        {isLoading ? <span className="loadProgressSpinner" aria-hidden="true" /> : null}
+        {loadProgress.completed}/{loadProgress.total} <span className="loadProgressLabel">{t("availability.checkedCount")}</span>
+      </button>
+      {isOpen ? (
+        <div className="checkedClubsPopover" role="dialog" aria-label={t("availability.checkedClubsTitle")}>
+          <strong>{t("availability.checkedClubsTitle")}</strong>
+          {availabilityCheckClubs.length > 0 ? (
+            <ul>
+              {availabilityCheckClubs.map((club) => {
+                const isFailed = failedClubSlugs.has(club.slug);
+                const isFetched = checkedClubSlugs.has(club.slug);
+                const className = isFailed || !isFetched ? "checkedClubItem checkedClubItem-problem" : "checkedClubItem";
+
+                return (
+                  <li className={className} key={club.slug}>
+                    {club.name}
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p>{t("availability.noCheckedClubs")}</p>
+          )}
+        </div>
+      ) : null}
     </span>
   );
 }
@@ -1910,28 +1990,43 @@ function ClubDetail({
           <SlotListSkeleton />
         ) : slots.length > 0 ? (
           <div className="slotList">
-            {slots.map((slot) => (
-              <a
-                className="slot"
-                href={slot.bookingUrl}
-                key={`${slot.start}-${slot.end}-${slot.courts.join("-")}`}
-                target="_blank"
-                rel="noreferrer"
-                title={t("actions.openBookingSystem")}
-                onClick={() => captureBookingSystemOpened(club, "club_detail_slot", availability?.date ?? today, slot)}
-              >
-                <div>
-                  <strong>
-                    {slot.start} - {slot.end}
-                  </strong>
-                  <span>{formatCourtNames(slot.courts.slice(0, courtsNeeded)).join(" + ")}</span>
+            {slots.map((slot) => {
+              const slotDate = availability?.date ?? today;
+              const bookingUrl = slot.bookingUrl ?? club.bookingUrl(slotDate);
+              const courtNames = formatCourtNames(slot.courts.slice(0, courtsNeeded));
+
+              return (
+                <div className="slot" key={`${slot.start}-${slot.end}-${slot.courts.join("-")}`}>
+                  <div className="slotSummary">
+                    <strong>
+                      {slot.start} - {slot.end}
+                    </strong>
+                    <span>{courtNames.join(" + ")}</span>
+                  </div>
+                  <div className="slotActions">
+                    <button
+                      className="slotAction slotAction-share"
+                      type="button"
+                      onClick={() => shareSlot(club, slot, slotDate, bookingUrl, courtNames)}
+                    >
+                      {t("actions.share")}
+                      <Share2 size={13} />
+                    </button>
+                    <a
+                      className="slotAction slotAction-book"
+                      href={bookingUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      title={t("actions.openBookingSystem")}
+                      onClick={() => captureBookingSystemOpened(club, "club_detail_slot", slotDate, slot)}
+                    >
+                      {t("actions.book")}
+                      <ExternalLink size={13} />
+                    </a>
+                  </div>
                 </div>
-                <small>
-                  {t("actions.book")}
-                  <ExternalLink size={13} />
-                </small>
-              </a>
-            ))}
+              );
+            })}
           </div>
         ) : availabilityUnavailable ? (
           <div className="availabilityWarning" role="status">
@@ -2039,6 +2134,26 @@ function captureBookingSystemOpened(club: Club, source: string, date: string, sl
     source,
     ...(slot ? { court_count: slot.courts.length, slot_end: slot.end, slot_start: slot.start } : {})
   });
+}
+
+async function shareSlot(club: Club, slot: BookableSlot, date: string, bookingUrl: string, courtNames: string[]) {
+  const text = `${club.name}\n${date}, ${slot.start}-${slot.end}\n${club.address}\n${googleMapsUrl(club.address)}\n${bookingUrl}`;
+  const shareData = { text };
+
+  captureEvent("slot_shared", {
+    club_slug: club.slug,
+    court_count: courtNames.length,
+    date,
+    slot_end: slot.end,
+    slot_start: slot.start
+  });
+
+  if (navigator.share) {
+    await navigator.share(shareData).catch(() => undefined);
+    return;
+  }
+
+  await navigator.clipboard?.writeText(text).catch(() => undefined);
 }
 
 function googleMapsUrl(address: string): string {

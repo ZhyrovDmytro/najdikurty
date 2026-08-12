@@ -32,6 +32,7 @@ const resources = {
         openBookingSystem: "Open booking system",
         openMenu: "Open menu",
         refreshAvailability: "Refresh availability",
+        share: "Share",
         showCards: "Show cards",
         showClubCards: "Show club cards",
         showCompactList: "Show compact list",
@@ -63,9 +64,11 @@ const resources = {
       },
       availability: {
         checked: "Checked",
+        checkedClubsTitle: "Checked clubs",
         checkedCount: "checked",
         failedJson: "Availability response was not JSON",
         failedLoad: "Failed to load availability",
+        noCheckedClubs: "No clubs checked yet",
         notLoaded: "Court availability is not loaded",
         recent: "recently",
         stale: "Stale",
@@ -195,6 +198,7 @@ const resources = {
         openBookingSystem: "Відкрити систему бронювання",
         openMenu: "Відкрити меню",
         refreshAvailability: "Оновити доступність",
+        share: "Поділитися",
         showCards: "Показати картки",
         showClubCards: "Показати картки клубів",
         showCompactList: "Показати компактний список",
@@ -226,9 +230,11 @@ const resources = {
       },
       availability: {
         checked: "Перевірено",
+        checkedClubsTitle: "Перевірені клуби",
         checkedCount: "перевірено",
         failedJson: "Відповідь про доступність була не у форматі JSON",
         failedLoad: "Не вдалося завантажити доступність",
+        noCheckedClubs: "Клуби ще не перевірено",
         notLoaded: "Доступність кортів не завантажена",
         recent: "щойно",
         stale: "Застаріло",
@@ -358,6 +364,7 @@ const resources = {
         openBookingSystem: "Otevřít rezervační systém",
         openMenu: "Otevřít menu",
         refreshAvailability: "Obnovit dostupnost",
+        share: "Sdílet",
         showCards: "Zobrazit karty",
         showClubCards: "Zobrazit karty klubů",
         showCompactList: "Zobrazit kompaktní seznam",
@@ -378,7 +385,7 @@ const resources = {
         tracked_other: "Sleduje se {{count}} klubů"
       },
       about: {
-        body: "HLEDEJKURTY shromažďuje volné padelové časy z rezervačních systémů klubů v Praze a ukazuje kluby, které odpovídají vašemu datu, délce hry, počtu kurtů, časovému oknu a volbě indoor/outdoor.",
+        body: "HLEDEJKURTY shromažďuje volné padelové časy z rezervačních systémů klubů v Praze a ukazuje kluby, které odpovídají vašemu datu, délce hry, počtu kurtů, časovému oknu a volbě hry v hale nebo venku.",
         cardBookBody: "Když najdete vhodný čas, akce rezervace otevře oficiální rezervační systém daného klubu.",
         cardBookTitle: "Rezervace u klubu",
         cardLimitsBody: "Dostupnost a ceny jsou informativní. Rezervační stránka klubu je vždy finálním zdrojem před rezervací.",
@@ -389,9 +396,11 @@ const resources = {
       },
       availability: {
         checked: "Ověřeno",
+        checkedClubsTitle: "Zkontrolované kluby",
         checkedCount: "ověřeno",
         failedJson: "Odpověď dostupnosti nebyla JSON",
         failedLoad: "Nepodařilo se načíst dostupnost",
+        noCheckedClubs: "Zatím nebyly zkontrolovány žádné kluby",
         notLoaded: "Dostupnost kurtů není načtená",
         recent: "nedávno",
         stale: "Zastaralé",
@@ -414,7 +423,7 @@ const resources = {
         duration: "Délka",
         endTime: "Konec",
         from: "od",
-        indoor: "Indoor",
+        indoor: "V hale",
         matchingClubs_one: "{{count}} odpovídající klub",
         matchingClubs_other: "{{count}} odpovídajících klubů",
         matchingSlots_one: "{{count}} odpovídající čas",
@@ -425,7 +434,7 @@ const resources = {
         noSlotsBody: "Změňte filtry nebo se vraťte a zobrazte jiné odpovídající kluby.",
         noSlotsTitle: "Pro tento klub nejsou žádné časy",
         notPublished: "Nezveřejněno",
-        outdoor: "Outdoor",
+        outdoor: "Venkovní",
         priceUnknown: "Cena neznámá",
         slots_one: "{{count}} čas",
         slots_other: "{{count}} časů",
@@ -498,13 +507,13 @@ const resources = {
       },
       sort: {
         highestPrice: "Nejvyšší cena",
-        indoorFirst: "Indoor nejdřív",
+        indoorFirst: "V hale nejdřív",
         labelClubs: "Řadit kluby",
         labelMatching: "Řadit odpovídající kluby",
         lowestPrice: "Nejnižší cena",
         multisport: "Multisport",
         name: "Název",
-        outdoorFirst: "Outdoor nejdřív"
+        outdoorFirst: "Venkovní nejdřív"
       }
     }
   }

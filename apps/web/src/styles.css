@@ -346,8 +346,8 @@ a {
 }
 
 .uiButton-icon {
-  width: 44px;
-  height: 44px;
+  width: 37px;
+  height: 37px;
   padding: 0;
 }
 
@@ -471,7 +471,7 @@ a {
 .uiControl {
   width: 100%;
   min-width: 0;
-  min-height: 44px;
+  min-height: 37px;
   padding: 10px 12px;
   color: var(--text);
   background: var(--surface);
@@ -1028,6 +1028,11 @@ a {
   font-size: 0.9rem;
 }
 
+.loadProgressPopover {
+  position: relative;
+  display: inline-flex;
+}
+
 .loadProgressBadge {
   display: inline-flex;
   align-items: center;
@@ -1041,12 +1046,58 @@ a {
   background: var(--surface-muted);
   border: 1px solid var(--border);
   border-radius: 999px;
+  cursor: pointer;
+}
+
+button.loadProgressBadge {
+  font: inherit;
 }
 
 .loadProgressBadge-loading {
   color: var(--blue);
   background: var(--blue-soft);
   border-color: var(--blue-border);
+}
+
+.checkedClubsPopover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 20;
+  width: min(260px, calc(100vw - 32px));
+  padding: 12px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-card);
+}
+
+.checkedClubsPopover strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.82rem;
+}
+
+.checkedClubsPopover ul {
+  display: grid;
+  gap: 6px;
+  max-height: 260px;
+  padding: 0;
+  margin: 0;
+  overflow: auto;
+  list-style: none;
+}
+
+.checkedClubsPopover li,
+.checkedClubsPopover p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.checkedClubsPopover .checkedClubItem-problem {
+  color: var(--danger);
 }
 
 .loadProgressSpinner {
@@ -1211,7 +1262,7 @@ a {
 
 .clubCompactSlots {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: 6px;
   padding: 10px 12px 12px;
   background: var(--surface-muted);
@@ -1219,23 +1270,13 @@ a {
 
 .clubCompactSlot {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 2px 8px;
-  min-height: 42px;
-  padding: 7px 9px;
+  gap: 10px;
+  min-height: 72px;
+  padding: 10px;
   color: inherit;
-  text-decoration: none;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
-}
-
-.clubCompactSlot:hover,
-.clubCompactSlot:focus-visible {
-  border-color: var(--brand-border);
-  box-shadow: 0 0 0 3px var(--brand-soft);
-  outline: 0;
 }
 
 .clubCompactSlot strong {
@@ -1245,23 +1286,11 @@ a {
 }
 
 .clubCompactSlot span {
-  grid-column: 1;
   overflow: hidden;
   color: var(--text-muted);
   font-size: 0.78rem;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.clubCompactSlot small {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  grid-column: 2;
-  grid-row: 1 / span 2;
-  color: var(--brand-strong);
-  font-size: 0.78rem;
-  font-weight: 900;
 }
 
 .clubSelect {
@@ -1551,36 +1580,28 @@ a.detailInfoRow:hover {
 
 .slotList {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
   gap: 10px;
 }
 
 .slot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-height: 78px;
+  display: grid;
+  gap: 14px;
+  min-height: 104px;
   padding: 12px;
   color: inherit;
-  text-decoration: none;
   background: var(--brand-soft);
   border: 1px solid var(--brand-border);
   border-radius: 8px;
-  transition:
-    background 120ms ease,
-    border-color 120ms ease,
-    box-shadow 120ms ease;
 }
 
-.slot:hover,
-.slot:focus-visible {
-  border-color: var(--brand-strong);
-  box-shadow: 0 0 0 4px var(--brand-soft);
-  outline: 0;
+.slotSummary {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
 }
 
-.slot div {
+.slotSkeleton > div {
   display: grid;
   gap: 4px;
   min-width: 0;
@@ -1599,17 +1620,42 @@ a.detailInfoRow:hover {
   white-space: nowrap;
 }
 
-.slot small {
+.slotActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.slotAction {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  flex: 0 0 auto;
-  color: var(--brand-strong);
+  min-height: 32px;
+  padding: 6px 10px;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.82rem;
   font-weight: 800;
+  text-decoration: none;
   white-space: nowrap;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
 }
 
-.slot small svg {
+.slotAction:hover,
+.slotAction:focus-visible {
+  border-color: var(--brand-border);
+  box-shadow: 0 0 0 3px var(--brand-soft);
+  outline: 0;
+}
+
+.slotAction-book {
+  color: var(--brand-strong);
+}
+
+.slotAction svg {
   flex: 0 0 auto;
 }
 
@@ -1897,8 +1943,8 @@ a.detailInfoRow:hover {
   }
 
   .topbarActions .uiButton-icon {
-    width: 40px;
-    height: 40px;
+    width: 37px;
+    height: 37px;
   }
 
   .languageSelect {
