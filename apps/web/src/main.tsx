@@ -75,6 +75,19 @@ const localeByLanguage: Record<LanguageCode, string> = {
   en: "en",
   ua: "uk"
 };
+const SITE_ORIGIN = "https://hledejkurty.cz";
+const SOCIAL_IMAGE_URL = `${SITE_ORIGIN}/logo.png`;
+const DEFAULT_META_DESCRIPTION =
+  "Find free padel courts in Prague. Compare availability, prices, indoor and outdoor courts, Multisport support, addresses, and booking links in one place.";
+
+interface SeoMeta {
+  canonicalUrl: string;
+  description: string;
+  imageUrl: string;
+  jsonLd: Record<string, unknown>;
+  locale: string;
+  title: string;
+}
 
 interface Club {
   slug: string;
@@ -293,6 +306,22 @@ const CLUBS: Club[] = [
 ];
 
 const FETCHABLE_CLUBS = CLUBS.filter((club) => club.availabilityEnabled !== false);
+const CLUB_IMAGE_DIMENSIONS: Record<string, { height: number; width: number }> = {
+  "cisarska-louka-padel": { height: 768, width: 1024 },
+  "head-tenis-centrum-vestec": { height: 1536, width: 2048 },
+  "one-padel": { height: 497, width: 402 },
+  "padel-cakovice": { height: 612, width: 900 },
+  "padel-club-spoje": { height: 833, width: 1360 },
+  "padel-dzus": { height: 640, width: 480 },
+  "padel-neride": { height: 500, width: 500 },
+  "padel-powers-smichov": { height: 259, width: 389 },
+  "padel-prosek": { height: 600, width: 640 },
+  "padel-radotin": { height: 300, width: 168 },
+  "sk-satalice": { height: 675, width: 900 },
+  "sk-slavia-praha-padel": { height: 200, width: 341 },
+  "tenis-a-padel-klub-pisecna": { height: 1186, width: 2192 },
+  "tk-sparta-praha": { height: 940, width: 1920 }
+};
 type AvailabilityByClub = Record<string, AvailabilityResult>;
 type FailedClub = {
   club: Club;
@@ -541,6 +570,10 @@ function App() {
     !selectedAvailability &&
     !selectedClubFailure;
 
+  useEffect(() => {
+    applySeoMeta(buildSeoMeta({ date, language, page, selectedClub }));
+  }, [date, language, page, selectedClub]);
+
   const durationOptions = useMemo(() => {
     const firstAvailability = Object.values(availabilityByClub)[0];
     return buildDurationOptions(firstAvailability?.dayRange);
@@ -708,7 +741,7 @@ function App() {
     <main className="appShell">
       <nav className="topbar" aria-label={t("nav.pageNavigation")}>
         <a className="brandMark" href={clubsHref(date)} onClick={(event) => handleInternalNavigation(event, () => navigateToClubs("push"))}>
-          <img src={assetPath("logo.png")} alt="" />
+          <img src={assetPath("logo.png")} alt="" width="48" height="48" decoding="async" />
           {t("brand.name")}
         </a>
         {page !== "clubs" || selectedClub ? (
@@ -789,6 +822,12 @@ function App() {
         />
       ) : (
         <>
+          {!selectedClub ? (
+            <section className="searchIntro" aria-labelledby="search-title">
+              <h1 id="search-title">{t("home.title")}</h1>
+              <p>{t("home.intro")}</p>
+            </section>
+          ) : null}
           <Card className="searchPanel">
         <div className="uiField searchField searchField-date">
           <span className="uiFieldLabel">
@@ -1098,7 +1137,7 @@ function SiteFooter({
     <footer className="siteFooter">
       <div className="footerBrand">
         <a className="footerLogo" href={clubsHref(date)} onClick={(event) => handleInternalNavigation(event, onNavigateToClubs)}>
-          <img src={assetPath("logo.png")} alt="" />
+          <img src={assetPath("logo.png")} alt="" width="48" height="48" decoding="async" />
           <span>{t("brand.name")}</span>
         </a>
         <p>{t("footer.description")}</p>
@@ -1230,7 +1269,13 @@ function AllClubsPage({
           visibleClubs.map(({ club, priceFrom }) => (
           <Card className={isCompactMode ? "trackedClubCard trackedClubCard-compact" : "trackedClubCard"} interactive key={club.slug}>
             <button className="trackedClubSelect" type="button" onClick={() => onSelectClub(club)}>
-              <img src={club.imageUrl} alt={`${club.name} padel`} />
+              <img
+                src={club.imageUrl}
+                alt={`${club.name} padel court in Prague`}
+                loading="lazy"
+                decoding="async"
+                {...clubImageDimensions(club)}
+              />
               <div className="trackedClubBody">
                 <div>
                   <h2>{club.name}</h2>
@@ -1649,7 +1694,13 @@ function ClubList({
               role="button"
               tabIndex={0}
             >
-              <img src={club.imageUrl} alt={`${club.name} padel`} />
+              <img
+                src={club.imageUrl}
+                alt={`${club.name} padel court in Prague`}
+                loading="lazy"
+                decoding="async"
+                {...clubImageDimensions(club)}
+              />
               <div className="clubBody">
                 <div className="clubTitleRow">
                   <div>
@@ -1927,10 +1978,16 @@ function ClubDetail({
   return (
     <>
       <Card className="clubDetail">
-        <img src={club.imageUrl} alt={`${club.name} padel`} />
+        <img
+          src={club.imageUrl}
+          alt={`${club.name} padel court in Prague`}
+          loading="eager"
+          decoding="async"
+          {...clubImageDimensions(club)}
+        />
         <div className="clubDetailBody">
           <div>
-            <h2>{club.name}</h2>
+            <h1>{club.name}</h1>
             <a
               className="detailAddress"
               href={googleMapsUrl(club.address)}
@@ -2165,6 +2222,10 @@ function phoneHref(phone: string): string {
   return /\d/.test(value) ? value : "";
 }
 
+function clubImageDimensions(club: Club): { height?: number; width?: number } {
+  return CLUB_IMAGE_DIMENSIONS[club.slug] ?? {};
+}
+
 function clubMatchesCourtType(club: Club, courtTypeFilter: CourtTypeFilter): boolean {
   return courtTypeFilter === "all" || club.courtTypes.includes(courtTypeFilter);
 }
@@ -2343,6 +2404,294 @@ function rogerOnlineUrl(date: string): string {
   });
 
   return `https://www.rogeronline.cz/v2/?${params.toString()}`;
+}
+
+function buildSeoMeta({
+  date,
+  language,
+  page,
+  selectedClub
+}: {
+  date: string;
+  language: LanguageCode;
+  page: Page;
+  selectedClub: Club | null;
+}): SeoMeta {
+  const locale = localeByLanguage[language];
+  const canonicalUrl = canonicalUrlFor(page, selectedClub);
+  const imageUrl = selectedClub ? absoluteSiteUrl(selectedClub.imageUrl) : SOCIAL_IMAGE_URL;
+  const title = seoTitle(page, selectedClub, language);
+  const description = seoDescription(page, selectedClub, language);
+
+  return {
+    canonicalUrl,
+    description,
+    imageUrl,
+    jsonLd: buildStructuredData({ canonicalUrl, date, description, imageUrl, language, page, selectedClub, title }),
+    locale,
+    title
+  };
+}
+
+function applySeoMeta(meta: SeoMeta) {
+  document.title = meta.title;
+  document.documentElement.lang = meta.locale;
+  setCanonicalUrl(meta.canonicalUrl);
+  setMetaTag("name", "description", meta.description);
+  setMetaTag("name", "robots", "index,follow");
+  setMetaTag("property", "og:site_name", "HLEDEJKURTY");
+  setMetaTag("property", "og:type", "website");
+  setMetaTag("property", "og:title", meta.title);
+  setMetaTag("property", "og:description", meta.description);
+  setMetaTag("property", "og:url", meta.canonicalUrl);
+  setMetaTag("property", "og:image", meta.imageUrl);
+  setMetaTag("property", "og:locale", openGraphLocale(meta.locale));
+  setMetaTag("name", "twitter:card", "summary_large_image");
+  setMetaTag("name", "twitter:title", meta.title);
+  setMetaTag("name", "twitter:description", meta.description);
+  setMetaTag("name", "twitter:image", meta.imageUrl);
+  setStructuredData(meta.jsonLd);
+}
+
+function seoTitle(page: Page, selectedClub: Club | null, language: LanguageCode): string {
+  if (selectedClub) {
+    if (language === "cz") return `${selectedClub.name} padel Praha | HLEDEJKURTY`;
+    if (language === "ua") return `${selectedClub.name} падел у Празі | HLEDEJKURTY`;
+    return `${selectedClub.name} padel court Prague | HLEDEJKURTY`;
+  }
+
+  if (page === "allClubs") {
+    if (language === "cz") return "Padelové kluby v Praze | HLEDEJKURTY";
+    if (language === "ua") return "Падел-клуби у Празі | HLEDEJKURTY";
+    return "Padel clubs in Prague | HLEDEJKURTY";
+  }
+
+  if (page === "about") {
+    if (language === "cz") return "O vyhledávači padelových kurtů | HLEDEJKURTY";
+    if (language === "ua") return "Про пошук падел-кортів | HLEDEJKURTY";
+    return "About the Prague padel court finder | HLEDEJKURTY";
+  }
+
+  if (page === "privacy") return `${i18n.t("legal.privacyTitle")} | HLEDEJKURTY`;
+  if (page === "terms") return `${i18n.t("legal.termsTitle")} | HLEDEJKURTY`;
+  if (page === "cookies") return `${i18n.t("legal.cookiesTitle")} | HLEDEJKURTY`;
+
+  if (language === "cz") return "Volné padelové kurty Praha | HLEDEJKURTY";
+  if (language === "ua") return "Вільні падел-корти у Празі | HLEDEJKURTY";
+  return "Find free padel courts in Prague | HLEDEJKURTY";
+}
+
+function seoDescription(page: Page, selectedClub: Club | null, language: LanguageCode): string {
+  if (selectedClub) {
+    const price = formatCzkPerHour(lowestPrice(selectedClub.priceInfo));
+    if (language === "cz") {
+      return `${selectedClub.name}: ${selectedClub.courtCount} padelové kurty, ${selectedClub.address}. Zkontrolujte volné časy, cenu od ${price} a rezervujte přes oficiální systém.`;
+    }
+    if (language === "ua") {
+      return `${selectedClub.name}: ${selectedClub.courtCount} падел-корти, ${selectedClub.address}. Перевірте вільні часи, ціну від ${price} і бронюйте в офіційній системі.`;
+    }
+    return `${selectedClub.name}: ${selectedClub.courtCount} padel courts, ${selectedClub.address}. Check available times, prices from ${price}, and book through the official system.`;
+  }
+
+  if (page === "allClubs") {
+    if (language === "cz") {
+      return "Seznam padelových klubů v Praze s adresami, cenami, typy kurtů, podporou Multisport a odkazy na oficiální rezervace.";
+    }
+    if (language === "ua") {
+      return "Список падел-клубів у Празі з адресами, цінами, типами кортів, Multisport і посиланнями на офіційне бронювання.";
+    }
+    return "Browse Prague padel clubs with addresses, prices, court types, Multisport support, and official booking links.";
+  }
+
+  if (page === "about") return i18n.t("about.body");
+  if (page === "privacy") return i18n.t("legal.privacyIntro");
+  if (page === "terms") return i18n.t("legal.termsIntro");
+  if (page === "cookies") return i18n.t("legal.cookiesIntro");
+
+  if (language === "cz") {
+    return "Najděte volné padelové kurty v Praze. Porovnejte dostupnost, ceny, vnitřní i venkovní kurty, Multisport, adresy a rezervační odkazy.";
+  }
+  if (language === "ua") {
+    return "Знайдіть вільні падел-корти у Празі. Порівняйте доступність, ціни, криті й відкриті корти, Multisport, адреси та бронювання.";
+  }
+  return DEFAULT_META_DESCRIPTION;
+}
+
+function buildStructuredData({
+  canonicalUrl,
+  date,
+  description,
+  imageUrl,
+  language,
+  page,
+  selectedClub,
+  title
+}: {
+  canonicalUrl: string;
+  date: string;
+  description: string;
+  imageUrl: string;
+  language: LanguageCode;
+  page: Page;
+  selectedClub: Club | null;
+  title: string;
+}): Record<string, unknown> {
+  const graph: Record<string, unknown>[] = [
+    {
+      "@id": `${SITE_ORIGIN}/#website`,
+      "@type": "WebSite",
+      description: DEFAULT_META_DESCRIPTION,
+      inLanguage: localeByLanguage[language],
+      name: "HLEDEJKURTY",
+      url: SITE_ORIGIN
+    },
+    {
+      "@id": `${SITE_ORIGIN}/#webapp`,
+      "@type": "WebApplication",
+      applicationCategory: "SportsApplication",
+      description: DEFAULT_META_DESCRIPTION,
+      image: SOCIAL_IMAGE_URL,
+      inLanguage: ["en", "cs", "uk"],
+      name: "HLEDEJKURTY",
+      operatingSystem: "Web",
+      url: SITE_ORIGIN
+    },
+    {
+      "@id": `${canonicalUrl}#webpage`,
+      "@type": "WebPage",
+      description,
+      image: imageUrl,
+      inLanguage: localeByLanguage[language],
+      isPartOf: { "@id": `${SITE_ORIGIN}/#website` },
+      name: title,
+      url: canonicalUrl
+    }
+  ];
+
+  if (selectedClub) {
+    graph.push(buildClubStructuredData(selectedClub, date, canonicalUrl));
+    graph.push(buildBreadcrumbStructuredData([{ name: "Padel courts", url: SITE_ORIGIN }, { name: selectedClub.name, url: canonicalUrl }]));
+  } else if (page === "allClubs" || page === "clubs") {
+    graph.push(buildClubItemListStructuredData(CLUBS));
+  } else {
+    graph.push(buildBreadcrumbStructuredData([{ name: "Padel courts", url: SITE_ORIGIN }, { name: title.replace(" | HLEDEJKURTY", ""), url: canonicalUrl }]));
+  }
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": graph
+  };
+}
+
+function buildClubItemListStructuredData(clubs: Club[]): Record<string, unknown> {
+  return {
+    "@id": `${SITE_ORIGIN}/?page=all-clubs#itemlist`,
+    "@type": "ItemList",
+    itemListElement: clubs.map((club, index) => ({
+      "@type": "ListItem",
+      item: {
+        "@id": `${canonicalUrlFor("clubs", club)}#club`,
+        name: club.name,
+        url: canonicalUrlFor("clubs", club)
+      },
+      position: index + 1
+    })),
+    name: "Padel clubs in Prague"
+  };
+}
+
+function buildClubStructuredData(club: Club, date: string, canonicalUrl: string): Record<string, unknown> {
+  const telephone = phoneHref(club.phone);
+  return {
+    "@id": `${canonicalUrl}#club`,
+    "@type": "SportsActivityLocation",
+    address: {
+      "@type": "PostalAddress",
+      addressCountry: "CZ",
+      addressLocality: "Praha",
+      streetAddress: club.address
+    },
+    amenityFeature: club.courtTypes.map((courtType) => ({
+      "@type": "LocationFeatureSpecification",
+      name: courtType === "indoor" ? "Indoor padel courts" : "Outdoor padel courts",
+      value: true
+    })),
+    image: absoluteSiteUrl(club.imageUrl),
+    name: club.name,
+    priceRange: formatCzkPerHour(lowestPrice(club.priceInfo)),
+    sport: "Padel",
+    telephone: telephone || undefined,
+    url: canonicalUrl,
+    potentialAction: {
+      "@type": "ReserveAction",
+      target: club.bookingUrl(date)
+    }
+  };
+}
+
+function buildBreadcrumbStructuredData(items: Array<{ name: string; url: string }>): Record<string, unknown> {
+  return {
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      item: item.url,
+      name: item.name,
+      position: index + 1
+    }))
+  };
+}
+
+function canonicalUrlFor(page: Page, club: Club | null): string {
+  const url = new URL("/", SITE_ORIGIN);
+  if (club) {
+    url.searchParams.set("club", club.slug);
+    return url.toString();
+  }
+  if (page !== "clubs") {
+    url.searchParams.set("page", pageToParam(page));
+  }
+  return url.toString();
+}
+
+function absoluteSiteUrl(path: string): string {
+  return new URL(path, SITE_ORIGIN).toString();
+}
+
+function setCanonicalUrl(url: string) {
+  let element = document.head.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+  if (!element) {
+    element = document.createElement("link");
+    element.rel = "canonical";
+    document.head.append(element);
+  }
+  element.href = url;
+}
+
+function setMetaTag(attribute: "name" | "property", key: string, content: string) {
+  let element = document.head.querySelector(`meta[${attribute}="${key}"]`) as HTMLMetaElement | null;
+  if (!element) {
+    element = document.createElement("meta");
+    element.setAttribute(attribute, key);
+    document.head.append(element);
+  }
+  element.content = content;
+}
+
+function setStructuredData(data: Record<string, unknown>) {
+  let element = document.getElementById("seo-structured-data") as HTMLScriptElement | null;
+  if (!element) {
+    element = document.createElement("script");
+    element.id = "seo-structured-data";
+    element.type = "application/ld+json";
+    document.head.append(element);
+  }
+  element.textContent = JSON.stringify(data);
+}
+
+function openGraphLocale(locale: string): string {
+  if (locale === "cs") return "cs_CZ";
+  if (locale === "uk") return "uk_UA";
+  return "en_US";
 }
 
 function clubsHref(date: string): string {

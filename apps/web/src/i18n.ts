@@ -125,6 +125,10 @@ const resources = {
         legal: "Legal",
         service: "Service"
       },
+      home: {
+        intro: "Choose a date, duration, number of courts, court type, and time window to see matching padel clubs around Prague.",
+        title: "Find free padel courts in Prague"
+      },
       legal: {
         badgeCookies: "Cookies",
         badgeLegal: "Legal",
@@ -291,6 +295,10 @@ const resources = {
         legal: "Юридичне",
         service: "Сервіс"
       },
+      home: {
+        intro: "Оберіть дату, тривалість, кількість кортів, тип корту й часовий проміжок, щоб побачити відповідні падел-клуби в Празі.",
+        title: "Знайдіть вільні падел-корти у Празі"
+      },
       legal: {
         badgeCookies: "Cookies",
         badgeLegal: "Юридичне",
@@ -456,6 +464,10 @@ const resources = {
         description: "Nezávislý vyhledávač dostupnosti padelových kurtů v Praze, Česká republika.",
         legal: "Právní",
         service: "Služba"
+      },
+      home: {
+        intro: "Vyberte datum, délku hry, počet kurtů, typ kurtu a časové okno a zobrazte odpovídající padelové kluby v Praze.",
+        title: "Najděte volné padelové kurty v Praze"
       },
       legal: {
         badgeCookies: "Cookies",
