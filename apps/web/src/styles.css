@@ -891,13 +891,20 @@ a {
   outline-offset: -3px;
 }
 
-.trackedClubSelect picture,
-.trackedClubSelect img {
+.trackedClubSelect picture {
   display: block;
+  overflow: hidden;
   width: 100%;
   height: clamp(210px, 18vw, 260px);
-  object-fit: cover;
   background: var(--surface-muted);
+}
+
+.trackedClubSelect picture > img,
+.trackedClubSelect > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .trackedClubCard-compact .trackedClubSelect {
@@ -1336,13 +1343,20 @@ button.loadProgressBadge {
 }
 
 .clubSelect picture,
-.clubSelect img,
 .imageSkeleton {
   display: block;
+  overflow: hidden;
   width: 100%;
   aspect-ratio: 16 / 9;
-  object-fit: cover;
   background: var(--surface-muted);
+}
+
+.clubSelect picture > img,
+.clubSelect > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .clubBody {
@@ -1543,13 +1557,22 @@ a.detailInfoRow:hover {
   padding: 16px;
 }
 
-.clubDetail picture,
-.clubDetail img {
+.clubDetail picture {
+  display: block;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  min-height: 260px;
+  border-radius: 8px;
+}
+
+.clubDetail picture > img,
+.clubDetail > img {
+  display: block;
   width: 100%;
   height: 100%;
   min-height: 260px;
   object-fit: cover;
-  border-radius: 8px;
 }
 
 .detailImageSkeleton {
@@ -2055,13 +2078,11 @@ a.detailInfoRow:hover {
     grid-template-columns: 1fr;
   }
 
-  .trackedClubSelect picture,
-  .trackedClubSelect img {
+  .trackedClubSelect picture {
     height: 170px;
   }
 
   .clubSelect picture,
-  .clubSelect img,
   .imageSkeleton {
     height: 170px;
     aspect-ratio: auto;
@@ -2196,7 +2217,9 @@ a.detailInfoRow:hover {
     grid-template-columns: 1fr;
   }
 
-  .clubDetail img {
+  .clubDetail picture,
+  .clubDetail picture > img,
+  .clubDetail > img {
     min-height: 190px;
   }
 
@@ -2219,10 +2242,8 @@ a.detailInfoRow:hover {
 }
 
 @media (max-width: 420px) {
-  .trackedClubSelect img,
   .trackedClubSelect picture,
   .clubSelect picture,
-  .clubSelect img,
   .imageSkeleton {
     height: 150px;
   }
