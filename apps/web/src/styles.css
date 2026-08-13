@@ -891,6 +891,7 @@ a {
   outline-offset: -3px;
 }
 
+.trackedClubSelect picture,
 .trackedClubSelect img {
   display: block;
   width: 100%;
@@ -904,6 +905,7 @@ a {
   align-items: center;
 }
 
+.trackedClubCard-compact .trackedClubSelect picture,
 .trackedClubCard-compact .trackedClubSelect img {
   display: none;
 }
@@ -1333,6 +1335,7 @@ button.loadProgressBadge {
   outline-offset: -3px;
 }
 
+.clubSelect picture,
 .clubSelect img,
 .imageSkeleton {
   display: block;
@@ -1540,6 +1543,7 @@ a.detailInfoRow:hover {
   padding: 16px;
 }
 
+.clubDetail picture,
 .clubDetail img {
   width: 100%;
   height: 100%;
@@ -2051,10 +2055,12 @@ a.detailInfoRow:hover {
     grid-template-columns: 1fr;
   }
 
+  .trackedClubSelect picture,
   .trackedClubSelect img {
     height: 170px;
   }
 
+  .clubSelect picture,
   .clubSelect img,
   .imageSkeleton {
     height: 170px;
@@ -2214,6 +2220,8 @@ a.detailInfoRow:hover {
 
 @media (max-width: 420px) {
   .trackedClubSelect img,
+  .trackedClubSelect picture,
+  .clubSelect picture,
   .clubSelect img,
   .imageSkeleton {
     height: 150px;

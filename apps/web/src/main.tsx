@@ -799,7 +799,7 @@ function App() {
     <main className="appShell">
       <nav className="topbar" aria-label={t("nav.pageNavigation")}>
         <a className="brandMark" href={clubsHref(date)} onClick={(event) => handleInternalNavigation(event, () => navigateToClubs("push"))}>
-          <img src={assetPath("logo.png")} alt="" width="48" height="48" decoding="async" />
+          <img src={assetPath("logo-256.webp")} alt="" width="48" height="48" decoding="async" />
           {t("brand.name")}
         </a>
         {page !== "clubs" || selectedClub ? (
@@ -1195,7 +1195,7 @@ function SiteFooter({
     <footer className="siteFooter">
       <div className="footerBrand">
         <a className="footerLogo" href={clubsHref(date)} onClick={(event) => handleInternalNavigation(event, onNavigateToClubs)}>
-          <img src={assetPath("logo.png")} alt="" width="48" height="48" decoding="async" />
+          <img src={assetPath("logo-256.webp")} alt="" width="48" height="48" decoding="async" />
           <span>{t("brand.name")}</span>
         </a>
         <p>{t("footer.description")}</p>
@@ -1324,16 +1324,10 @@ function AllClubsPage({
 
       <section className={isCompactMode ? "trackedClubList trackedClubList-compact" : "trackedClubList"} aria-label="Tracked clubs">
         {visibleClubs.length > 0 ? (
-          visibleClubs.map(({ club, priceFrom }) => (
+          visibleClubs.map(({ club, priceFrom }, index) => (
           <Card className={isCompactMode ? "trackedClubCard trackedClubCard-compact" : "trackedClubCard"} interactive key={club.slug}>
             <button className="trackedClubSelect" type="button" onClick={() => onSelectClub(club)}>
-              <img
-                src={club.imageUrl}
-                alt={`${club.name} padel court in Prague`}
-                loading="lazy"
-                decoding="async"
-                {...clubImageDimensions(club)}
-              />
+              <ClubImage club={club} loading={index < 3 ? "eager" : "lazy"} />
               <div className="trackedClubBody">
                 <div>
                   <h2>{club.name}</h2>
@@ -1527,6 +1521,21 @@ function LegalSection({ children, title }: { children: React.ReactNode; title: s
       <h2>{title}</h2>
       {children}
     </section>
+  );
+}
+
+function ClubImage({ club, loading }: { club: Club; loading: "eager" | "lazy" }) {
+  return (
+    <picture>
+      <source srcSet={optimizedClubImageSrcSet(club)} sizes="(max-width: 760px) 100vw, 33vw" type="image/webp" />
+      <img
+        src={club.imageUrl}
+        alt={`${club.name} padel court in Prague`}
+        loading={loading}
+        decoding="async"
+        {...clubImageDimensions(club)}
+      />
+    </picture>
   );
 }
 
@@ -1738,7 +1747,7 @@ function ClubList({
     <section className="clubGrid" aria-label={t("club.matchingClubs", { count: results.length })}>
       {resultsToolbar}
       {results.length > 0 ? (
-        results.map(({ club, availability, bookableSlots }) => (
+        results.map(({ club, availability, bookableSlots }, index) => (
           <Card className="clubCard" interactive key={club.slug}>
             <div
               className="clubSelect"
@@ -1752,13 +1761,7 @@ function ClubList({
               role="button"
               tabIndex={0}
             >
-              <img
-                src={club.imageUrl}
-                alt={`${club.name} padel court in Prague`}
-                loading="lazy"
-                decoding="async"
-                {...clubImageDimensions(club)}
-              />
+              <ClubImage club={club} loading={index < 2 ? "eager" : "lazy"} />
               <div className="clubBody">
                 <div className="clubTitleRow">
                   <div>
@@ -2036,13 +2039,7 @@ function ClubDetail({
   return (
     <>
       <Card className="clubDetail">
-        <img
-          src={club.imageUrl}
-          alt={`${club.name} padel court in Prague`}
-          loading="eager"
-          decoding="async"
-          {...clubImageDimensions(club)}
-        />
+        <ClubImage club={club} loading="eager" />
         <div className="clubDetailBody">
           <div>
             <h1>{club.name}</h1>
@@ -2298,6 +2295,13 @@ function weekdayOpeningHours(openingHours: Record<number, TimeRange>): Record<nu
 
 function clubImageDimensions(club: Club): { height?: number; width?: number } {
   return CLUB_IMAGE_DIMENSIONS[club.slug] ?? {};
+}
+
+function optimizedClubImageSrcSet(club: Club): string {
+  return [
+    `${assetPath(`clubs/optimized/${club.slug}-640.webp`)} 640w`,
+    `${assetPath(`clubs/optimized/${club.slug}-1200.webp`)} 1200w`
+  ].join(", ");
 }
 
 function clubMatchesCourtType(club: Club, courtTypeFilter: CourtTypeFilter): boolean {
