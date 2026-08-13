@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node scripts/inline-build-css.mjs",
     "dev": "vite --host 127.0.0.1",
     "optimize:images": "node scripts/optimize-images.mjs",
     "preview": "vite preview",

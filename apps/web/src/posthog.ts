@@ -1,14 +1,15 @@
 import type { PostHog, Properties } from "posthog-js/dist/module.slim.no-external";
 
+const ANALYTICS_LOAD_DELAY_MS = 8_000;
 const posthogKey = import.meta.env.VITE_POSTHOG_KEY;
 const posthogHost = import.meta.env.VITE_POSTHOG_HOST ?? "https://eu.i.posthog.com";
-const isConfigured = typeof posthogKey === "string" && posthogKey.length > 0;
+const isConfigured = typeof posthogKey === "string" && posthogKey.length > 0 && !shouldSkipAnalytics();
 let posthogClientPromise: Promise<PostHog> | undefined;
 
 function getPosthogClient(): Promise<PostHog> | undefined {
   if (!isConfigured) return undefined;
 
-  posthogClientPromise ??= runWhenIdle()
+  posthogClientPromise ??= deferAnalyticsStartup()
     .then(() => import("posthog-js/dist/module.slim.no-external"))
     .then(({ default: posthog }) => {
       posthog.init(posthogKey, {
@@ -36,6 +37,38 @@ function getPosthogClient(): Promise<PostHog> | undefined {
     });
 
   return posthogClientPromise;
+}
+
+function shouldSkipAnalytics(): boolean {
+  if (typeof navigator === "undefined") return true;
+
+  const userAgent = navigator.userAgent.toLowerCase();
+  const legacyDoNotTrack = (window as Window & { doNotTrack?: string }).doNotTrack;
+  const doNotTrack = navigator.doNotTrack === "1" || legacyDoNotTrack === "1";
+  const isBotOrAudit =
+    /chrome-lighthouse|lighthouse|pagespeed|headlesschrome|googlebot|bingbot|duckduckbot|yandexbot|ahrefsbot|semrushbot|siteauditbot/.test(
+      userAgent
+    );
+
+  return doNotTrack || isBotOrAudit;
+}
+
+async function deferAnalyticsStartup(): Promise<void> {
+  await waitForWindowLoad();
+  await delay(ANALYTICS_LOAD_DELAY_MS);
+  await runWhenIdle();
+}
+
+function waitForWindowLoad(): Promise<void> {
+  if (document.readyState === "complete") return Promise.resolve();
+
+  return new Promise((resolve) => {
+    window.addEventListener("load", () => resolve(), { once: true });
+  });
+}
+
+function delay(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
 }
 
 function runWhenIdle(): Promise<void> {
