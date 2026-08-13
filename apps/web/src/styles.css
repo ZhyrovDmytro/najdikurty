@@ -893,7 +893,7 @@ a {
 
 .trackedClubSelect img {
   width: 100%;
-  aspect-ratio: 16 / 9;
+  height: clamp(210px, 18vw, 260px);
   object-fit: cover;
   background: var(--surface-muted);
 }
