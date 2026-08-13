@@ -892,6 +892,7 @@ a {
 }
 
 .trackedClubSelect img {
+  display: block;
   width: 100%;
   height: clamp(210px, 18vw, 260px);
   object-fit: cover;
@@ -1334,6 +1335,7 @@ button.loadProgressBadge {
 
 .clubSelect img,
 .imageSkeleton {
+  display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
   object-fit: cover;
@@ -2049,6 +2051,16 @@ a.detailInfoRow:hover {
     grid-template-columns: 1fr;
   }
 
+  .trackedClubSelect img {
+    height: 170px;
+  }
+
+  .clubSelect img,
+  .imageSkeleton {
+    height: 170px;
+    aspect-ratio: auto;
+  }
+
   .trackedClubCard-compact {
     grid-template-columns: 1fr;
   }
@@ -2197,5 +2209,13 @@ a.detailInfoRow:hover {
   .siteFooter,
   .footerNav {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 420px) {
+  .trackedClubSelect img,
+  .clubSelect img,
+  .imageSkeleton {
+    height: 150px;
   }
 }
