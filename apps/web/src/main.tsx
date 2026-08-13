@@ -39,6 +39,7 @@ import {
   buildDurationOptions,
   buildTimeOptions,
   formatDuration,
+  toMinutes,
   type AvailabilityResult,
   type BookableSlot,
   type TimeRange
@@ -65,10 +66,11 @@ type Page = "clubs" | "allClubs" | "about" | "privacy" | "terms" | "cookies";
 type CourtType = "indoor" | "outdoor";
 type CourtTypeFilter = CourtType | "all";
 type FindCourtSort = "name" | "priceAsc" | "priceDesc" | "multisport" | "indoor" | "outdoor";
-const TIME_PICKER_RANGE: TimeRange = { start: "00:00", end: "23:59" };
+const TIME_PICKER_RANGE: TimeRange = { start: "00:00", end: "24:00" };
 const AVAILABILITY_REQUEST_TIMEOUT_MS = 30_000;
 const AVAILABILITY_REQUEST_MAX_ATTEMPTS = 2;
 const AVAILABILITY_REQUEST_RETRY_DELAY_MS = 1_000;
+const AVAILABILITY_REQUEST_CONCURRENCY = 3;
 const initialPage: Page = pageFromParam(initialParams.get("page"));
 const localeByLanguage: Record<LanguageCode, string> = {
   cz: "cs",
@@ -103,6 +105,7 @@ interface Club {
   courtTypeLabel: string;
   acceptsMultisport?: boolean;
   availabilityEnabled?: boolean;
+  openingHours?: Record<number, TimeRange>;
   bookingUrl: (date: string) => string;
 }
 
@@ -120,6 +123,7 @@ const CLUBS: Club[] = [
     courtTypeLabel: "2 outdoor courts",
     acceptsMultisport: true,
     availabilityEnabled: false,
+    openingHours: dailyOpeningHours({ start: "08:00", end: "21:00" }),
     bookingUrl: (date: string) =>
       `https://jdemenato.cz/reservation/myportalorganizationcalendar.navigation.daynavigationbar:selectdayinternal/${date}`
   },
@@ -135,6 +139,7 @@ const CLUBS: Club[] = [
     courtTypes: ["outdoor"],
     courtTypeLabel: "4 outdoor courts",
     acceptsMultisport: true,
+    openingHours: dailyOpeningHours({ start: "07:00", end: "22:00" }),
     bookingUrl: (date: string) => skySportCityTimelineUrl(date)
   },
   {
@@ -148,6 +153,15 @@ const CLUBS: Club[] = [
     courtCount: 2,
     courtTypes: ["outdoor"],
     courtTypeLabel: "2 outdoor courts",
+    openingHours: weekdayOpeningHours({
+      0: { start: "09:00", end: "20:00" },
+      1: { start: "08:00", end: "21:00" },
+      2: { start: "08:00", end: "21:00" },
+      3: { start: "08:00", end: "21:00" },
+      4: { start: "08:00", end: "21:00" },
+      5: { start: "08:00", end: "21:00" },
+      6: { start: "09:00", end: "20:00" }
+    }),
     bookingUrl: (date: string) => playtomicClubUrl("padel-club-spoje", date)
   },
   {
@@ -161,6 +175,7 @@ const CLUBS: Club[] = [
     courtCount: 4,
     courtTypes: ["indoor", "outdoor"],
     courtTypeLabel: "2 indoor + 2 outdoor courts",
+    openingHours: dailyOpeningHours({ start: "08:00", end: "22:00" }),
     bookingUrl: (date: string) => playtomicClubUrl("tenis-a-padel-klub-pisecna", date)
   },
   {
@@ -174,6 +189,7 @@ const CLUBS: Club[] = [
     courtCount: 4,
     courtTypes: ["outdoor"],
     courtTypeLabel: "4 outdoor courts",
+    openingHours: dailyOpeningHours({ start: "08:00", end: "22:00" }),
     bookingUrl: (date: string) => `https://rezervace.padelslavia.cz/cs/rezervace/index/padel/${date}`
   },
   {
@@ -189,6 +205,7 @@ const CLUBS: Club[] = [
     courtTypeLabel: "4 indoor courts",
     acceptsMultisport: true,
     availabilityEnabled: false,
+    openingHours: dailyOpeningHours({ start: "07:00", end: "24:00" }),
     bookingUrl: () => "https://teniscentrum.isportsystem.cz/?op=tab-id-13"
   },
   {
@@ -205,6 +222,7 @@ const CLUBS: Club[] = [
     courtTypeLabel: "3 outdoor courts",
     acceptsMultisport: true,
     availabilityEnabled: false,
+    openingHours: dailyOpeningHours({ start: "07:00", end: "22:00" }),
     bookingUrl: () => "https://padelradotin.isportsystem.cz/"
   },
   {
@@ -219,6 +237,7 @@ const CLUBS: Club[] = [
     courtTypes: ["indoor"],
     courtTypeLabel: "2 indoor courts",
     availabilityEnabled: false,
+    openingHours: dailyOpeningHours({ start: "07:00", end: "22:00" }),
     bookingUrl: () => "https://padelautomat.isportsystem.cz/"
   },
   {
@@ -233,6 +252,7 @@ const CLUBS: Club[] = [
     courtTypes: ["indoor"],
     courtTypeLabel: "3 indoor courts",
     acceptsMultisport: true,
+    openingHours: dailyOpeningHours({ start: "06:00", end: "24:00" }),
     bookingUrl: () => "https://padelneride.cz/rezervace/"
   },
   {
@@ -247,6 +267,7 @@ const CLUBS: Club[] = [
     courtTypes: ["indoor"],
     courtTypeLabel: "4 indoor courts",
     acceptsMultisport: true,
+    openingHours: dailyOpeningHours({ start: "07:00", end: "23:00" }),
     bookingUrl: (date: string) => bookaballUrl(date)
   },
   {
@@ -261,6 +282,7 @@ const CLUBS: Club[] = [
     courtTypes: ["indoor"],
     courtTypeLabel: "8 indoor courts",
     acceptsMultisport: true,
+    openingHours: dailyOpeningHours({ start: "07:00", end: "24:00" }),
     bookingUrl: () => padelosCompanyUrl()
   },
   {
@@ -274,6 +296,7 @@ const CLUBS: Club[] = [
     courtCount: 9,
     courtTypes: ["indoor"],
     courtTypeLabel: "9 indoor courts",
+    openingHours: dailyOpeningHours({ start: "06:00", end: "24:00" }),
     bookingUrl: () => "https://onepadel.cz/book"
   },
   {
@@ -288,6 +311,15 @@ const CLUBS: Club[] = [
     courtTypes: ["outdoor"],
     courtTypeLabel: "3 outdoor courts",
     acceptsMultisport: true,
+    openingHours: weekdayOpeningHours({
+      0: { start: "11:00", end: "21:30" },
+      1: { start: "09:00", end: "23:00" },
+      2: { start: "09:00", end: "23:00" },
+      3: { start: "09:00", end: "23:00" },
+      4: { start: "09:00", end: "23:00" },
+      5: { start: "09:00", end: "23:00" },
+      6: { start: "11:00", end: "21:30" }
+    }),
     bookingUrl: (date: string) => reenioBookingUrl(date)
   },
   {
@@ -301,6 +333,7 @@ const CLUBS: Club[] = [
     courtCount: 2,
     courtTypes: ["outdoor"],
     courtTypeLabel: "2 outdoor courts",
+    openingHours: dailyOpeningHours({ start: "08:00", end: "22:00" }),
     bookingUrl: (date: string) => rogerOnlineUrl(date)
   }
 ];
@@ -396,6 +429,25 @@ function delay(milliseconds: number): Promise<void> {
   return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
 }
 
+async function runWithConcurrency<T>(
+  items: T[],
+  concurrency: number,
+  task: (item: T) => Promise<void>
+): Promise<void> {
+  let nextIndex = 0;
+  const workerCount = Math.min(Math.max(concurrency, 1), items.length);
+
+  await Promise.all(
+    Array.from({ length: workerCount }, async () => {
+      while (nextIndex < items.length) {
+        const item = items[nextIndex];
+        nextIndex += 1;
+        await task(item);
+      }
+    })
+  );
+}
+
 function App() {
   const { t } = useTranslation();
   const [page, setPage] = useState<Page>(initialPage);
@@ -426,14 +478,16 @@ function App() {
   const trackedClubs = useMemo(() => sortTrackedClubs(buildTrackedClubs(CLUBS), allClubsSort), [allClubsSort]);
 
   async function loadAvailability() {
-    const targetClubs = selectedClubSlug
+    const searchWindow = effectiveTimeWindowForDate(date, customStartTime, customEndTime, now);
+    const targetClubs = (selectedClubSlug
       ? CLUBS.filter(
           (club) =>
             club.slug === selectedClubSlug &&
             club.availabilityEnabled !== false &&
             clubMatchesCourtType(club, courtTypeFilter)
         )
-      : FETCHABLE_CLUBS.filter((club) => clubMatchesCourtType(club, courtTypeFilter));
+      : FETCHABLE_CLUBS.filter((club) => clubMatchesCourtType(club, courtTypeFilter))
+    ).filter((club) => clubCanMatchSearchWindow(club, date, duration, searchWindow, now));
     const loadId = loadSequenceRef.current + 1;
     loadSequenceRef.current = loadId;
 
@@ -456,8 +510,10 @@ function App() {
     }
 
     try {
-      await Promise.all(
-        targetClubs.map(async (club) => {
+      await runWithConcurrency(
+        targetClubs,
+        AVAILABILITY_REQUEST_CONCURRENCY,
+        async (club) => {
           const params = new URLSearchParams({ club: club.slug, sport: club.sport, date });
           try {
             const payload = await fetchAvailabilityWithRetry(`${API_BASE_URL}/api/availability?${params}`, club.name);
@@ -489,7 +545,7 @@ function App() {
               }));
             }
           }
-        })
+        }
       );
     } catch (loadError) {
       if (loadSequenceRef.current === loadId) {
@@ -579,12 +635,13 @@ function App() {
     return buildDurationOptions(firstAvailability?.dayRange);
   }, [availabilityByClub]);
   const timeOptions = useMemo(() => buildTimeOptions(TIME_PICKER_RANGE), []);
+  const minimumStartTime = useMemo(() => defaultStartTimeForDate(date, now), [date, now]);
   const timeWindow = useMemo<TimeRange>(
     () => ({
-      start: customStartTime ?? TIME_PICKER_RANGE.start,
+      start: latestTime(customStartTime ?? minimumStartTime, minimumStartTime),
       end: customEndTime ?? TIME_PICKER_RANGE.end
     }),
-    [customEndTime, customStartTime]
+    [customEndTime, customStartTime, minimumStartTime]
   );
 
   useEffect(() => {
@@ -603,9 +660,10 @@ function App() {
   useEffect(() => {
     if (timeOptions.length === 0) return;
 
-    const firstTime = timeOptions[0];
+    const firstTime = minimumStartTime;
     const lastTime = timeOptions[timeOptions.length - 1];
-    const nextStart = customStartTime && timeOptions.includes(customStartTime) ? customStartTime : null;
+    const nextStart =
+      customStartTime && timeOptions.includes(customStartTime) && customStartTime >= minimumStartTime ? customStartTime : null;
     const nextEnd = customEndTime && timeOptions.includes(customEndTime) ? customEndTime : null;
 
     if (customStartTime && !nextStart) {
@@ -621,7 +679,7 @@ function App() {
     if (toComparableTime(effectiveStart) >= toComparableTime(effectiveEnd)) {
       setCustomEndTime(nextTimeOption(effectiveStart, timeOptions) ?? lastTime);
     }
-  }, [customEndTime, customStartTime, timeOptions]);
+  }, [customEndTime, customStartTime, minimumStartTime, timeOptions]);
 
   const clubResults = useMemo(() => {
     return CLUBS.map((club) => {
@@ -645,7 +703,7 @@ function App() {
   const maxCourtCount = selectedClub
     ? selectedClub.courtCount
     : Math.max(...Object.values(availabilityByClub).map((availability) => availability.courts.length), 2);
-  const startTimeOptions = timeOptions.filter((time) => time < timeWindow.end);
+  const startTimeOptions = timeOptions.filter((time) => time >= minimumStartTime && time < timeWindow.end);
   const endTimeOptions = timeOptions.filter((time) => time > timeWindow.start);
   const visibleClubSlugs = useMemo(() => visibleClubResults.map((result) => result.club.slug), [visibleClubResults]);
   const areAllCompactRowsExpanded =
@@ -2222,12 +2280,59 @@ function phoneHref(phone: string): string {
   return /\d/.test(value) ? value : "";
 }
 
+function dailyOpeningHours(range: TimeRange): Record<number, TimeRange> {
+  return {
+    0: range,
+    1: range,
+    2: range,
+    3: range,
+    4: range,
+    5: range,
+    6: range
+  };
+}
+
+function weekdayOpeningHours(openingHours: Record<number, TimeRange>): Record<number, TimeRange> {
+  return openingHours;
+}
+
 function clubImageDimensions(club: Club): { height?: number; width?: number } {
   return CLUB_IMAGE_DIMENSIONS[club.slug] ?? {};
 }
 
 function clubMatchesCourtType(club: Club, courtTypeFilter: CourtTypeFilter): boolean {
   return courtTypeFilter === "all" || club.courtTypes.includes(courtTypeFilter);
+}
+
+function clubCanMatchSearchWindow(club: Club, date: string, durationMinutes: number, timeWindow: TimeRange, now: Date): boolean {
+  const openingRange = openingRangeForDate(club, date);
+  if (!openingRange) return club.openingHours ? false : true;
+
+  const earliestStart = Math.max(
+    toMinutes(openingRange.start),
+    toMinutes(timeWindow.start),
+    toMinutes(defaultStartTimeForDate(date, now))
+  );
+  const latestEnd = Math.min(toMinutes(openingRange.end), toMinutes(timeWindow.end));
+
+  return earliestStart + durationMinutes <= latestEnd;
+}
+
+function openingRangeForDate(club: Club, date: string): TimeRange | undefined {
+  return club.openingHours?.[weekdayForDate(date)];
+}
+
+function effectiveTimeWindowForDate(
+  date: string,
+  customStartTime: string | null,
+  customEndTime: string | null,
+  now: Date
+): TimeRange {
+  const minimumStartTime = defaultStartTimeForDate(date, now);
+  return {
+    start: latestTime(customStartTime ?? minimumStartTime, minimumStartTime),
+    end: customEndTime ?? TIME_PICKER_RANGE.end
+  };
 }
 
 function formatCourtTypeSummary(club: Club): string {
@@ -2808,6 +2913,11 @@ function dateInputValue(year: number, month: number, day: number): string {
   return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
+function weekdayForDate(date: string): number {
+  const [year, month, day] = date.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day, 12)).getUTCDay();
+}
+
 function writeUrl({
   date,
   clubSlug,
@@ -2842,6 +2952,25 @@ function toComparableTime(time: string): number {
   return hours * 60 + minutes;
 }
 
+function latestTime(firstTime: string, secondTime: string): string {
+  return toComparableTime(firstTime) >= toComparableTime(secondTime) ? firstTime : secondTime;
+}
+
+function defaultStartTimeForDate(date: string, now: Date): string {
+  if (pragueDateInputValue(now) !== date) return TIME_PICKER_RANGE.start;
+
+  const currentMinutes = pragueTimeInMinutes(now);
+  const roundedMinutes = Math.ceil(currentMinutes / 30) * 30;
+  const latestSelectableMinutes = toMinutes(TIME_PICKER_RANGE.end);
+  return minutesToTimeInput(Math.min(roundedMinutes, latestSelectableMinutes));
+}
+
+function minutesToTimeInput(totalMinutes: number): string {
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
 function formatCheckedTime(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
@@ -2865,6 +2994,19 @@ function pragueDateInputValue(date: Date): string {
 
   const valueByType = Object.fromEntries(parts.map((part) => [part.type, part.value]));
   return `${valueByType.year}-${valueByType.month}-${valueByType.day}`;
+}
+
+function pragueTimeInMinutes(date: Date): number {
+  const parts = new Intl.DateTimeFormat("en", {
+    hour: "2-digit",
+    hourCycle: "h23",
+    minute: "2-digit",
+    second: "2-digit",
+    timeZone: "Europe/Prague"
+  }).formatToParts(date);
+
+  const valueByType = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return Number(valueByType.hour) * 60 + Number(valueByType.minute) + Number(valueByType.second) / 60;
 }
 
 function pragueLocalMidnightTimestamp(date: string): number {
