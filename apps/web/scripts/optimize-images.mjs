@@ -49,3 +49,18 @@ await sharp(path.join(publicDir, "logo.png"))
   .resize({ width: 256, height: 256, fit: "contain", withoutEnlargement: true })
   .webp({ effort: 6, quality: 82 })
   .toFile(path.join(publicDir, "logo-256.webp"));
+
+await sharp(path.join(publicDir, "logo.png"))
+  .resize({ width: 128, height: 128, fit: "contain", withoutEnlargement: true })
+  .webp({ effort: 6, quality: 82 })
+  .toFile(path.join(publicDir, "logo-128.webp"));
+
+await sharp(path.join(publicDir, "logo.png"))
+  .resize({ width: 64, height: 64, fit: "contain", withoutEnlargement: true })
+  .webp({ effort: 6, quality: 82 })
+  .toFile(path.join(publicDir, "logo-64.webp"));
+
+await sharp(path.join(publicDir, "logo.png"))
+  .resize({ width: 180, height: 180, fit: "contain", withoutEnlargement: true })
+  .png({ compressionLevel: 9, palette: true })
+  .toFile(path.join(publicDir, "apple-touch-icon.png"));

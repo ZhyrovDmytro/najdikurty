@@ -799,7 +799,7 @@ function App() {
     <main className="appShell">
       <nav className="topbar" aria-label={t("nav.pageNavigation")}>
         <a className="brandMark" href={clubsHref(date)} onClick={(event) => handleInternalNavigation(event, () => navigateToClubs("push"))}>
-          <img src={assetPath("logo-256.webp")} alt="" width="48" height="48" decoding="async" />
+          <LogoImage />
           {t("brand.name")}
         </a>
         {page !== "clubs" || selectedClub ? (
@@ -1195,7 +1195,7 @@ function SiteFooter({
     <footer className="siteFooter">
       <div className="footerBrand">
         <a className="footerLogo" href={clubsHref(date)} onClick={(event) => handleInternalNavigation(event, onNavigateToClubs)}>
-          <img src={assetPath("logo-256.webp")} alt="" width="48" height="48" decoding="async" />
+          <LogoImage />
           <span>{t("brand.name")}</span>
         </a>
         <p>{t("footer.description")}</p>
@@ -1536,6 +1536,20 @@ function ClubImage({ club, loading }: { club: Club; loading: "eager" | "lazy" })
         {...clubImageDimensions(club)}
       />
     </picture>
+  );
+}
+
+function LogoImage() {
+  return (
+    <img
+      src={assetPath("logo-64.webp")}
+      srcSet={`${assetPath("logo-64.webp")} 64w, ${assetPath("logo-128.webp")} 128w`}
+      sizes="48px"
+      alt=""
+      width="48"
+      height="48"
+      decoding="async"
+    />
   );
 }
 
