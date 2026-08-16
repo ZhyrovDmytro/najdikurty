@@ -80,7 +80,7 @@ const localeByLanguage: Record<LanguageCode, string> = {
 const SITE_ORIGIN = "https://hledejkurty.cz";
 const SOCIAL_IMAGE_URL = `${SITE_ORIGIN}/logo.png`;
 const DEFAULT_META_DESCRIPTION =
-  "Find free padel courts in Prague. Compare availability, prices, indoor and outdoor courts, Multisport support, addresses, and booking links in one place.";
+  "Find free padel courts in Prague. Search padel court availability by date, time, duration, indoor or outdoor courts, Multisport support, prices, and booking links.";
 
 interface SeoMeta {
   canonicalUrl: string;
@@ -339,6 +339,15 @@ const CLUBS: Club[] = [
 ];
 
 const FETCHABLE_CLUBS = CLUBS.filter((club) => club.availabilityEnabled !== false);
+const HOME_FEATURED_CLUB_SLUGS = [
+  "padel-prosek",
+  "padel-club-spoje",
+  "padel-neride",
+  "padel-dzus",
+  "padel-powers-smichov",
+  "one-padel"
+] as const;
+const ABOUT_FAQ_KEYS = ["availability", "booking", "trackedClubs", "accuracy", "multisport"] as const;
 const CLUB_IMAGE_DIMENSIONS: Record<string, { height: number; width: number }> = {
   "cisarska-louka-padel": { height: 768, width: 1024 },
   "head-tenis-centrum-vestec": { height: 1536, width: 2048 },
@@ -368,6 +377,15 @@ interface TrackedClub {
 interface LoadProgress {
   completed: number;
   total: number;
+}
+
+interface AvailabilityLoadOptions {
+  customEndTime?: string | null;
+  customStartTime?: string | null;
+  date?: string;
+  duration?: number;
+  selectedClubSlug?: string | null;
+  courtTypeFilter?: CourtTypeFilter;
 }
 
 async function parseAvailabilityResponse(response: Response): Promise<AvailabilityResult & { error?: string }> {
@@ -473,29 +491,48 @@ function App() {
   const [loadProgress, setLoadProgress] = useState<LoadProgress>({ completed: 0, total: 0 });
   const [checkedClubSlugs, setCheckedClubSlugs] = useState<Set<string>>(() => new Set());
   const [availabilityCheckClubs, setAvailabilityCheckClubs] = useState<Club[]>([]);
+  const [hasSearchedAvailability, setHasSearchedAvailability] = useState(initialPage === "clubs" && Boolean(initialParams.get("club")));
   const loadSequenceRef = useRef(0);
   const currentPragueDate = pragueDateInputValue(now);
   const trackedClubs = useMemo(() => sortTrackedClubs(buildTrackedClubs(CLUBS), allClubsSort), [allClubsSort]);
 
-  async function loadAvailability() {
-    const searchWindow = effectiveTimeWindowForDate(date, customStartTime, customEndTime, now);
-    const targetClubs = (selectedClubSlug
+  function clearAvailabilityResults() {
+    loadSequenceRef.current += 1;
+    setAvailabilityByClub({});
+    setFailedClubs([]);
+    setLoadError(null);
+    setIsLoading(false);
+    setLoadProgress({ completed: 0, total: 0 });
+    setCheckedClubSlugs(new Set());
+    setAvailabilityCheckClubs([]);
+  }
+
+  async function loadAvailability(options: AvailabilityLoadOptions = {}) {
+    const hasOption = (key: keyof AvailabilityLoadOptions) => Object.prototype.hasOwnProperty.call(options, key);
+    const searchDate = options.date ?? date;
+    const searchStartTime = hasOption("customStartTime") ? options.customStartTime ?? null : customStartTime;
+    const searchEndTime = hasOption("customEndTime") ? options.customEndTime ?? null : customEndTime;
+    const searchSelectedClubSlug = hasOption("selectedClubSlug") ? options.selectedClubSlug ?? null : selectedClubSlug;
+    const searchCourtTypeFilter = options.courtTypeFilter ?? courtTypeFilter;
+    const searchDuration = options.duration ?? duration;
+    const searchWindow = effectiveTimeWindowForDate(searchDate, searchStartTime, searchEndTime, now);
+    const targetClubs = (searchSelectedClubSlug
       ? CLUBS.filter(
           (club) =>
-            club.slug === selectedClubSlug &&
+            club.slug === searchSelectedClubSlug &&
             club.availabilityEnabled !== false &&
-            clubMatchesCourtType(club, courtTypeFilter)
+            clubMatchesCourtType(club, searchCourtTypeFilter)
         )
-      : FETCHABLE_CLUBS.filter((club) => clubMatchesCourtType(club, courtTypeFilter))
-    ).filter((club) => clubCanMatchSearchWindow(club, date, duration, searchWindow, now));
+      : FETCHABLE_CLUBS.filter((club) => clubMatchesCourtType(club, searchCourtTypeFilter))
+    ).filter((club) => clubCanMatchSearchWindow(club, searchDate, searchDuration, searchWindow, now));
     const loadId = loadSequenceRef.current + 1;
     loadSequenceRef.current = loadId;
 
     setIsLoading(true);
     setAvailabilityByClub((currentAvailability) => {
-      if (!selectedClubSlug) return {};
+      if (!searchSelectedClubSlug) return {};
       const nextAvailability = { ...currentAvailability };
-      delete nextAvailability[selectedClubSlug];
+      delete nextAvailability[searchSelectedClubSlug];
       return nextAvailability;
     });
     setFailedClubs([]);
@@ -514,7 +551,7 @@ function App() {
         targetClubs,
         AVAILABILITY_REQUEST_CONCURRENCY,
         async (club) => {
-          const params = new URLSearchParams({ club: club.slug, sport: club.sport, date });
+          const params = new URLSearchParams({ club: club.slug, sport: club.sport, date: searchDate });
           try {
             const payload = await fetchAvailabilityWithRetry(`${API_BASE_URL}/api/availability?${params}`, club.name);
 
@@ -560,6 +597,7 @@ function App() {
 
   useEffect(() => {
     if (page !== "clubs") return;
+    if (!selectedClubSlug) return;
     void loadAvailability();
   }, [courtTypeFilter, date, page, selectedClubSlug]);
 
@@ -594,6 +632,10 @@ function App() {
       setPage(nextPage);
       setDate(selectableDate(params.get("date"), pragueDateInputValue(new Date())));
       setSelectedClubSlug(nextPage === "clubs" ? params.get("club") : null);
+      setHasSearchedAvailability(nextPage === "clubs" && Boolean(params.get("club")));
+      if (nextPage === "clubs" && !params.get("club")) {
+        clearAvailabilityResults();
+      }
     }
 
     window.addEventListener("popstate", handlePopState);
@@ -708,6 +750,7 @@ function App() {
   const visibleClubSlugs = useMemo(() => visibleClubResults.map((result) => result.club.slug), [visibleClubResults]);
   const areAllCompactRowsExpanded =
     visibleClubSlugs.length > 0 && visibleClubSlugs.every((clubSlug) => expandedCompactClubSlugs.has(clubSlug));
+  const shouldShowMainResults = Boolean(selectedClub) || hasSearchedAvailability;
 
   useEffect(() => {
     capturePageView({
@@ -741,6 +784,50 @@ function App() {
       disabled={isLoading}
     />
   );
+  const searchAvailabilityButton = (
+    <Button
+      className="searchSubmitButton"
+      disabled={isLoading}
+      icon={isLoading ? <RefreshCw size={18} /> : <SearchCheck size={18} />}
+      onClick={() => {
+        captureEvent("availability_searched", {
+          court_type: courtTypeFilter,
+          date,
+          duration_minutes: duration,
+          selected_club: selectedClubSlug !== null
+        });
+        setHasSearchedAvailability(true);
+        void loadAvailability();
+      }}
+      type="button"
+      variant="primary"
+    >
+      {t("actions.searchAvailability")}
+    </Button>
+  );
+  const quickSearchOptions = [
+    {
+      endTime: "22:00",
+      id: "todayEvening",
+      label: t("quickSearch.todayEvening"),
+      startTime: "18:00",
+      targetDate: currentPragueDate
+    },
+    {
+      endTime: "12:00",
+      id: "tomorrowMorning",
+      label: t("quickSearch.tomorrowMorning"),
+      startTime: "08:00",
+      targetDate: addDaysToDateInput(currentPragueDate, 1)
+    },
+    {
+      endTime: "22:00",
+      id: "weekend",
+      label: t("quickSearch.weekend"),
+      startTime: "08:00",
+      targetDate: nextSaturdayDateInput(currentPragueDate)
+    }
+  ];
   const clubResultActions = (
     <div className="resultActions">
       <div className="resultSortControl">
@@ -886,7 +973,7 @@ function App() {
               <p>{t("home.intro")}</p>
             </section>
           ) : null}
-          <Card className="searchPanel">
+          <Card className={`searchPanel ${!selectedClub ? "searchPanel-withSubmit" : ""}`}>
         <div className="uiField searchField searchField-date">
           <span className="uiFieldLabel">
             <span className="uiFieldIcon">
@@ -949,6 +1036,10 @@ function App() {
                 filter: "court_type",
                 value: nextCourtType
               });
+              if (!selectedClubSlug) {
+                setHasSearchedAvailability(false);
+                clearAvailabilityResults();
+              }
               setCourtTypeFilter(nextCourtType);
             }}
           >
@@ -975,9 +1066,30 @@ function App() {
             ))}
           </Select>
         </Field>
+        {!selectedClub ? <div className="searchField searchField-submit">{searchAvailabilityButton}</div> : null}
           </Card>
 
-          <section className="resultBar">
+          {!selectedClub ? (
+            <section className="quickSearches" aria-label={t("quickSearch.label")}>
+              <span>{t("quickSearch.label")}</span>
+              <div>
+                {quickSearchOptions.map((option) => (
+                  <Button
+                    disabled={isLoading}
+                    key={option.id}
+                    onClick={() => runQuickSearch(option.id, option.targetDate, option.startTime, option.endTime)}
+                    type="button"
+                    variant="ghost"
+                  >
+                    {option.label}
+                  </Button>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          {shouldShowMainResults ? (
+            <section className="resultBar">
         <div>
           <Search size={18} />
           <strong>
@@ -985,10 +1097,11 @@ function App() {
           </strong>
         </div>
         {selectedClub ? <div className="resultActions">{refreshAvailabilityButton}</div> : null}
-          </section>
+            </section>
+          ) : null}
 
-          {loadError ? <Alert icon={<AlertCircle size={18} />} title={loadError} /> : null}
-          {!selectedClub && failedClubs.length > 0 ? <FailedClubAlert failedClubs={failedClubs} date={date} /> : null}
+          {shouldShowMainResults && loadError ? <Alert icon={<AlertCircle size={18} />} title={loadError} /> : null}
+          {shouldShowMainResults && !selectedClub && failedClubs.length > 0 ? <FailedClubAlert failedClubs={failedClubs} date={date} /> : null}
 
           {selectedClub && selectedAvailability ? (
             <ClubDetail
@@ -1015,7 +1128,7 @@ function App() {
               unavailableReason={selectedClubFailure?.reason}
               directBookingUrl={selectedClub.bookingUrl(date)}
             />
-          ) : (
+          ) : shouldShowMainResults ? (
             <ClubList
               results={visibleClubResults}
               isLoading={isLoading}
@@ -1027,6 +1140,13 @@ function App() {
               compact={isShortInfoMode}
               expandedClubSlugs={expandedCompactClubSlugs}
               onExpandedClubSlugsChange={setExpandedCompactClubSlugs}
+              onSelectClub={(club) => updateSelectedClub(club.slug)}
+            />
+          ) : (
+            <HomeDiscovery
+              clubs={trackedClubs}
+              date={date}
+              onBrowseClubs={() => navigateToAllClubs("push")}
               onSelectClub={(club) => updateSelectedClub(club.slug)}
             />
           )}
@@ -1051,7 +1171,37 @@ function App() {
       value: nextSelectableDate
     });
     setDate(nextSelectableDate);
+    if (page === "clubs" && !selectedClubSlug) {
+      setHasSearchedAvailability(false);
+      clearAvailabilityResults();
+    }
     writeUrl({ date: nextSelectableDate, clubSlug: selectedClubSlug, mode: "replace" });
+  }
+
+  function runQuickSearch(preset: string, nextDate: string, nextStartTime: string, nextEndTime: string) {
+    const nextSelectableDate = selectableDate(nextDate, currentPragueDate);
+    captureEvent("quick_search_selected", {
+      court_type: courtTypeFilter,
+      date: nextSelectableDate,
+      duration_minutes: duration,
+      end_time: nextEndTime,
+      preset,
+      start_time: nextStartTime
+    });
+    setDate(nextSelectableDate);
+    setCourtsNeeded(1);
+    setDuration(90);
+    setCustomStartTime(nextStartTime);
+    setCustomEndTime(nextEndTime);
+    setHasSearchedAvailability(true);
+    writeUrl({ date: nextSelectableDate, clubSlug: null, mode: "replace" });
+    void loadAvailability({
+      customEndTime: nextEndTime,
+      customStartTime: nextStartTime,
+      date: nextSelectableDate,
+      duration: 90,
+      selectedClubSlug: null
+    });
   }
 
   function updateStartTime(nextStartTime: string) {
@@ -1090,6 +1240,7 @@ function App() {
     }
     setPage("clubs");
     setSelectedClubSlug(nextClubSlug);
+    setHasSearchedAvailability(Boolean(nextClubSlug));
     setFailedClubs([]);
     writeUrl({ date, clubSlug: nextClubSlug, mode: "push" });
     window.scrollTo({ top: 0 });
@@ -1098,6 +1249,8 @@ function App() {
   function navigateToClubs(mode: "push" | "replace") {
     setPage("clubs");
     setSelectedClubSlug(null);
+    setHasSearchedAvailability(false);
+    clearAvailabilityResults();
     writeUrl({ date, clubSlug: null, mode });
     window.scrollTo({ top: 0 });
   }
@@ -1105,6 +1258,7 @@ function App() {
   function navigateToAllClubs(mode: "push" | "replace") {
     setPage("allClubs");
     setSelectedClubSlug(null);
+    setHasSearchedAvailability(false);
     writeUrl({ date, clubSlug: null, mode, page: "allClubs" });
     window.scrollTo({ top: 0 });
   }
@@ -1112,6 +1266,7 @@ function App() {
   function navigateToAbout(mode: "push" | "replace") {
     setPage("about");
     setSelectedClubSlug(null);
+    setHasSearchedAvailability(false);
     writeUrl({ date, clubSlug: null, mode, page: "about" });
     window.scrollTo({ top: 0 });
   }
@@ -1119,6 +1274,7 @@ function App() {
   function navigateToLegalPage(nextPage: "privacy" | "terms" | "cookies", mode: "push" | "replace") {
     setPage(nextPage);
     setSelectedClubSlug(null);
+    setHasSearchedAvailability(false);
     writeUrl({ date, clubSlug: null, mode, page: nextPage });
     window.scrollTo({ top: 0 });
   }
@@ -1237,6 +1393,144 @@ function SiteFooter({
   );
 }
 
+function HomeDiscovery({
+  clubs,
+  date,
+  onBrowseClubs,
+  onSelectClub
+}: {
+  clubs: TrackedClub[];
+  date: string;
+  onBrowseClubs: () => void;
+  onSelectClub: (club: Club) => void;
+}) {
+  const { t } = useTranslation();
+  const availabilityTrackedClubs = clubs.filter(({ club }) => club.availabilityEnabled !== false);
+  const totalCourtCount = availabilityTrackedClubs.reduce((total, { club }) => total + club.courtCount, 0);
+  const availabilityTrackedCount = availabilityTrackedClubs.length;
+  const multisportClubCount = availabilityTrackedClubs.filter(({ club }) => club.acceptsMultisport).length;
+  const weekdayLabels = t("date.weekdays", { returnObjects: true }) as string[];
+  const featuredClubs = HOME_FEATURED_CLUB_SLUGS.map((slug) => clubs.find(({ club }) => club.slug === slug)).filter(
+    (club): club is TrackedClub => Boolean(club)
+  );
+
+  return (
+    <section className="homeDiscovery" aria-labelledby="home-discovery-title">
+      <div className="homeDiscoveryIntro">
+        <div>
+          <h2 id="home-discovery-title">{t("home.landingTitle")}</h2>
+          <p>{t("home.landingBody")}</p>
+        </div>
+        <a
+          className="uiButton uiButton-secondary uiButton-md homeDiscoveryLink"
+          href={allClubsHref()}
+          onClick={(event) => handleInternalNavigation(event, onBrowseClubs)}
+        >
+          <span className="uiButtonIcon">
+            <ListOrdered size={17} />
+          </span>
+          <span>{t("home.allClubsCta")}</span>
+        </a>
+      </div>
+
+      <div className="homeStats" aria-label={t("home.statsLabel")}>
+        <Card className="homeStat">
+          <SearchCheck size={20} />
+          <strong>{t("allClubs.tracked", { count: availabilityTrackedCount })}</strong>
+          <span>{t("home.trackedClubsHelp")}</span>
+        </Card>
+        <Card className="homeStat">
+          <Scale size={20} />
+          <strong>{t("home.trackedCourts", { count: totalCourtCount })}</strong>
+          <span>{t("home.trackedCourtsHelp")}</span>
+        </Card>
+        <Card className="homeStat">
+          <WalletCards size={20} />
+          <strong>{t("home.multisportClubs", { count: multisportClubCount })}</strong>
+          <span>{t("home.multisportHelp")}</span>
+        </Card>
+      </div>
+
+      <div className="homeDiscoveryGrid">
+        <Card className="homeDiscoveryCard">
+          <Clock3 size={21} />
+          <h3>{t("home.featureTimeTitle")}</h3>
+          <p>{t("home.featureTimeBody")}</p>
+        </Card>
+        <Card className="homeDiscoveryCard">
+          <CloudSun size={21} />
+          <h3>{t("home.featureCourtTitle")}</h3>
+          <p>{t("home.featureCourtBody")}</p>
+        </Card>
+        <Card className="homeDiscoveryCard">
+          <ExternalLink size={21} />
+          <h3>{t("home.featureBookingTitle")}</h3>
+          <p>{t("home.featureBookingBody")}</p>
+        </Card>
+      </div>
+
+      <section className="homeFeaturedClubs" aria-labelledby="home-featured-clubs-title">
+        <div>
+          <h2 id="home-featured-clubs-title">{t("home.featuredClubsTitle")}</h2>
+          <p>{t("home.featuredClubsBody")}</p>
+        </div>
+        <div className="homeClubCards">
+          {featuredClubs.map(({ club, priceFrom }) => (
+            <article
+              className="homeClubCard"
+              key={club.slug}
+            >
+              <a
+                className="homeClubCardLink"
+                href={clubHref(date, club.slug)}
+                onClick={(event) => handleInternalNavigation(event, () => onSelectClub(club))}
+              >
+                <span className="homeClubCardHeader">
+                  <strong>{club.name}</strong>
+                  <span className="trackedClubPrice">
+                    {t("club.from")} <strong>{formatCzkPerHour(priceFrom)}</strong>
+                  </span>
+                </span>
+                <span className="homeClubMetaLine">
+                  <UsersRound size={15} />
+                  <span>
+                    {club.courtCount} {t("club.court", { count: club.courtCount })}
+                  </span>
+                  <CourtTypeBadges courtTypes={club.courtTypes} />
+                </span>
+                <span className="homeClubMetaLine">
+                  <WalletCards size={15} />
+                  {club.acceptsMultisport ? (
+                    <span className="multisportBadge">{t("club.multisport")}</span>
+                  ) : (
+                    <span className="noMultisportBadge">{t("club.noMultisport")}</span>
+                  )}
+                </span>
+                <span className="homeClubMetaLine">
+                  <Clock3 size={15} />
+                  <span>
+                    {formatOpeningHours(club.openingHours, weekdayLabels, t("club.daily"), t("club.notPublished"))}
+                  </span>
+                </span>
+              </a>
+              <a
+                className="homeClubMetaLine homeClubAddress"
+                href={googleMapsUrl(club.address)}
+                target="_blank"
+                rel="noreferrer"
+                onClick={() => captureEvent("map_opened", { club_slug: club.slug, source: "home_featured_clubs" })}
+              >
+                <MapPin size={15} />
+                <span>{club.address}</span>
+              </a>
+            </article>
+          ))}
+        </div>
+      </section>
+    </section>
+  );
+}
+
 function AllClubsPage({
   clubs,
   sort,
@@ -1274,7 +1568,9 @@ function AllClubsPage({
       <div className="pageHeader">
         <div>
           <Badge tone="green">
-            {visibleClubs.length === clubs.length ? t("allClubs.tracked", { count: clubs.length }) : `${visibleClubs.length}/${clubs.length} ${t("nav.clubs").toLocaleLowerCase()}`}
+            {visibleClubs.length === clubs.length
+              ? `${t("allClubs.tracked", { count: FETCHABLE_CLUBS.length })} · ${t("allClubs.listed", { count: clubs.length })}`
+              : `${visibleClubs.length}/${clubs.length} ${t("nav.clubs").toLocaleLowerCase()}`}
           </Badge>
           <h1 id="all-clubs-title">{t("nav.allClubs")}</h1>
         </div>
@@ -1372,7 +1668,6 @@ function AboutPage({ onBrowseClubs }: { onBrowseClubs: () => void }) {
   return (
     <section className="aboutPage" aria-labelledby="about-title">
       <div className="aboutHero">
-        <Badge tone="green">{t("nav.about")}</Badge>
         <h1 id="about-title">{t("about.title")}</h1>
         <p>{t("about.body")}</p>
         <Button icon={<SearchCheck size={17} />} onClick={onBrowseClubs}>
@@ -1396,6 +1691,31 @@ function AboutPage({ onBrowseClubs }: { onBrowseClubs: () => void }) {
           <h2>{t("about.cardLimitsTitle")}</h2>
           <p>{t("about.cardLimitsBody")}</p>
         </Card>
+      </div>
+
+      <FaqAccordion />
+    </section>
+  );
+}
+
+function FaqAccordion() {
+  const { t } = useTranslation();
+
+  return (
+    <section className="faqSection" aria-labelledby="faq-title">
+      <div className="faqHeader">
+        <h2 id="faq-title">{t("about.faqTitle")}</h2>
+      </div>
+      <div className="faqList">
+        {ABOUT_FAQ_KEYS.map((question) => (
+          <details className="faqItem" key={question}>
+            <summary>
+              <span>{t(`about.faq.${question}.question`)}</span>
+              <ChevronDown size={18} />
+            </summary>
+            <p>{t(`about.faq.${question}.answer`)}</p>
+          </details>
+        ))}
       </div>
     </section>
   );
@@ -2307,6 +2627,55 @@ function weekdayOpeningHours(openingHours: Record<number, TimeRange>): Record<nu
   return openingHours;
 }
 
+function formatOpeningHours(
+  openingHours: Record<number, TimeRange> | undefined,
+  weekdayLabels: string[],
+  dailyLabel: string,
+  notPublishedLabel: string
+): string {
+  if (!openingHours) return notPublishedLabel;
+
+  const orderedDays = [1, 2, 3, 4, 5, 6, 0];
+  const dayEntries = orderedDays.flatMap((day) => {
+    const range = openingHours[day];
+    return range ? [{ day, range }] : [];
+  });
+
+  if (dayEntries.length === 0) return notPublishedLabel;
+
+  const firstRange = dayEntries[0]?.range;
+  const sameEveryDay =
+    dayEntries.length === 7 &&
+    firstRange &&
+    dayEntries.every(({ range }) => range.start === firstRange.start && range.end === firstRange.end);
+
+  if (sameEveryDay) {
+    return `${dailyLabel} ${firstRange.start}-${firstRange.end}`;
+  }
+
+  const groups: Array<{ endDay: number; range: TimeRange; startDay: number }> = [];
+  for (const { day, range } of dayEntries) {
+    const previousGroup = groups[groups.length - 1];
+    if (previousGroup && previousGroup.range.start === range.start && previousGroup.range.end === range.end) {
+      previousGroup.endDay = day;
+    } else {
+      groups.push({ endDay: day, range, startDay: day });
+    }
+  }
+
+  return groups
+    .map(({ endDay, range, startDay }) => {
+      const dayLabel = startDay === endDay ? weekdayLabel(startDay, weekdayLabels) : `${weekdayLabel(startDay, weekdayLabels)}-${weekdayLabel(endDay, weekdayLabels)}`;
+      return `${dayLabel} ${range.start}-${range.end}`;
+    })
+    .join(", ");
+}
+
+function weekdayLabel(day: number, weekdayLabels: string[]): string {
+  if (day === 0) return weekdayLabels[6] ?? "Sun";
+  return weekdayLabels[day - 1] ?? String(day);
+}
+
 function clubImageDimensions(club: Club): { height?: number; width?: number } {
   return CLUB_IMAGE_DIMENSIONS[club.slug] ?? {};
 }
@@ -2694,6 +3063,9 @@ function buildStructuredData({
   if (selectedClub) {
     graph.push(buildClubStructuredData(selectedClub, date, canonicalUrl));
     graph.push(buildBreadcrumbStructuredData([{ name: "Padel courts", url: SITE_ORIGIN }, { name: selectedClub.name, url: canonicalUrl }]));
+  } else if (page === "about") {
+    graph.push(buildFaqStructuredData(canonicalUrl, language));
+    graph.push(buildBreadcrumbStructuredData([{ name: "Padel courts", url: SITE_ORIGIN }, { name: title.replace(" | HLEDEJKURTY", ""), url: canonicalUrl }]));
   } else if (page === "allClubs" || page === "clubs") {
     graph.push(buildClubItemListStructuredData(CLUBS));
   } else {
@@ -2703,6 +3075,22 @@ function buildStructuredData({
   return {
     "@context": "https://schema.org",
     "@graph": graph
+  };
+}
+
+function buildFaqStructuredData(canonicalUrl: string, language: LanguageCode): Record<string, unknown> {
+  return {
+    "@id": `${canonicalUrl}#faq`,
+    "@type": "FAQPage",
+    inLanguage: localeByLanguage[language],
+    mainEntity: ABOUT_FAQ_KEYS.map((question) => ({
+      "@type": "Question",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: i18n.t(`about.faq.${question}.answer`, { lng: language })
+      },
+      name: i18n.t(`about.faq.${question}.question`, { lng: language })
+    }))
   };
 }
 
@@ -2822,6 +3210,11 @@ function clubsHref(date: string): string {
   return `?${params.toString()}`;
 }
 
+function clubHref(date: string, clubSlug: string): string {
+  const params = new URLSearchParams({ date, club: clubSlug });
+  return `?${params.toString()}`;
+}
+
 function allClubsHref(): string {
   return "?page=all-clubs";
 }
@@ -2909,6 +3302,11 @@ function addDaysToDateInput(date: string, days: number): string {
   const [year, month, day] = date.split("-").map(Number);
   const nextDate = new Date(Date.UTC(year, month - 1, day + days, 12));
   return nextDate.toISOString().slice(0, 10);
+}
+
+function nextSaturdayDateInput(date: string): string {
+  const weekday = weekdayForDate(date);
+  return addDaysToDateInput(date, (6 - weekday + 7) % 7);
 }
 
 function addMonthsToMonthInput(month: string, months: number): string {

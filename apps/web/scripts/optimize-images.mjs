@@ -64,3 +64,13 @@ await sharp(path.join(publicDir, "logo.png"))
   .resize({ width: 180, height: 180, fit: "contain", withoutEnlargement: true })
   .png({ compressionLevel: 9, palette: true })
   .toFile(path.join(publicDir, "apple-touch-icon.png"));
+
+await sharp(path.join(publicDir, "logo.png"))
+  .resize({ width: 32, height: 32, fit: "contain", withoutEnlargement: true })
+  .png({ compressionLevel: 9, palette: true })
+  .toFile(path.join(publicDir, "favicon-32.png"));
+
+await sharp(path.join(publicDir, "logo.png"))
+  .resize({ width: 16, height: 16, fit: "contain", withoutEnlargement: true })
+  .png({ compressionLevel: 9, palette: true })
+  .toFile(path.join(publicDir, "favicon-16.png"));

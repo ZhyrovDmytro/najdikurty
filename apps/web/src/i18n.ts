@@ -38,7 +38,8 @@ const resources = {
         showCompactList: "Show compact list",
         showSlots: "Show slots",
         switchToDarkMode: "Switch to dark mode",
-        switchToLightMode: "Switch to light mode"
+        switchToLightMode: "Switch to light mode",
+        searchAvailability: "Search"
       },
       brand: {
         name: "HLEDEJKURTY"
@@ -49,6 +50,8 @@ const resources = {
         searchAria: "Search clubs by name",
         searchLabel: "Search",
         searchPlaceholder: "Club name",
+        listed_one: "{{count}} club listed",
+        listed_other: "{{count}} clubs listed",
         tracked_one: "{{count}} club tracked",
         tracked_other: "{{count}} clubs tracked"
       },
@@ -60,6 +63,29 @@ const resources = {
         cardLimitsTitle: "Transparent limits",
         cardSearchBody: "Instead of checking many calendars manually, filter once and see which clubs currently have matching slots.",
         cardSearchTitle: "One search",
+        faq: {
+          accuracy: {
+            answer: "Availability can change quickly because reservations happen in each club's own booking system. Use HLEDEJKURTY to find likely free slots, then confirm the final time and price on the official club page.",
+            question: "How accurate is the availability?"
+          },
+          availability: {
+            answer: "The app checks supported club booking systems for the date, duration, number of courts, court type, and time window you choose.",
+            question: "How does the search work?"
+          },
+          booking: {
+            answer: "No. HLEDEJKURTY does not take payments or reservations. The booking button always sends you to the official booking system for the selected club.",
+            question: "Can I book directly here?"
+          },
+          multisport: {
+            answer: "When a club publishes Multisport support, we show it as a label. Always confirm current payment rules with the club before booking.",
+            question: "Do you show Multisport support?"
+          },
+          trackedClubs: {
+            answer: "Right now we can check reservations for these 10 clubs: Padel Prosek, Padel Club Spoje, Tenis & Padel klub Písečná, SK Slavia Praha Padel, Padel Neride, Padel Džus, Padel Powers Smíchov, One Padel, Císařská louka Padel, and SK Satalice. You can find the full padel club directory on the All clubs page.",
+            question: "Which clubs are tracked?"
+          }
+        },
+        faqTitle: "Frequently asked questions",
         title: "Find a free padel court without opening every booking system."
       },
       availability: {
@@ -86,6 +112,7 @@ const resources = {
         court_other: "courts",
         courtType: "Court type",
         courtTypes: "Court types",
+        daily: "Daily",
         providerCourtPrefix: "Court",
         date: "Date",
         duration: "Duration",
@@ -97,11 +124,13 @@ const resources = {
         matchingSlots_one: "{{count}} matching slot",
         matchingSlots_other: "{{count}} matching slots",
         multisport: "Multisport",
+        noMultisport: "No Multisport",
         noMatchingBody: "Try a shorter duration, fewer courts, or another day.",
         noMatchingTitle: "No matching clubs",
         noSlotsBody: "Change the filters or go back to see other matching clubs.",
         noSlotsTitle: "No slots for this club",
         notPublished: "Not published",
+        openingHours: "Working hours",
         outdoor: "Outdoor",
         priceUnknown: "Price unknown",
         slots_one: "{{count}} slot",
@@ -126,8 +155,27 @@ const resources = {
         service: "Service"
       },
       home: {
-        intro: "Choose a date, duration, number of courts, court type, and time window to see matching padel clubs around Prague.",
-        title: "Find free padel courts in Prague"
+        allClubsCta: "Browse all tracked clubs",
+        featureBookingBody: "Open the official booking system only after you find a club that matches your search.",
+        featureBookingTitle: "Book at the club",
+        featureCourtBody: "Filter by indoor or outdoor padel courts, court count, duration, price, and Multisport support.",
+        featureCourtTitle: "Compare useful details",
+        featureTimeBody: "Pick today, tomorrow, or another date before checking availability, so the app only asks clubs when you are ready.",
+        featureTimeTitle: "Choose the right date first",
+        featuredClubsBody: "The full club list includes addresses, prices, court types, Multisport labels, and direct booking links.",
+        featuredClubsTitle: "Popular tracked padel clubs in Prague",
+        intro: "Choose a date, duration, number of courts, court type, and time window, then search real-time padel court availability around Prague.",
+        landingBody: "HLEDEJKURTY helps you find free padel courts in Prague without opening every booking system manually. Search by date, start time, duration, number of courts, indoor or outdoor courts, prices, Multisport support, and official booking links.",
+        landingTitle: "Search padel court availability",
+        multisportClubs_one: "{{count}} Multisport club",
+        multisportClubs_other: "{{count}} Multisport clubs",
+        multisportHelp: "Easy to spot before booking",
+        statsLabel: "Tracked padel court statistics",
+        title: "Find free padel courts in Prague",
+        trackedClubsHelp: "Across Prague and nearby areas",
+        trackedCourts_one: "{{count}} padel court",
+        trackedCourts_other: "{{count}} padel courts",
+        trackedCourtsHelp: "Actively checked for availability"
       },
       legal: {
         badgeCookies: "Cookies",
@@ -177,6 +225,12 @@ const resources = {
         privacy: "Privacy Policy",
         terms: "Terms of Use"
       },
+      quickSearch: {
+        label: "Quick searches",
+        todayEvening: "Today Evening",
+        tomorrowMorning: "Tomorrow Morning",
+        weekend: "Weekend"
+      },
       sort: {
         highestPrice: "Highest price",
         indoorFirst: "Indoor first",
@@ -208,7 +262,8 @@ const resources = {
         showCompactList: "Показати компактний список",
         showSlots: "Показати слоти",
         switchToDarkMode: "Перемкнути на темну тему",
-        switchToLightMode: "Перемкнути на світлу тему"
+        switchToLightMode: "Перемкнути на світлу тему",
+        searchAvailability: "Шукати"
       },
       brand: {
         name: "HLEDEJKURTY"
@@ -219,6 +274,8 @@ const resources = {
         searchAria: "Пошук клубів за назвою",
         searchLabel: "Пошук",
         searchPlaceholder: "Назва клубу",
+        listed_one: "{{count}} клуб у списку",
+        listed_other: "{{count}} клубів у списку",
         tracked_one: "Відстежується {{count}} клуб",
         tracked_other: "Відстежується {{count}} клубів"
       },
@@ -230,6 +287,29 @@ const resources = {
         cardLimitsTitle: "Прозорі обмеження",
         cardSearchBody: "Замість перевірки багатьох календарів вручну задайте фільтри один раз і побачте, де зараз є відповідні слоти.",
         cardSearchTitle: "Один пошук",
+        faq: {
+          accuracy: {
+            answer: "Доступність може швидко змінюватися, бо бронювання відбувається в системі кожного клубу. Використовуйте HLEDEJKURTY, щоб знайти ймовірно вільні слоти, а фінальний час і ціну підтверджуйте на сторінці клубу.",
+            question: "Наскільки точна доступність?"
+          },
+          availability: {
+            answer: "Застосунок перевіряє підтримувані системи бронювання клубів за вибраною датою, тривалістю, кількістю кортів, типом корту та часовим проміжком.",
+            question: "Як працює пошук?"
+          },
+          booking: {
+            answer: "Ні. HLEDEJKURTY не приймає оплату й не створює бронювання. Кнопка бронювання завжди відкриває офіційну систему вибраного клубу.",
+            question: "Чи можна бронювати прямо тут?"
+          },
+          multisport: {
+            answer: "Коли клуб публікує підтримку Multisport, ми показуємо це як позначку. Перед бронюванням завжди уточнюйте актуальні правила оплати в клубі.",
+            question: "Чи показуєте ви підтримку Multisport?"
+          },
+          trackedClubs: {
+            answer: "Зараз ми можемо перевіряти бронювання для цих 10 клубів: Padel Prosek, Padel Club Spoje, Tenis & Padel klub Písečná, SK Slavia Praha Padel, Padel Neride, Padel Džus, Padel Powers Smíchov, One Padel, Císařská louka Padel і SK Satalice. Повний каталог падел-клубів можна знайти на сторінці всіх клубів.",
+            question: "Які клуби відстежуються?"
+          }
+        },
+        faqTitle: "Поширені запитання",
         title: "Знайдіть вільний корт для паделу без відкривання кожної системи бронювання."
       },
       availability: {
@@ -256,6 +336,7 @@ const resources = {
         court_other: "кортів",
         courtType: "Тип корту",
         courtTypes: "Типи кортів",
+        daily: "Щодня",
         providerCourtPrefix: "Корт",
         date: "Дата",
         duration: "Тривалість",
@@ -267,11 +348,13 @@ const resources = {
         matchingSlots_one: "{{count}} відповідний слот",
         matchingSlots_other: "{{count}} відповідних слотів",
         multisport: "Multisport",
+        noMultisport: "Без Multisport",
         noMatchingBody: "Спробуйте коротшу тривалість, менше кортів або інший день.",
         noMatchingTitle: "Немає відповідних клубів",
         noSlotsBody: "Змініть фільтри або поверніться, щоб побачити інші відповідні клуби.",
         noSlotsTitle: "Немає слотів для цього клубу",
         notPublished: "Не опубліковано",
+        openingHours: "Години роботи",
         outdoor: "Надворі",
         priceUnknown: "Ціна невідома",
         slots_one: "{{count}} слот",
@@ -296,8 +379,27 @@ const resources = {
         service: "Сервіс"
       },
       home: {
-        intro: "Оберіть дату, тривалість, кількість кортів, тип корту й часовий проміжок, щоб побачити відповідні падел-клуби в Празі.",
-        title: "Знайдіть вільні падел-корти у Празі"
+        allClubsCta: "Переглянути всі клуби",
+        featureBookingBody: "Відкривайте офіційну систему бронювання лише після того, як знайдете клуб під ваш запит.",
+        featureBookingTitle: "Бронювання у клубі",
+        featureCourtBody: "Фільтруйте криті й відкриті падел-корти, кількість кортів, тривалість, ціну та Multisport.",
+        featureCourtTitle: "Порівняйте важливі деталі",
+        featureTimeBody: "Оберіть сьогодні, завтра або іншу дату до перевірки доступності, щоб застосунок звертався до клубів тільки коли ви готові.",
+        featureTimeTitle: "Спочатку виберіть потрібну дату",
+        featuredClubsBody: "Повний список клубів містить адреси, ціни, типи кортів, позначки Multisport і прямі посилання на бронювання.",
+        featuredClubsTitle: "Популярні падел-клуби у Празі",
+        intro: "Оберіть дату, тривалість, кількість кортів, тип корту й часовий проміжок, а потім перевірте доступність падел-кортів у Празі.",
+        landingBody: "HLEDEJKURTY допомагає знаходити вільні падел-корти у Празі без ручного відкривання кожної системи бронювання. Шукайте за датою, часом початку, тривалістю, кількістю кортів, критими чи відкритими кортами, цінами, Multisport і офіційними посиланнями на бронювання.",
+        landingTitle: "Перевіряйте доступність падел-кортів",
+        multisportClubs_one: "{{count}} клуб з Multisport",
+        multisportClubs_other: "{{count}} клубів з Multisport",
+        multisportHelp: "Легко побачити перед бронюванням",
+        statsLabel: "Статистика відстежуваних падел-кортів",
+        title: "Знайдіть вільні падел-корти у Празі",
+        trackedClubsHelp: "У Празі та поблизу",
+        trackedCourts_one: "{{count}} падел-корт",
+        trackedCourts_other: "{{count}} падел-кортів",
+        trackedCourtsHelp: "Активно перевіряються на доступність"
       },
       legal: {
         badgeCookies: "Cookies",
@@ -347,6 +449,12 @@ const resources = {
         privacy: "Політика приватності",
         terms: "Умови використання"
       },
+      quickSearch: {
+        label: "Швидкий пошук",
+        todayEvening: "Сьогодні ввечері",
+        tomorrowMorning: "Завтра вранці",
+        weekend: "Вихідні"
+      },
       sort: {
         highestPrice: "Найвища ціна",
         indoorFirst: "Спочатку в залі",
@@ -378,7 +486,8 @@ const resources = {
         showCompactList: "Zobrazit kompaktní seznam",
         showSlots: "Zobrazit časy",
         switchToDarkMode: "Přepnout na tmavý režim",
-        switchToLightMode: "Přepnout na světlý režim"
+        switchToLightMode: "Přepnout na světlý režim",
+        searchAvailability: "Hledat"
       },
       brand: {
         name: "HLEDEJKURTY"
@@ -389,6 +498,8 @@ const resources = {
         searchAria: "Hledat kluby podle názvu",
         searchLabel: "Hledat",
         searchPlaceholder: "Název klubu",
+        listed_one: "{{count}} klub v seznamu",
+        listed_other: "{{count}} klubů v seznamu",
         tracked_one: "Sleduje se {{count}} klub",
         tracked_other: "Sleduje se {{count}} klubů"
       },
@@ -400,6 +511,29 @@ const resources = {
         cardLimitsTitle: "Transparentní limity",
         cardSearchBody: "Místo ruční kontroly mnoha kalendářů nastavíte filtr jednou a uvidíte, které kluby mají odpovídající časy.",
         cardSearchTitle: "Jedno hledání",
+        faq: {
+          accuracy: {
+            answer: "Dostupnost se může rychle změnit, protože rezervace probíhají ve vlastním systému každého klubu. HLEDEJKURTY použijte k nalezení pravděpodobně volných časů a finální čas i cenu potvrďte na stránce klubu.",
+            question: "Jak přesná je dostupnost?"
+          },
+          availability: {
+            answer: "Aplikace kontroluje podporované rezervační systémy klubů podle zvoleného data, délky hry, počtu kurtů, typu kurtu a časového okna.",
+            question: "Jak vyhledávání funguje?"
+          },
+          booking: {
+            answer: "Ne. HLEDEJKURTY nepřijímá platby ani nevytváří rezervace. Tlačítko rezervace vás vždy pošle do oficiálního rezervačního systému vybraného klubu.",
+            question: "Mohu rezervovat přímo tady?"
+          },
+          multisport: {
+            answer: "Když klub uvádí podporu Multisport, zobrazíme ji jako štítek. Aktuální pravidla platby si před rezervací vždy ověřte u klubu.",
+            question: "Zobrazujete podporu Multisport?"
+          },
+          trackedClubs: {
+            answer: "Právě teď umíme kontrolovat rezervace u těchto 10 klubů: Padel Prosek, Padel Club Spoje, Tenis & Padel klub Písečná, SK Slavia Praha Padel, Padel Neride, Padel Džus, Padel Powers Smíchov, One Padel, Císařská louka Padel a SK Satalice. Kompletní katalog padelových klubů najdete na stránce Všechny kluby.",
+            question: "Které kluby sledujete?"
+          }
+        },
+        faqTitle: "Časté otázky",
         title: "Najděte volný padelový kurt bez otevírání každého rezervačního systému."
       },
       availability: {
@@ -426,6 +560,7 @@ const resources = {
         court_other: "kurtů",
         courtType: "Typ kurtu",
         courtTypes: "Typy kurtů",
+        daily: "Denně",
         providerCourtPrefix: "Kurt",
         date: "Datum",
         duration: "Délka",
@@ -437,11 +572,13 @@ const resources = {
         matchingSlots_one: "{{count}} odpovídající čas",
         matchingSlots_other: "{{count}} odpovídajících časů",
         multisport: "Multisport",
+        noMultisport: "Bez Multisport",
         noMatchingBody: "Zkuste kratší délku, méně kurtů nebo jiný den.",
         noMatchingTitle: "Žádné odpovídající kluby",
         noSlotsBody: "Změňte filtry nebo se vraťte a zobrazte jiné odpovídající kluby.",
         noSlotsTitle: "Pro tento klub nejsou žádné časy",
         notPublished: "Nezveřejněno",
+        openingHours: "Otevírací doba",
         outdoor: "Venkovní",
         priceUnknown: "Cena neznámá",
         slots_one: "{{count}} čas",
@@ -466,8 +603,27 @@ const resources = {
         service: "Služba"
       },
       home: {
-        intro: "Vyberte datum, délku hry, počet kurtů, typ kurtu a časové okno a zobrazte odpovídající padelové kluby v Praze.",
-        title: "Najděte volné padelové kurty v Praze"
+        allClubsCta: "Zobrazit všechny kluby",
+        featureBookingBody: "Oficiální rezervační systém otevřete až ve chvíli, kdy najdete klub odpovídající vašemu hledání.",
+        featureBookingTitle: "Rezervace u klubu",
+        featureCourtBody: "Filtrujte vnitřní i venkovní padelové kurty, počet kurtů, délku hry, cenu a podporu Multisport.",
+        featureCourtTitle: "Porovnejte důležité detaily",
+        featureTimeBody: "Vyberte dnešek, zítřek nebo jiné datum před kontrolou dostupnosti, aby aplikace oslovila kluby až ve chvíli, kdy jste připraveni.",
+        featureTimeTitle: "Nejdřív vyberte správné datum",
+        featuredClubsBody: "Úplný seznam klubů obsahuje adresy, ceny, typy kurtů, štítky Multisport a přímé odkazy na rezervaci.",
+        featuredClubsTitle: "Oblíbené sledované padelové kluby v Praze",
+        intro: "Vyberte datum, délku hry, počet kurtů, typ kurtu a časové okno, potom zkontrolujte dostupnost padelových kurtů v Praze.",
+        landingBody: "HLEDEJKURTY pomáhá najít volné padelové kurty v Praze bez ručního otevírání každého rezervačního systému. Hledejte podle data, začátku, délky hry, počtu kurtů, vnitřních nebo venkovních kurtů, cen, Multisport a oficiálních rezervačních odkazů.",
+        landingTitle: "Zkontrolujte dostupnost padelových kurtů",
+        multisportClubs_one: "{{count}} klub s Multisport",
+        multisportClubs_other: "{{count}} klubů s Multisport",
+        multisportHelp: "Viditelné ještě před rezervací",
+        statsLabel: "Statistiky sledovaných padelových kurtů",
+        title: "Najděte volné padelové kurty v Praze",
+        trackedClubsHelp: "V Praze a okolí",
+        trackedCourts_one: "{{count}} padelový kurt",
+        trackedCourts_other: "{{count}} padelových kurtů",
+        trackedCourtsHelp: "Aktivně kontrolováno pro dostupnost"
       },
       legal: {
         badgeCookies: "Cookies",
@@ -516,6 +672,12 @@ const resources = {
         primaryNavigation: "Hlavní navigace",
         privacy: "Zásady ochrany soukromí",
         terms: "Podmínky použití"
+      },
+      quickSearch: {
+        label: "Rychlé hledání",
+        todayEvening: "Dnes večer",
+        tomorrowMorning: "Zítra ráno",
+        weekend: "Víkend"
       },
       sort: {
         highestPrice: "Nejvyšší cena",
