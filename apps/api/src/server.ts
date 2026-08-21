@@ -16,6 +16,12 @@ import {
   fetchSkySportCityAvailability,
   isPlaytomicClubSlug
 } from "@mamekurt/scrapers";
+import { createDatabaseFromEnvironment, type DatabaseConnection } from "./db/client.js";
+import { manualRefreshRequestSchema, queueManualRefreshes } from "./scheduling/manual-refresh.js";
+import { ScrapeJobRepository } from "./scheduling/job-repository.js";
+import { searchQuerySchema } from "./search/query.js";
+import { DrizzleSearchRepository } from "./search/repository.js";
+import { SearchService } from "./search/search-service.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 4000);
@@ -43,6 +49,9 @@ interface CachedAvailability {
 
 const availabilityCache = new Map<string, CachedAvailability>();
 const inFlightAvailability = new Map<string, Promise<AvailabilityPayload>>();
+let searchDatabaseConnection: DatabaseConnection | undefined;
+let databaseSearchService: SearchService | undefined;
+let scrapeJobRepository: ScrapeJobRepository | undefined;
 
 const querySchema = z.object({
   club: z.string().default("tk-sparta-praha"),
@@ -52,6 +61,7 @@ const querySchema = z.object({
 });
 
 app.use(cors());
+app.use(express.json({ limit: "16kb" }));
 
 app.get("/health", (_request, response) => {
   response.json({ ok: true });
@@ -138,6 +148,49 @@ app.get("/api/availability", async (request, response, next) => {
   }
 });
 
+app.get("/api/search", async (request, response, next) => {
+  const startedAt = Date.now();
+  const requestId = createRequestId();
+
+  try {
+    const parsedQuery = searchQuerySchema.safeParse(request.query);
+    if (!parsedQuery.success) {
+      response.status(400).json({ error: "Invalid search query", details: parsedQuery.error.flatten() });
+      return;
+    }
+    const query = parsedQuery.data;
+    logInfo("search.database.start", { requestId, ...query });
+    const result = await getDatabaseSearchService().search(query);
+    logInfo("search.database.success", {
+      requestId,
+      results: result.results.length,
+      durationMs: Date.now() - startedAt,
+      queryDurationMs: result.queryDurationMs
+    });
+    response.json(result);
+  } catch (error) {
+    logError("search.database.failure", error, { requestId, durationMs: Date.now() - startedAt });
+    next(error);
+  }
+});
+
+app.post("/api/refresh", async (request, response, next) => {
+  const requestId = createRequestId();
+  try {
+    const parsed = manualRefreshRequestSchema.safeParse(request.body);
+    if (!parsed.success) {
+      response.status(400).json({ error: "Invalid refresh request", details: parsed.error.flatten() });
+      return;
+    }
+    const results = await queueManualRefreshes(getScrapeJobRepository(), parsed.data);
+    logInfo("refresh.queued", { requestId, date: parsed.data.date, results });
+    response.status(202).json({ queued: true, date: parsed.data.date, results });
+  } catch (error) {
+    logError("refresh.failure", error, { requestId });
+    next(error);
+  }
+});
+
 app.use((error: unknown, _request: express.Request, response: express.Response, _next: express.NextFunction) => {
   const message = error instanceof Error ? error.message : "Unexpected error";
   response.status(500).json({ error: message });
@@ -147,6 +200,22 @@ app.listen(port, host, () => {
   console.log(`Mamekurt API listening on http://${host}:${port}`);
   startAvailabilityWarmer();
 });
+
+function getDatabaseSearchService(): SearchService {
+  if (databaseSearchService) return databaseSearchService;
+  databaseSearchService = new SearchService(new DrizzleSearchRepository(getDatabaseConnection().db));
+  return databaseSearchService;
+}
+
+function getScrapeJobRepository(): ScrapeJobRepository {
+  scrapeJobRepository ??= new ScrapeJobRepository(getDatabaseConnection().db);
+  return scrapeJobRepository;
+}
+
+function getDatabaseConnection(): DatabaseConnection {
+  searchDatabaseConnection ??= createDatabaseFromEnvironment();
+  return searchDatabaseConnection;
+}
 
 function startAvailabilityWarmer(): void {
   if (!availabilityWarmerEnabled()) {

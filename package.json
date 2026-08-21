@@ -16,5 +16,8 @@
     "dev:api": "npm run dev -w @mamekurt/api",
     "dev:web": "npm run dev -w @mamekurt/web",
     "test": "npm test --workspaces --if-present"
+  },
+  "devDependencies": {
+    "drizzle-orm": "^0.45.2"
   }
 }

@@ -4,20 +4,38 @@
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "db:check": "drizzle-kit check",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
     "dev": "tsx watch src/server.ts",
-    "start": "node dist/server.js"
+    "scrape": "tsx src/cli/scrape.ts",
+    "scheduler": "tsx src/cli/scheduler.ts",
+    "scheduler:once": "tsx src/cli/scheduler.ts --once",
+    "worker": "tsx src/cli/worker.ts",
+    "jobs:once": "tsx src/cli/worker.ts --once",
+    "start": "node dist/server.js",
+    "start:scheduler": "node dist/cli/scheduler.js",
+    "start:worker": "node dist/cli/worker.js",
+    "start:jobs:once": "node dist/cli/worker.js --once",
+    "test": "vitest run"
   },
   "dependencies": {
     "@mamekurt/scrapers": "0.1.0",
     "cors": "^2.8.5",
+    "drizzle-orm": "^0.45.2",
     "express": "^4.19.2",
+    "postgres": "^3.4.9",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/node": "^20.14.10",
+    "dotenv": "^17.4.2",
+    "drizzle-kit": "^0.31.10",
     "tsx": "^4.16.2",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "vitest": "^2.1.9"
   }
 }

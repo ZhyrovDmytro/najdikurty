@@ -1,9 +1,13 @@
-import { parsePlaytomicAvailability } from "./parser.js";
+import type { Club } from "../../domain/models.js";
+import { localDateRange } from "../../domain/timezone.js";
+import { toLegacyPlaytomicAvailability } from "./parser.js";
+import { PlaytomicAvailabilityProvider } from "./provider.js";
 import type { AvailabilityResult, TimeRange } from "../../types.js";
 
 const PRAGUE_TIMEZONE = "Europe/Prague";
 
 interface PlaytomicClubConfig {
+  name: string;
   tenantId: string;
   resourceIds: string[];
   timezone: string;
@@ -12,6 +16,7 @@ interface PlaytomicClubConfig {
 
 const PLAYTOMIC_CLUBS: Record<string, PlaytomicClubConfig> = {
   "padel-club-spoje": {
+    name: "Padel Club Spoje",
     tenantId: "61e73f55-98c6-405f-ac6b-e2677af5905f",
     resourceIds: ["cec43977-821d-4881-b95d-e7be9b74aeed", "ac302981-a812-4b3e-b9c9-fbb8da1f1e24"],
     timezone: PRAGUE_TIMEZONE,
@@ -26,6 +31,7 @@ const PLAYTOMIC_CLUBS: Record<string, PlaytomicClubConfig> = {
     }
   },
   "tenis-a-padel-klub-pisecna": {
+    name: "Tenis & Padel klub Písečná",
     tenantId: "33257960-acca-4aa4-9f77-b6e5ab56f3e5",
     resourceIds: [
       "20b5ce4e-5c85-4205-b8c3-0a6d1b970181",
@@ -60,34 +66,55 @@ export function isPlaytomicClubSlug(clubSlug: string): boolean {
   return clubSlug in PLAYTOMIC_CLUBS;
 }
 
+export function createPlaytomicClub(clubSlug: string, options: { baseUrl?: string; sport?: string } = {}): Club {
+  const config = PLAYTOMIC_CLUBS[clubSlug];
+  if (!config) {
+    throw new Error(`Unknown Playtomic club: ${clubSlug}`);
+  }
+
+  const baseUrl = options.baseUrl ?? "https://playtomic.com";
+  return {
+    id: clubSlug,
+    slug: clubSlug,
+    name: config.name,
+    providerId: "playtomic",
+    providerExternalId: config.tenantId,
+    providerConfig: {
+      tenantId: config.tenantId,
+      resourceIds: config.resourceIds,
+      sport: options.sport ?? "padel",
+      minBookingMinutes: 60
+    },
+    bookingUrl: `${baseUrl.replace(/\/$/, "")}/clubs/${clubSlug}`,
+    timezone: config.timezone,
+    active: true
+  };
+}
+
 export async function fetchPlaytomicAvailability(options: PlaytomicFetchOptions): Promise<AvailabilityResult> {
-  const fetchImpl = options.fetchImpl ?? fetch;
   const baseUrl = options.baseUrl ?? "https://playtomic.com";
   const config = PLAYTOMIC_CLUBS[options.clubSlug] ?? PLAYTOMIC_CLUBS["padel-club-spoje"];
   const date = options.date ?? pragueDateInputValue(new Date());
   const sport = options.sport ?? "padel";
   const tenantId = options.tenantId ?? config.tenantId;
   const resourceIds = options.resourceIds ?? config.resourceIds;
-  const url = new URL("/api/clubs/availability", baseUrl);
+  const club: Club = {
+    ...createPlaytomicClub(options.clubSlug, { baseUrl, sport }),
+    providerExternalId: tenantId,
+    providerConfig: { tenantId, resourceIds, sport, minBookingMinutes: 60 }
+  };
+  const provider = new PlaytomicAvailabilityProvider({ baseUrl, fetchImpl: options.fetchImpl });
+  const range = localDateRange(date, club.timezone);
+  const result = await provider.fetchAvailability({
+    club,
+    from: range.from,
+    to: range.to
+  });
 
-  url.searchParams.set("tenant_id", tenantId);
-  url.searchParams.set("date", date);
-  url.searchParams.set("sport_id", sport.toUpperCase());
-
-  const response = await fetchImpl(url);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${url.toString()}: ${response.status} ${response.statusText}`);
-  }
-
-  const payload = await response.json();
-  return parsePlaytomicAvailability(payload, {
-    sourceUrl: response.url || url.toString(),
-    clubSlug: options.clubSlug,
+  return toLegacyPlaytomicAvailability(result, {
     date,
     dayRange: playtomicDayRange(date, config.openingHours),
-    resourceIds,
-    sport,
-    timezone: config.timezone
+    sport
   });
 }
 

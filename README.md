@@ -42,6 +42,61 @@ npm run dev:web
 
 The API defaults to `http://localhost:4000`. The web app defaults to `http://localhost:5173`.
 
+## Supabase database
+
+Phase 3 adds a PostgreSQL availability index without changing the current API or UI runtime. Copy `apps/api/.env.example` to `apps/api/.env.local`, then set:
+
+- `DATABASE_URL` to the Supabase Session pooler URL for the long-running Render API.
+- `MIGRATION_DATABASE_URL` to the direct Supabase database URL when IPv6 is available, or the Session pooler URL otherwise.
+
+Keep both values outside git. From the repository root, use:
+
+```bash
+npm run db:check -w @mamekurt/api
+npm run db:generate -w @mamekurt/api
+npm run db:migrate -w @mamekurt/api
+```
+
+The repository integration test is intentionally opt-in so ordinary unit tests do not mutate a shared database:
+
+```bash
+TEST_DATABASE_URL="postgresql://..." npm test -w @mamekurt/api
+```
+
+Use a disposable Supabase branch or local PostgreSQL database for `TEST_DATABASE_URL`. The six application tables have row-level security enabled and no public client policies; Phase 3 accesses them only through the trusted backend connection.
+
+To manually refresh one of the indexed Playtomic clubs, first build the scraper package and then run the API scrape command. It reads `DATABASE_URL` from the environment or `apps/api/.env.local`:
+
+```bash
+npm run build -w @mamekurt/scrapers
+npm run scrape -w @mamekurt/api -- --club=padel-club-spoje --date=2026-08-22
+```
+
+The Phase 6 command supports every currently enabled club:
+
+```text
+padel-prosek
+padel-club-spoje
+tenis-a-padel-klub-pisecna
+sk-slavia-praha-padel
+padel-neride
+padel-dzus
+padel-powers-smichov
+one-padel
+cisarska-louka-padel
+sk-satalice
+```
+
+`--date` is optional and defaults to today in the club timezone; `--timeout=25000` can be adjusted for manual diagnostics. The command writes normalized courts and availability, reconciles a complete provider response, and records the execution in `scrape_runs`. Padel Slavia needs `PADEL_SLAVIA_EMAIL` and `PADEL_SLAVIA_PASSWORD` for non-current dates. It does not change the public API response path.
+
+Phase 5 adds a database-only search endpoint. It never contacts a booking provider during the request:
+
+```bash
+curl "http://localhost:4000/api/search?date=2026-08-22&from=17:00&to=21:00&duration=90&clubs=padel-club-spoje"
+```
+
+Optional filters are `clubs` (comma-separated slugs) and `indoor=true|false`. The legacy `/api/availability` endpoint remains available for comparison and the frontend continues using its existing behavior until a later production-switch phase.
+
 ## Web analytics
 
 The web app uses PostHog only when `VITE_POSTHOG_KEY` is configured. The SDK is lazy-loaded and uses manual event capture only:

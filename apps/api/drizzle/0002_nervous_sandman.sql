@@ -1,0 +1,1 @@
+CREATE INDEX "availability_slots_court_club_idx" ON "availability_slots" USING btree ("court_id","club_id");

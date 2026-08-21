@@ -487,6 +487,8 @@ function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [failedClubs, setFailedClubs] = useState<FailedClub[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [manualRefreshMessage, setManualRefreshMessage] = useState<string | null>(null);
+  const [isManualRefreshRequesting, setIsManualRefreshRequesting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [loadProgress, setLoadProgress] = useState<LoadProgress>({ completed: 0, total: 0 });
   const [checkedClubSlugs, setCheckedClubSlugs] = useState<Set<string>>(() => new Set());
@@ -752,6 +754,35 @@ function App() {
     visibleClubSlugs.length > 0 && visibleClubSlugs.every((clubSlug) => expandedCompactClubSlugs.has(clubSlug));
   const shouldShowMainResults = Boolean(selectedClub) || hasSearchedAvailability;
 
+  async function requestManualRefresh() {
+    const clubSlugs = selectedClubSlug ? [selectedClubSlug] : FETCHABLE_CLUBS.map((club) => club.slug);
+    setIsManualRefreshRequesting(true);
+    setManualRefreshMessage(null);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/refresh`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ clubSlugs, date })
+      });
+      const payload = await response.json() as {
+        error?: string;
+        results?: Array<{ outcome: "queued" | "already_queued" | "already_running" }>;
+      };
+      if (!response.ok) throw new Error(payload.error ?? `Refresh request failed (${response.status})`);
+      const newlyQueued = payload.results?.some(({ outcome }) => outcome === "queued") ?? false;
+      setManualRefreshMessage(t(newlyQueued ? "availability.refreshQueued" : "availability.refreshAlreadyQueued"));
+      captureEvent("availability_refresh_requested", {
+        club_count: clubSlugs.length,
+        club_slug: selectedClubSlug,
+        date
+      });
+    } catch (error) {
+      setManualRefreshMessage(error instanceof Error ? error.message : t("availability.refreshFailed"));
+    } finally {
+      setIsManualRefreshRequesting(false);
+    }
+  }
+
   useEffect(() => {
     capturePageView({
       analytics_enabled: isAnalyticsEnabled(),
@@ -769,19 +800,12 @@ function App() {
       aria-label={t("actions.refreshAvailability")}
       icon={<RefreshCw size={18} />}
       onClick={() => {
-        captureEvent("availability_refreshed", {
-          club_slug: selectedClubSlug,
-          court_type: courtTypeFilter,
-          date,
-          duration_minutes: duration,
-          selected_club: selectedClubSlug !== null
-        });
-        void loadAvailability();
+        void requestManualRefresh();
       }}
       size="icon"
       title={t("actions.refreshAvailability")}
       variant="secondary"
-      disabled={isLoading}
+      disabled={isLoading || isManualRefreshRequesting}
     />
   );
   const searchAvailabilityButton = (
@@ -1101,6 +1125,12 @@ function App() {
           ) : null}
 
           {shouldShowMainResults && loadError ? <Alert icon={<AlertCircle size={18} />} title={loadError} /> : null}
+          {shouldShowMainResults && manualRefreshMessage ? (
+            <div className="availabilityWarning" role="status">
+              <RefreshCw size={18} />
+              <span>{manualRefreshMessage}</span>
+            </div>
+          ) : null}
           {shouldShowMainResults && !selectedClub && failedClubs.length > 0 ? <FailedClubAlert failedClubs={failedClubs} date={date} /> : null}
 
           {selectedClub && selectedAvailability ? (
