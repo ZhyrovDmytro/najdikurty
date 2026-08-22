@@ -82,6 +82,7 @@ describe.skipIf(!connectionString)("DrizzleAvailabilityIndexRepository", () => {
       recordsChanged: 1
     });
     expect(finishedRun.completedAt).not.toBeNull();
+    expect(finishedRun.durationMs).toBeGreaterThanOrEqual(0);
 
     await repository.upsertScrapeTarget({
       clubId: club.id,

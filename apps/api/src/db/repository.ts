@@ -216,7 +216,7 @@ export class DrizzleAvailabilityIndexRepository implements AvailabilityIndexRepo
       .set({
         ...input,
         completedAt,
-        durationMs: sql<number>`greatest(0, extract(epoch from (${completedAt} - ${scrapeRuns.startedAt})) * 1000)::integer`,
+        durationMs: sql<number>`greatest(0, extract(epoch from (${completedAt}::timestamptz - ${scrapeRuns.startedAt})) * 1000)::integer`,
         updatedAt: completedAt
       })
       .where(sql`${scrapeRuns.id} = ${id}`)

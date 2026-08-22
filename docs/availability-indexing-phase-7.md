@@ -79,7 +79,7 @@ Low-cost Render Cron command (recommended for the initial deployment):
 npm run start:jobs:once -w @mamekurt/api
 ```
 
-Run it with `*/5 * * * *`. The command seeds missing targets, drains all work that is currently due, and exits. Scheduled targets remain constrained to Prague 08:00–22:00; manual targets can run on the next five-minute invocation at any hour.
+The initial Render deployment runs every ten minutes only during the daytime window. Render evaluates cron expressions in UTC, so use `*/10 6-19 * * *` during Prague summer time (CEST) and `*/10 7-20 * * *` during standard time (CET). This produces invocations from 08:00 through 21:50 Prague time. The command seeds missing targets, drains all work that is currently due, and exits. Manual targets queued outside this window wait for the next daytime invocation.
 
 Both processes require `DATABASE_URL` and the provider credentials already documented in `apps/api/.env.example`. The scheduler and worker are separate from the API web process so a slow provider cannot consume web request capacity.
 
