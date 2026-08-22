@@ -1,4 +1,5 @@
 import cors from "cors";
+import { config as loadEnvironment } from "dotenv";
 import express from "express";
 import { z } from "zod";
 import {
@@ -17,11 +18,13 @@ import {
   isPlaytomicClubSlug
 } from "@mamekurt/scrapers";
 import { createDatabaseFromEnvironment, type DatabaseConnection } from "./db/client.js";
-import { manualRefreshRequestSchema, queueManualRefreshes } from "./scheduling/manual-refresh.js";
+import { manualRefreshRequestSchema, manualRefreshStatusQuerySchema, queueManualRefreshes } from "./scheduling/manual-refresh.js";
 import { ScrapeJobRepository } from "./scheduling/job-repository.js";
 import { searchQuerySchema } from "./search/query.js";
 import { DrizzleSearchRepository } from "./search/repository.js";
 import { SearchService } from "./search/search-service.js";
+
+loadEnvironment({ path: [".env.local", ".env"] });
 
 const app = express();
 const port = Number(process.env.PORT ?? 4000);
@@ -182,11 +185,34 @@ app.post("/api/refresh", async (request, response, next) => {
       response.status(400).json({ error: "Invalid refresh request", details: parsed.error.flatten() });
       return;
     }
-    const results = await queueManualRefreshes(getScrapeJobRepository(), parsed.data);
+    const requestedAt = new Date();
+    const results = await queueManualRefreshes(getScrapeJobRepository(), parsed.data, requestedAt);
     logInfo("refresh.queued", { requestId, date: parsed.data.date, results });
-    response.status(202).json({ queued: true, date: parsed.data.date, results });
+    response.status(202).json({ queued: true, date: parsed.data.date, requestedAt: requestedAt.toISOString(), results });
   } catch (error) {
     logError("refresh.failure", error, { requestId });
+    next(error);
+  }
+});
+
+app.get("/api/refresh/status", async (request, response, next) => {
+  const requestId = createRequestId();
+  try {
+    const parsed = manualRefreshStatusQuerySchema.safeParse(request.query);
+    if (!parsed.success) {
+      response.status(400).json({ error: "Invalid refresh status query", details: parsed.error.flatten() });
+      return;
+    }
+    const results = await getScrapeJobRepository().getManualRefreshStatuses(parsed.data.clubSlugs, parsed.data.date);
+    response.json({
+      date: parsed.data.date,
+      results: results.map((result) => ({
+        ...result,
+        lastRefreshAt: result.lastRefreshAt?.toISOString() ?? null
+      }))
+    });
+  } catch (error) {
+    logError("refresh.status_failure", error, { requestId });
     next(error);
   }
 });

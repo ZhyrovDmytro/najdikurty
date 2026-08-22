@@ -21,6 +21,11 @@ describe("refresh scheduling policy", () => {
   });
 
   it("creates the configured future-date horizon", () => {
-    expect(targetDates(new Date("2026-08-21T12:00:00Z"), 3)).toEqual(["2026-08-21", "2026-08-22", "2026-08-23"]);
+    expect(targetDates(new Date("2026-08-21T12:00:00Z"), 3)).toEqual([
+      "2026-08-21",
+      "2026-08-22",
+      "2026-08-23",
+      "2026-08-24"
+    ]);
   });
 });

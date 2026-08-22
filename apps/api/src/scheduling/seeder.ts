@@ -9,11 +9,13 @@ export async function seedScrapeTargets(
   settings: JobConfig,
   now = new Date()
 ): Promise<number> {
+  const dates = targetDates(now, settings.horizonDays, settings.timezone);
+  await repository.pauseTargetsOutsideRange(dates[0], dates[dates.length - 1], now);
   let seeded = 0;
   for (const slug of indexedClubSlugs()) {
     const registration = getIndexedClubRegistration(slug);
     const club = await repository.ensureCatalogClub(registration);
-    for (const date of targetDates(now, settings.horizonDays, settings.timezone)) {
+    for (const date of dates) {
       const nextRefreshAt = nextScheduledRefresh(now, date, {
         timezone: settings.timezone,
         startTime: settings.scheduleStart,

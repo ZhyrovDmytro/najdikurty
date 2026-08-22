@@ -63,5 +63,7 @@ describe.skipIf(!connectionString)("DrizzleSearchRepository", () => {
 
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({ clubSlug: club.slug, courtName: "Court 1", available: true });
+    expect(rows[0]?.windowStartsAt).toBeInstanceOf(Date);
+    expect(rows[0]?.windowEndsAt).toBeInstanceOf(Date);
   });
 });

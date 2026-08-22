@@ -11,14 +11,14 @@ export const LANGUAGE_OPTIONS: Array<{ code: LanguageCode; label: string }> = [
   { code: "cz", label: "CZ" }
 ];
 
-const storedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+const storedLanguage = typeof localStorage === "undefined" ? null : localStorage.getItem(LANGUAGE_STORAGE_KEY);
 const initialLanguage = isLanguageCode(storedLanguage) ? storedLanguage : "en";
 
 export function isLanguageCode(value: string | null): value is LanguageCode {
   return value === "ua" || value === "en" || value === "cz";
 }
 
-const resources = {
+export const resources = {
   en: {
     translation: {
       actions: {
@@ -56,12 +56,12 @@ const resources = {
         tracked_other: "{{count}} clubs tracked"
       },
       about: {
-        body: "HLEDEJKURTY gathers available padel slots from club booking systems around Prague and shows the clubs that match your date, duration, court count, time window, and indoor/outdoor preference.",
+        body: "HLEDEJKURTY regularly gathers padel availability from supported club booking systems around Prague. Search the latest saved results for today and the next seven days by date, duration, court count, time window, and indoor/outdoor preference.",
         cardBookBody: "When you find a suitable slot, the Book action opens the official booking system for that club.",
         cardBookTitle: "Book at the club",
         cardLimitsBody: "Availability and prices are informational. The club booking page is always the final source before reservation.",
         cardLimitsTitle: "Transparent limits",
-        cardSearchBody: "Instead of checking many calendars manually, filter once and see which clubs currently have matching slots.",
+        cardSearchBody: "Instead of checking many calendars manually, search the latest collected availability and see which clubs have matching slots.",
         cardSearchTitle: "One search",
         faq: {
           accuracy: {
@@ -69,8 +69,12 @@ const resources = {
             question: "How accurate is the availability?"
           },
           availability: {
-            answer: "The app checks supported club booking systems for the date, duration, number of courts, court type, and time window you choose.",
+            answer: "The app searches the latest availability collected from supported clubs for today and the next seven days, using the date, duration, number of courts, court type, and time window you choose.",
             question: "How does the search work?"
+          },
+          updates: {
+            answer: "Availability is refreshed automatically between 08:00 and 22:00 Prague time. Today's availability is normally checked about every 20 minutes; later dates are checked less often. Individual results show their last check time, while the status beside the checked-club count shows an approximate countdown to the next regular cycle. You can also request a fresh check manually, and the displayed results update automatically when it finishes.",
+            question: "How often is availability updated?"
           },
           booking: {
             answer: "No. HLEDEJKURTY does not take payments or reservations. The booking button always sends you to the official booking system for the selected club.",
@@ -95,11 +99,16 @@ const resources = {
         failedJson: "Availability response was not JSON",
         failedLoad: "Failed to load availability",
         noCheckedClubs: "No clubs checked yet",
+        nextCheck: "Next in ~{{duration}}",
+        nextCheckTooltip: "Today's availability is checked about every 20 minutes. Next check in ~{{duration}}. Use the refresh button to request fresh data.",
         notLoaded: "Court availability is not loaded",
         recent: "recently",
         refreshAlreadyQueued: "A fresh availability check is already queued or running.",
+        refreshComplete: "Fresh availability is ready and the results were updated automatically.",
+        refreshDelayed: "The fresh check is taking longer than expected. Please try Search again later.",
         refreshFailed: "Could not request a fresh availability check.",
         refreshQueued: "Fresh availability was requested. New data will be saved after the background check finishes.",
+        refreshWaiting: "Refreshing availability in the background. Results will update automatically when it finishes.",
         stale: "Stale",
         suggestion: "Try refreshing the page or selecting a different timeframe.",
         timeout: "Availability request timed out after {{seconds}}s",
@@ -283,12 +292,12 @@ const resources = {
         tracked_other: "Відстежується {{count}} клубів"
       },
       about: {
-        body: "HLEDEJKURTY збирає доступні слоти для паделу із систем бронювання клубів у Празі та показує клуби, що відповідають вашій даті, тривалості, кількості кортів, часовому вікну та бажанню грати в залі чи надворі.",
+        body: "HLEDEJKURTY регулярно збирає доступність кортів для паделу з підтримуваних систем бронювання клубів у Празі. Шукайте серед останніх збережених результатів на сьогодні та наступні сім днів за датою, тривалістю, кількістю кортів, часовим проміжком і типом корту.",
         cardBookBody: "Коли знайдете відповідний слот, дія бронювання відкриє офіційну систему бронювання цього клубу.",
         cardBookTitle: "Бронювання у клубі",
         cardLimitsBody: "Доступність і ціни мають інформаційний характер. Сторінка бронювання клубу завжди є остаточним джерелом перед резервуванням.",
         cardLimitsTitle: "Прозорі обмеження",
-        cardSearchBody: "Замість перевірки багатьох календарів вручну задайте фільтри один раз і побачте, де зараз є відповідні слоти.",
+        cardSearchBody: "Замість ручної перевірки багатьох календарів перегляньте останню зібрану доступність і знайдіть клуби з відповідними слотами.",
         cardSearchTitle: "Один пошук",
         faq: {
           accuracy: {
@@ -296,8 +305,12 @@ const resources = {
             question: "Наскільки точна доступність?"
           },
           availability: {
-            answer: "Застосунок перевіряє підтримувані системи бронювання клубів за вибраною датою, тривалістю, кількістю кортів, типом корту та часовим проміжком.",
+            answer: "Застосунок шукає в останніх даних, зібраних із підтримуваних клубів на сьогодні та наступні сім днів, за вибраною датою, тривалістю, кількістю кортів, типом корту та часовим проміжком.",
             question: "Як працює пошук?"
+          },
+          updates: {
+            answer: "Доступність автоматично оновлюється між 08:00 і 22:00 за празьким часом. Дані на сьогодні зазвичай перевіряються приблизно кожні 20 хвилин, а пізніші дати — рідше. Окремі результати показують час останньої перевірки, а статус біля кількості перевірених клубів — приблизний відлік до наступного регулярного циклу. Також можна вручну запросити свіжу перевірку, і після її завершення показані результати оновляться автоматично.",
+            question: "Як часто оновлюється доступність?"
           },
           booking: {
             answer: "Ні. HLEDEJKURTY не приймає оплату й не створює бронювання. Кнопка бронювання завжди відкриває офіційну систему вибраного клубу.",
@@ -322,11 +335,16 @@ const resources = {
         failedJson: "Відповідь про доступність була не у форматі JSON",
         failedLoad: "Не вдалося завантажити доступність",
         noCheckedClubs: "Клуби ще не перевірено",
+        nextCheck: "Наступна через ~{{duration}}",
+        nextCheckTooltip: "Дані на сьогодні перевіряються приблизно кожні 20 хвилин. Наступна перевірка через ~{{duration}}. Натисніть кнопку оновлення, щоб запросити свіжі дані.",
         notLoaded: "Доступність кортів не завантажена",
         recent: "щойно",
         refreshAlreadyQueued: "Нова перевірка доступності вже в черзі або виконується.",
+        refreshComplete: "Свіжі дані готові, а результати оновлено автоматично.",
+        refreshDelayed: "Перевірка триває довше, ніж очікувалося. Спробуйте пошукати знову пізніше.",
         refreshFailed: "Не вдалося запросити нову перевірку доступності.",
         refreshQueued: "Запит на оновлення доступності надіслано. Нові дані буде збережено після завершення фонової перевірки.",
+        refreshWaiting: "Доступність оновлюється у фоновому режимі. Після завершення результати оновляться автоматично.",
         stale: "Застаріло",
         suggestion: "Спробуйте оновити сторінку або вибрати інший часовий проміжок.",
         timeout: "Запит доступності перевищив ліміт {{seconds}} с",
@@ -510,12 +528,12 @@ const resources = {
         tracked_other: "Sleduje se {{count}} klubů"
       },
       about: {
-        body: "HLEDEJKURTY shromažďuje volné padelové časy z rezervačních systémů klubů v Praze a ukazuje kluby, které odpovídají vašemu datu, délce hry, počtu kurtů, časovému oknu a volbě hry v hale nebo venku.",
+        body: "HLEDEJKURTY pravidelně shromažďuje dostupnost padelových kurtů z podporovaných rezervačních systémů klubů v Praze. V nejnovějších uložených výsledcích pro dnešek a následujících sedm dní můžete hledat podle data, délky hry, počtu kurtů, časového okna a typu kurtu.",
         cardBookBody: "Když najdete vhodný čas, akce rezervace otevře oficiální rezervační systém daného klubu.",
         cardBookTitle: "Rezervace u klubu",
         cardLimitsBody: "Dostupnost a ceny jsou informativní. Rezervační stránka klubu je vždy finálním zdrojem před rezervací.",
         cardLimitsTitle: "Transparentní limity",
-        cardSearchBody: "Místo ruční kontroly mnoha kalendářů nastavíte filtr jednou a uvidíte, které kluby mají odpovídající časy.",
+        cardSearchBody: "Místo ruční kontroly mnoha kalendářů prohledejte nejnovější shromážděnou dostupnost a zjistěte, které kluby mají odpovídající časy.",
         cardSearchTitle: "Jedno hledání",
         faq: {
           accuracy: {
@@ -523,8 +541,12 @@ const resources = {
             question: "Jak přesná je dostupnost?"
           },
           availability: {
-            answer: "Aplikace kontroluje podporované rezervační systémy klubů podle zvoleného data, délky hry, počtu kurtů, typu kurtu a časového okna.",
+            answer: "Aplikace vyhledává v nejnovější dostupnosti shromážděné z podporovaných klubů pro dnešek a následujících sedm dní podle zvoleného data, délky hry, počtu kurtů, typu kurtu a časového okna.",
             question: "Jak vyhledávání funguje?"
+          },
+          updates: {
+            answer: "Dostupnost se automaticky aktualizuje mezi 08:00 a 22:00 pražského času. Dnešní dostupnost se běžně kontroluje přibližně každých 20 minut, pozdější data méně často. Jednotlivé výsledky ukazují čas poslední kontroly a stav vedle počtu zkontrolovaných klubů přibližný odpočet do dalšího pravidelného cyklu. Novou kontrolu můžete také vyžádat ručně a po jejím dokončení se zobrazené výsledky automaticky aktualizují.",
+            question: "Jak často se dostupnost aktualizuje?"
           },
           booking: {
             answer: "Ne. HLEDEJKURTY nepřijímá platby ani nevytváří rezervace. Tlačítko rezervace vás vždy pošle do oficiálního rezervačního systému vybraného klubu.",
@@ -549,11 +571,16 @@ const resources = {
         failedJson: "Odpověď dostupnosti nebyla JSON",
         failedLoad: "Nepodařilo se načíst dostupnost",
         noCheckedClubs: "Zatím nebyly zkontrolovány žádné kluby",
+        nextCheck: "Další za ~{{duration}}",
+        nextCheckTooltip: "Dnešní dostupnost se kontroluje přibližně každých 20 minut. Další kontrola za ~{{duration}}. Čerstvá data si vyžádáte tlačítkem obnovení.",
         notLoaded: "Dostupnost kurtů není načtená",
         recent: "nedávno",
         refreshAlreadyQueued: "Nová kontrola dostupnosti už čeká ve frontě nebo právě probíhá.",
+        refreshComplete: "Čerstvá dostupnost je připravená a výsledky se automaticky aktualizovaly.",
+        refreshDelayed: "Kontrola trvá déle, než se očekávalo. Zkuste hledání později znovu.",
         refreshFailed: "Nepodařilo se vyžádat novou kontrolu dostupnosti.",
         refreshQueued: "Aktualizace dostupnosti byla vyžádána. Nová data se uloží po dokončení kontroly na pozadí.",
+        refreshWaiting: "Dostupnost se aktualizuje na pozadí. Po dokončení se výsledky automaticky obnoví.",
         stale: "Zastaralé",
         suggestion: "Zkuste obnovit stránku nebo vybrat jiné časové rozmezí.",
         timeout: "Požadavek na dostupnost vypršel po {{seconds}} s",

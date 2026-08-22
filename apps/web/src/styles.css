@@ -87,6 +87,64 @@ body {
     var(--app-bg);
 }
 
+.seoPrerender {
+  width: min(960px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 24px 0 48px;
+}
+
+.seoPrerenderBrand {
+  color: var(--text);
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.seoPrerender article {
+  margin-top: 20px;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-card);
+}
+
+.seoPrerender h1 {
+  margin: 0 0 12px;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1.08;
+}
+
+.seoPrerender p,
+.seoPrerender li {
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.seoPrerender a {
+  color: var(--blue);
+}
+
+.seoPrerenderClubs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.seoPrerenderClubs li {
+  display: grid;
+  gap: 3px;
+  padding: 10px;
+  background: var(--surface-muted);
+  border-radius: 8px;
+}
+
+.seoPrerenderClubs a {
+  font-weight: 800;
+}
+
 button,
 input,
 select {
@@ -1404,6 +1462,62 @@ a {
 .loadProgressPopover {
   position: relative;
   display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nextCheckBadge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 2px 8px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.35;
+  white-space: nowrap;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: help;
+}
+
+.nextCheckBadge::after {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 30;
+  width: max-content;
+  max-width: min(320px, calc(100vw - 32px));
+  padding: 8px 10px;
+  color: var(--surface);
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: left;
+  white-space: normal;
+  content: attr(data-tooltip);
+  visibility: hidden;
+  background: var(--text);
+  border-radius: 7px;
+  box-shadow: var(--shadow-card);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-2px);
+  transition: opacity 120ms ease, transform 120ms ease, visibility 120ms ease;
+}
+
+.nextCheckBadge:hover::after,
+.nextCheckBadge:focus-visible::after {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.nextCheckBadge:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
 }
 
 .loadProgressBadge {
@@ -1768,16 +1882,6 @@ button.loadProgressBadge {
   border-radius: 999px;
 }
 
-.freshnessBadge svg {
-  flex: 0 0 auto;
-}
-
-.freshnessBadge-stale {
-  color: var(--warning);
-  background: var(--warning-soft);
-  border-color: var(--warning-border);
-}
-
 .courtTypeBadges {
   display: flex;
   flex-wrap: wrap;
@@ -2061,9 +2165,45 @@ a.detailInfoRow:hover {
   border-radius: 8px;
 }
 
+.manualRefreshStatus {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid;
+  border-radius: 8px;
+  line-height: 1.45;
+}
+
+.manualRefreshStatus > svg {
+  flex: 0 0 auto;
+}
+
+.manualRefreshStatus-info {
+  color: var(--blue);
+  background: var(--blue-soft);
+  border-color: var(--blue-border);
+}
+
+.manualRefreshStatus-success {
+  color: var(--brand-strong);
+  background: var(--brand-soft);
+  border-color: var(--brand-border);
+}
+
+.manualRefreshStatus-warning {
+  color: var(--warning);
+  background: var(--warning-soft);
+  border-color: var(--warning-border);
+}
+
 .availabilityWarning > svg {
   flex: 0 0 auto;
   margin-top: 2px;
+}
+
+.refreshSpinner {
+  animation: spin 0.75s linear infinite;
 }
 
 .availabilityWarning strong {

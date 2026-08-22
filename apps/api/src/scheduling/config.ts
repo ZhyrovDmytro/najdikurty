@@ -31,7 +31,7 @@ export function jobConfig(environment: NodeJS.ProcessEnv = process.env): JobConf
     retryBaseMs: envInteger(environment, "WORKER_RETRY_BASE_MS", 60_000, 1_000, 60 * 60_000),
     retryMaxMs: envInteger(environment, "WORKER_RETRY_MAX_MS", 15 * 60_000, 1_000, 24 * 60 * 60_000),
     schedulerIntervalMs: envInteger(environment, "SCHEDULER_INTERVAL_MS", 15 * 60_000, 10_000, 24 * 60 * 60_000),
-    horizonDays: envInteger(environment, "SCRAPE_TARGET_HORIZON_DAYS", 14, 1, 31),
+    horizonDays: envInteger(environment, "SCRAPE_TARGET_HORIZON_DAYS", 7, 1, 31),
     timezone: environment.SCRAPE_SCHEDULE_TIMEZONE?.trim() || "Europe/Prague",
     scheduleStart: scheduleTime(environment.SCRAPE_SCHEDULE_START, "08:00"),
     scheduleEnd: scheduleTime(environment.SCRAPE_SCHEDULE_END, "22:00")

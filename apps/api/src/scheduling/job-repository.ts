@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, lte, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, lt, lte, or, sql } from "drizzle-orm";
 import type { IndexedClubRegistration } from "../indexing/catalog.js";
 import type { Database } from "../db/client.js";
 import { bookingProviders, clubs, scrapeTargets, type ScrapeTargetRow } from "../db/schema.js";
@@ -14,6 +14,12 @@ export interface ClaimedScrapeTarget {
 }
 
 export type ManualRefreshOutcome = "queued" | "already_queued" | "already_running";
+
+export interface ManualRefreshStatus {
+  clubSlug: string;
+  status: ScrapeTargetRow["status"];
+  lastRefreshAt: Date | null;
+}
 
 export class ScrapeJobRepository {
   private readonly indexRepository: DrizzleAvailabilityIndexRepository;
@@ -53,6 +59,25 @@ export class ScrapeJobRepository {
       .onConflictDoNothing({ target: [scrapeTargets.clubId, scrapeTargets.targetDate] });
   }
 
+  async pauseTargetsOutsideRange(firstDate: string, lastDate: string, now = new Date()): Promise<number> {
+    const rows = await this.db
+      .update(scrapeTargets)
+      .set({
+        status: "paused",
+        lockedAt: null,
+        lockedBy: null,
+        updatedAt: now
+      })
+      .where(
+        and(
+          or(eq(scrapeTargets.status, "pending"), eq(scrapeTargets.status, "failed")),
+          or(lt(scrapeTargets.targetDate, firstDate), gt(scrapeTargets.targetDate, lastDate))
+        )
+      )
+      .returning({ id: scrapeTargets.id });
+    return rows.length;
+  }
+
   async requestManualRefresh(
     clubId: string,
     targetDate: string,
@@ -88,6 +113,19 @@ export class ScrapeJobRepository {
         .where(eq(scrapeTargets.id, target.id));
       return "queued";
     });
+  }
+
+  async getManualRefreshStatuses(clubSlugs: string[], targetDate: string): Promise<ManualRefreshStatus[]> {
+    if (clubSlugs.length === 0) return [];
+    return this.db
+      .select({
+        clubSlug: clubs.slug,
+        status: scrapeTargets.status,
+        lastRefreshAt: scrapeTargets.lastRefreshAt
+      })
+      .from(scrapeTargets)
+      .innerJoin(clubs, eq(scrapeTargets.clubId, clubs.id))
+      .where(and(inArray(clubs.slug, clubSlugs), eq(scrapeTargets.targetDate, targetDate)));
   }
 
   async recoverAbandonedLocks(now: Date, lockTimeoutMs: number): Promise<number> {

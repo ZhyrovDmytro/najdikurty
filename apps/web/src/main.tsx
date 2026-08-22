@@ -44,11 +44,18 @@ import {
   type BookableSlot,
   type TimeRange
 } from "./availability";
+import {
+  databaseSearchToAvailabilityByClub,
+  type DatabaseSearchResponse
+} from "./database-search";
 import { Alert, Badge, Button, Card, EmptyState, Field, Input, Select, Skeleton } from "./ui";
 import i18n, { LANGUAGE_OPTIONS, LANGUAGE_STORAGE_KEY, type LanguageCode } from "./i18n";
+import { hasManualRefreshCompleted, type ManualRefreshStatusResponse } from "./manual-refresh";
 import { captureEvent, capturePageView, isAnalyticsEnabled } from "./posthog";
+import { approximateCountdown, nextApproximateCheck } from "./refresh-schedule";
 import "./styles.css";
 
+const MAX_SEARCH_DAYS_AHEAD = 7;
 const initialParams = new URLSearchParams(window.location.search);
 const initialCurrentDate = pragueDateInputValue(new Date());
 const today = selectableDate(initialParams.get("date"), initialCurrentDate);
@@ -62,16 +69,22 @@ const API_BASE_URL = (
   CONFIGURED_API_BASE_URL ||
   (import.meta.env.MODE === "production" && window.location.hostname.endsWith("github.io") ? GITHUB_PAGES_API_BASE_URL : "")
 ).replace(/\/$/, "");
+const USE_DATABASE_SEARCH = import.meta.env.VITE_USE_DATABASE_SEARCH === "true";
 type Page = "clubs" | "allClubs" | "about" | "privacy" | "terms" | "cookies";
+const initialRoute = routeFromLocation(window.location.pathname, initialParams);
+const initialPage: Page = initialRoute.page;
 type CourtType = "indoor" | "outdoor";
 type CourtTypeFilter = CourtType | "all";
 type FindCourtSort = "name" | "priceAsc" | "priceDesc" | "multisport" | "indoor" | "outdoor";
+type ManualRefreshTone = "info" | "success" | "warning";
 const TIME_PICKER_RANGE: TimeRange = { start: "00:00", end: "24:00" };
 const AVAILABILITY_REQUEST_TIMEOUT_MS = 30_000;
 const AVAILABILITY_REQUEST_MAX_ATTEMPTS = 2;
 const AVAILABILITY_REQUEST_RETRY_DELAY_MS = 1_000;
 const AVAILABILITY_REQUEST_CONCURRENCY = 3;
-const initialPage: Page = pageFromParam(initialParams.get("page"));
+const DATABASE_SEARCH_MAX_DURATION_MINUTES = 8 * 60;
+const MANUAL_REFRESH_POLL_INTERVAL_MS = 5_000;
+const MANUAL_REFRESH_WAIT_TIMEOUT_MS = 15 * 60_000;
 const localeByLanguage: Record<LanguageCode, string> = {
   cz: "cs",
   en: "en",
@@ -347,7 +360,7 @@ const HOME_FEATURED_CLUB_SLUGS = [
   "padel-powers-smichov",
   "one-padel"
 ] as const;
-const ABOUT_FAQ_KEYS = ["availability", "booking", "trackedClubs", "accuracy", "multisport"] as const;
+const ABOUT_FAQ_KEYS = ["availability", "updates", "booking", "trackedClubs", "accuracy", "multisport"] as const;
 const CLUB_IMAGE_DIMENSIONS: Record<string, { height: number; width: number }> = {
   "cisarska-louka-padel": { height: 768, width: 1024 },
   "head-tenis-centrum-vestec": { height: 1536, width: 2048 },
@@ -443,6 +456,13 @@ async function fetchAvailabilityWithRetry(url: string, clubName: string): Promis
   throw lastError instanceof Error ? lastError : new Error(i18n.t("availability.unknownCheckFailure"));
 }
 
+async function fetchDatabaseSearch(url: string): Promise<DatabaseSearchResponse> {
+  const response = await fetchAvailabilityRequest(url);
+  const payload = await response.json() as DatabaseSearchResponse & { error?: string };
+  if (!response.ok) throw new Error(payload.error ?? `Database search failed (${response.status})`);
+  return payload;
+}
+
 function delay(milliseconds: number): Promise<void> {
   return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
 }
@@ -477,7 +497,7 @@ function App() {
   const [customEndTime, setCustomEndTime] = useState<string | null>(null);
   const [now, setNow] = useState(() => new Date());
   const [availabilityByClub, setAvailabilityByClub] = useState<AvailabilityByClub>({});
-  const [selectedClubSlug, setSelectedClubSlug] = useState<string | null>(initialPage === "clubs" ? initialParams.get("club") : null);
+  const [selectedClubSlug, setSelectedClubSlug] = useState<string | null>(initialPage === "clubs" ? initialRoute.clubSlug : null);
   const [allClubsSort, setAllClubsSort] = useState<FindCourtSort>("name");
   const [findCourtSort, setFindCourtSort] = useState<FindCourtSort>("name");
   const [theme, setTheme] = useState<"light" | "dark">(initialTheme);
@@ -488,14 +508,18 @@ function App() {
   const [failedClubs, setFailedClubs] = useState<FailedClub[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [manualRefreshMessage, setManualRefreshMessage] = useState<string | null>(null);
+  const [manualRefreshTone, setManualRefreshTone] = useState<ManualRefreshTone>("info");
   const [isManualRefreshRequesting, setIsManualRefreshRequesting] = useState(false);
+  const [isManualRefreshWaiting, setIsManualRefreshWaiting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [loadProgress, setLoadProgress] = useState<LoadProgress>({ completed: 0, total: 0 });
   const [checkedClubSlugs, setCheckedClubSlugs] = useState<Set<string>>(() => new Set());
   const [availabilityCheckClubs, setAvailabilityCheckClubs] = useState<Club[]>([]);
-  const [hasSearchedAvailability, setHasSearchedAvailability] = useState(initialPage === "clubs" && Boolean(initialParams.get("club")));
+  const [hasSearchedAvailability, setHasSearchedAvailability] = useState(initialPage === "clubs" && Boolean(initialRoute.clubSlug));
   const loadSequenceRef = useRef(0);
+  const manualRefreshSequenceRef = useRef(0);
   const currentPragueDate = pragueDateInputValue(now);
+  const maximumSelectableDate = addDaysToDateInput(currentPragueDate, MAX_SEARCH_DAYS_AHEAD);
   const trackedClubs = useMemo(() => sortTrackedClubs(buildTrackedClubs(CLUBS), allClubsSort), [allClubsSort]);
 
   function clearAvailabilityResults() {
@@ -545,6 +569,48 @@ function App() {
 
     if (targetClubs.length === 0) {
       setIsLoading(false);
+      return;
+    }
+
+    if (USE_DATABASE_SEARCH) {
+      const params = new URLSearchParams({
+        date: searchDate,
+        from: searchWindow.start,
+        to: searchWindow.end,
+        duration: String(searchDuration),
+        clubs: targetClubs.map((club) => club.slug).join(",")
+      });
+      if (searchCourtTypeFilter !== "all") {
+        params.set("indoor", String(searchCourtTypeFilter === "indoor"));
+      }
+
+      try {
+        const response = await fetchDatabaseSearch(`${API_BASE_URL}/api/search?${params}`);
+        if (loadSequenceRef.current !== loadId) return;
+        const dayRangeByClub = Object.fromEntries(targetClubs.map((club) => [
+          club.slug,
+          club.openingHours?.[weekdayForDate(searchDate)] ?? TIME_PICKER_RANGE
+        ]));
+        const databaseAvailability = databaseSearchToAvailabilityByClub(response, {
+          date: searchDate,
+          durationMinutes: searchDuration,
+          dayRangeByClub
+        });
+        setAvailabilityByClub((currentAvailability) =>
+          searchSelectedClubSlug
+            ? { ...currentAvailability, ...databaseAvailability }
+            : databaseAvailability
+        );
+        setCheckedClubSlugs(new Set(targetClubs.map((club) => club.slug)));
+        setLoadProgress({ completed: targetClubs.length, total: targetClubs.length });
+      } catch (error) {
+        if (loadSequenceRef.current !== loadId) return;
+        const reason = error instanceof Error ? error.message : t("availability.failedLoad");
+        setLoadError(reason);
+        setFailedClubs(targetClubs.map((club) => ({ club, reason })));
+      } finally {
+        if (loadSequenceRef.current === loadId) setIsLoading(false);
+      }
       return;
     }
 
@@ -628,14 +694,21 @@ function App() {
   }, [page, selectedClubSlug]);
 
   useEffect(() => {
+    manualRefreshSequenceRef.current += 1;
+    setIsManualRefreshWaiting(false);
+    setManualRefreshMessage(null);
+  }, [date, selectedClubSlug]);
+
+  useEffect(() => {
     function handlePopState() {
       const params = new URLSearchParams(window.location.search);
-      const nextPage = pageFromParam(params.get("page"));
+      const nextRoute = routeFromLocation(window.location.pathname, params);
+      const nextPage = nextRoute.page;
       setPage(nextPage);
       setDate(selectableDate(params.get("date"), pragueDateInputValue(new Date())));
-      setSelectedClubSlug(nextPage === "clubs" ? params.get("club") : null);
-      setHasSearchedAvailability(nextPage === "clubs" && Boolean(params.get("club")));
-      if (nextPage === "clubs" && !params.get("club")) {
+      setSelectedClubSlug(nextPage === "clubs" ? nextRoute.clubSlug : null);
+      setHasSearchedAvailability(nextPage === "clubs" && Boolean(nextRoute.clubSlug));
+      if (nextPage === "clubs" && !nextRoute.clubSlug) {
         clearAvailabilityResults();
       }
     }
@@ -646,17 +719,19 @@ function App() {
 
   useEffect(() => {
     const urlDate = new URLSearchParams(window.location.search).get("date");
-    if (page === "clubs" && urlDate && urlDate < currentPragueDate) {
-      writeUrl({ date: currentPragueDate, clubSlug: selectedClubSlug, mode: "replace" });
+    const nextSelectableDate = selectableDate(urlDate, currentPragueDate);
+    if (page === "clubs" && urlDate && urlDate !== nextSelectableDate) {
+      writeUrl({ date: nextSelectableDate, clubSlug: selectedClubSlug, mode: "replace" });
     }
   }, []);
 
   useEffect(() => {
-    if (date >= currentPragueDate) return;
+    const nextSelectableDate = selectableDate(date, currentPragueDate);
+    if (date === nextSelectableDate) return;
 
-    setDate(currentPragueDate);
+    setDate(nextSelectableDate);
     if (page === "clubs") {
-      writeUrl({ date: currentPragueDate, clubSlug: selectedClubSlug, mode: "replace" });
+      writeUrl({ date: nextSelectableDate, clubSlug: selectedClubSlug, mode: "replace" });
     }
   }, [currentPragueDate, date, page, selectedClubSlug]);
 
@@ -676,7 +751,12 @@ function App() {
 
   const durationOptions = useMemo(() => {
     const firstAvailability = Object.values(availabilityByClub)[0];
-    return buildDurationOptions(firstAvailability?.dayRange);
+    const options = buildDurationOptions(
+      firstAvailability?.dayRange ?? (USE_DATABASE_SEARCH ? TIME_PICKER_RANGE : undefined)
+    );
+    return USE_DATABASE_SEARCH
+      ? options.filter((minutes) => minutes <= DATABASE_SEARCH_MAX_DURATION_MINUTES)
+      : options;
   }, [availabilityByClub]);
   const timeOptions = useMemo(() => buildTimeOptions(TIME_PICKER_RANGE), []);
   const minimumStartTime = useMemo(() => defaultStartTimeForDate(date, now), [date, now]);
@@ -695,7 +775,10 @@ function App() {
   }, [duration, durationOptions]);
 
   useEffect(() => {
-    const maxCourtCount = Math.max(...Object.values(availabilityByClub).map((availability) => availability.courts.length), 2);
+    const maxCourtCount = Math.max(
+      ...Object.values(availabilityByClub).map((availability) => availability.courts.length),
+      USE_DATABASE_SEARCH ? Math.max(...FETCHABLE_CLUBS.map((club) => club.courtCount)) : 2
+    );
     if (courtsNeeded > maxCourtCount) {
       setCourtsNeeded(maxCourtCount);
     }
@@ -746,7 +829,10 @@ function App() {
       : [];
   const maxCourtCount = selectedClub
     ? selectedClub.courtCount
-    : Math.max(...Object.values(availabilityByClub).map((availability) => availability.courts.length), 2);
+    : Math.max(
+        ...Object.values(availabilityByClub).map((availability) => availability.courts.length),
+        USE_DATABASE_SEARCH ? Math.max(...FETCHABLE_CLUBS.map((club) => club.courtCount)) : 2
+      );
   const startTimeOptions = timeOptions.filter((time) => time >= minimumStartTime && time < timeWindow.end);
   const endTimeOptions = timeOptions.filter((time) => time > timeWindow.start);
   const visibleClubSlugs = useMemo(() => visibleClubResults.map((result) => result.club.slug), [visibleClubResults]);
@@ -756,7 +842,12 @@ function App() {
 
   async function requestManualRefresh() {
     const clubSlugs = selectedClubSlug ? [selectedClubSlug] : FETCHABLE_CLUBS.map((club) => club.slug);
+    const refreshSequence = manualRefreshSequenceRef.current + 1;
+    const requestedAtFallback = new Date().toISOString();
+    manualRefreshSequenceRef.current = refreshSequence;
     setIsManualRefreshRequesting(true);
+    setIsManualRefreshWaiting(false);
+    setManualRefreshTone("info");
     setManualRefreshMessage(null);
     try {
       const response = await fetch(`${API_BASE_URL}/api/refresh`, {
@@ -766,20 +857,72 @@ function App() {
       });
       const payload = await response.json() as {
         error?: string;
+        requestedAt?: string;
         results?: Array<{ outcome: "queued" | "already_queued" | "already_running" }>;
       };
       if (!response.ok) throw new Error(payload.error ?? `Refresh request failed (${response.status})`);
-      const newlyQueued = payload.results?.some(({ outcome }) => outcome === "queued") ?? false;
-      setManualRefreshMessage(t(newlyQueued ? "availability.refreshQueued" : "availability.refreshAlreadyQueued"));
+      loadSequenceRef.current += 1;
+      setAvailabilityByClub({});
+      setFailedClubs([]);
+      setLoadError(null);
+      setIsLoading(true);
+      setLoadProgress({ completed: 0, total: clubSlugs.length });
+      setCheckedClubSlugs(new Set());
+      setAvailabilityCheckClubs(FETCHABLE_CLUBS.filter((club) => clubSlugs.includes(club.slug)));
+      setIsManualRefreshRequesting(false);
+      setIsManualRefreshWaiting(true);
+      setManualRefreshTone("info");
+      setManualRefreshMessage(t("availability.refreshWaiting"));
       captureEvent("availability_refresh_requested", {
         club_count: clubSlugs.length,
         club_slug: selectedClubSlug,
         date
       });
-    } catch (error) {
-      setManualRefreshMessage(error instanceof Error ? error.message : t("availability.refreshFailed"));
-    } finally {
+      void waitForManualRefresh(clubSlugs, date, payload.requestedAt ?? requestedAtFallback, refreshSequence);
+    } catch {
       setIsManualRefreshRequesting(false);
+      setIsManualRefreshWaiting(false);
+      setIsLoading(false);
+      setManualRefreshTone("warning");
+      setManualRefreshMessage(t("availability.refreshFailed"));
+    }
+  }
+
+  async function waitForManualRefresh(
+    clubSlugs: string[],
+    refreshDate: string,
+    requestedAt: string,
+    refreshSequence: number
+  ) {
+    const deadline = Date.now() + MANUAL_REFRESH_WAIT_TIMEOUT_MS;
+    try {
+      while (Date.now() < deadline && manualRefreshSequenceRef.current === refreshSequence) {
+        const params = new URLSearchParams({ clubSlugs: clubSlugs.join(","), date: refreshDate });
+        const response = await fetchAvailabilityRequest(`${API_BASE_URL}/api/refresh/status?${params}`);
+        const payload = await response.json() as ManualRefreshStatusResponse & { error?: string };
+        if (!response.ok) throw new Error(payload.error ?? `Refresh status failed (${response.status})`);
+        if (hasManualRefreshCompleted(payload.results, clubSlugs, requestedAt)) {
+          if (manualRefreshSequenceRef.current !== refreshSequence) return;
+          await loadAvailability();
+          if (manualRefreshSequenceRef.current !== refreshSequence) return;
+          setIsManualRefreshWaiting(false);
+          setManualRefreshTone("success");
+          setManualRefreshMessage(t("availability.refreshComplete"));
+          return;
+        }
+        await delay(MANUAL_REFRESH_POLL_INTERVAL_MS);
+      }
+      if (manualRefreshSequenceRef.current !== refreshSequence) return;
+      setIsManualRefreshWaiting(false);
+      setIsLoading(false);
+      setManualRefreshTone("warning");
+      setManualRefreshMessage(t("availability.refreshDelayed"));
+    } catch {
+      if (manualRefreshSequenceRef.current !== refreshSequence) return;
+      setIsManualRefreshWaiting(false);
+      setIsLoading(false);
+      setManualRefreshTone("warning");
+      setManualRefreshMessage(t("availability.refreshFailed"));
     }
   }
 
@@ -798,14 +941,14 @@ function App() {
   const refreshAvailabilityButton = (
       <Button
       aria-label={t("actions.refreshAvailability")}
-      icon={<RefreshCw size={18} />}
+      icon={<RefreshCw className={isManualRefreshRequesting || isManualRefreshWaiting ? "refreshSpinner" : undefined} size={18} />}
       onClick={() => {
         void requestManualRefresh();
       }}
       size="icon"
       title={t("actions.refreshAvailability")}
       variant="secondary"
-      disabled={isLoading || isManualRefreshRequesting}
+      disabled={isLoading || isManualRefreshRequesting || isManualRefreshWaiting}
     />
   );
   const searchAvailabilityButton = (
@@ -909,7 +1052,7 @@ function App() {
   return (
     <main className="appShell">
       <nav className="topbar" aria-label={t("nav.pageNavigation")}>
-        <a className="brandMark" href={clubsHref(date)} onClick={(event) => handleInternalNavigation(event, () => navigateToClubs("push"))}>
+        <a className="brandMark" href={clubsHref()} onClick={(event) => handleInternalNavigation(event, () => navigateToClubs("push"))}>
           <LogoImage />
           {t("brand.name")}
         </a>
@@ -919,7 +1062,7 @@ function App() {
           <span className="topbarSpacer" aria-hidden="true" />
         )}
         <div className={isMobileMenuOpen ? "topbarNav topbarNavOpen" : "topbarNav"} aria-label={t("nav.primaryNavigation")}>
-          <a className={page === "clubs" ? "topbarNavLink active" : "topbarNavLink"} href={clubsHref(date)} onClick={(event) => handleInternalNavigation(event, () => navigateToClubs("push"))}>
+          <a className={page === "clubs" ? "topbarNavLink active" : "topbarNavLink"} href={clubsHref()} onClick={(event) => handleInternalNavigation(event, () => navigateToClubs("push"))}>
             {t("nav.findCourt")}
           </a>
           <a className={page === "allClubs" ? "topbarNavLink active" : "topbarNavLink"} href={allClubsHref()} onClick={(event) => handleInternalNavigation(event, () => navigateToAllClubs("push"))}>
@@ -1005,7 +1148,13 @@ function App() {
             </span>
             {t("club.date")}
           </span>
-          <DateCalendarPicker value={date} minDate={currentPragueDate} language={language} onChange={updateDate} />
+          <DateCalendarPicker
+            value={date}
+            minDate={currentPragueDate}
+            maxDate={maximumSelectableDate}
+            language={language}
+            onChange={updateDate}
+          />
         </div>
         <Field icon={<UsersRound size={16} />} label={t("club.needed")} className="searchField">
           <Select
@@ -1126,8 +1275,11 @@ function App() {
 
           {shouldShowMainResults && loadError ? <Alert icon={<AlertCircle size={18} />} title={loadError} /> : null}
           {shouldShowMainResults && manualRefreshMessage ? (
-            <div className="availabilityWarning" role="status">
-              <RefreshCw size={18} />
+            <div
+              className={`manualRefreshStatus manualRefreshStatus-${manualRefreshTone}`}
+              role={manualRefreshTone === "warning" ? "alert" : "status"}
+            >
+              <RefreshCw className={isManualRefreshRequesting || isManualRefreshWaiting ? "refreshSpinner" : undefined} size={18} />
               <span>{manualRefreshMessage}</span>
             </div>
           ) : null}
@@ -1175,7 +1327,6 @@ function App() {
           ) : (
             <HomeDiscovery
               clubs={trackedClubs}
-              date={date}
               onBrowseClubs={() => navigateToAllClubs("push")}
               onSelectClub={(club) => updateSelectedClub(club.slug)}
             />
@@ -1184,7 +1335,6 @@ function App() {
       )}
       <SiteFooter
         currentPage={page}
-        date={date}
         onNavigateToClubs={() => navigateToClubs("push")}
         onNavigateToAllClubs={() => navigateToAllClubs("push")}
         onNavigateToAbout={() => navigateToAbout("push")}
@@ -1362,14 +1512,12 @@ function Breadcrumbs({ page, selectedClub, onHome }: { page: Page; selectedClub:
 
 function SiteFooter({
   currentPage,
-  date,
   onNavigateToClubs,
   onNavigateToAllClubs,
   onNavigateToAbout,
   onNavigateToLegalPage
 }: {
   currentPage: Page;
-  date: string;
   onNavigateToClubs: () => void;
   onNavigateToAllClubs: () => void;
   onNavigateToAbout: () => void;
@@ -1380,7 +1528,7 @@ function SiteFooter({
   return (
     <footer className="siteFooter">
       <div className="footerBrand">
-        <a className="footerLogo" href={clubsHref(date)} onClick={(event) => handleInternalNavigation(event, onNavigateToClubs)}>
+        <a className="footerLogo" href={clubsHref()} onClick={(event) => handleInternalNavigation(event, onNavigateToClubs)}>
           <LogoImage />
           <span>{t("brand.name")}</span>
         </a>
@@ -1390,7 +1538,7 @@ function SiteFooter({
       <nav className="footerNav" aria-label={t("nav.primaryNavigation")}>
         <div>
           <h2>{t("footer.service")}</h2>
-          <a href={clubsHref(date)} aria-current={currentPage === "clubs" ? "page" : undefined} onClick={(event) => handleInternalNavigation(event, onNavigateToClubs)}>
+          <a href={clubsHref()} aria-current={currentPage === "clubs" ? "page" : undefined} onClick={(event) => handleInternalNavigation(event, onNavigateToClubs)}>
             {t("nav.findCourt")}
           </a>
           <a href={allClubsHref()} aria-current={currentPage === "allClubs" ? "page" : undefined} onClick={(event) => handleInternalNavigation(event, onNavigateToAllClubs)}>
@@ -1425,12 +1573,10 @@ function SiteFooter({
 
 function HomeDiscovery({
   clubs,
-  date,
   onBrowseClubs,
   onSelectClub
 }: {
   clubs: TrackedClub[];
-  date: string;
   onBrowseClubs: () => void;
   onSelectClub: (club: Club) => void;
 }) {
@@ -1512,7 +1658,7 @@ function HomeDiscovery({
             >
               <a
                 className="homeClubCardLink"
-                href={clubHref(date, club.slug)}
+                href={clubHref(club.slug)}
                 onClick={(event) => handleInternalNavigation(event, () => onSelectClub(club))}
               >
                 <span className="homeClubCardHeader">
@@ -2196,6 +2342,10 @@ function LoadProgressBadge({
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const failedClubSlugs = new Set(failedClubs.map(({ club }) => club.slug));
+  const currentTime = new Date();
+  const nextCheck = nextApproximateCheck(pragueDateInputValue(currentTime), currentTime);
+  const countdown = approximateCountdown(nextCheck, currentTime);
+  const nextCheckTooltip = t("availability.nextCheckTooltip", { duration: countdown });
 
   if (loadProgress.total === 0) {
     return null;
@@ -2213,6 +2363,16 @@ function LoadProgressBadge({
         {isLoading ? <span className="loadProgressSpinner" aria-hidden="true" /> : null}
         {loadProgress.completed}/{loadProgress.total} <span className="loadProgressLabel">{t("availability.checkedCount")}</span>
       </button>
+      {!isLoading ? (
+        <span
+          aria-label={`${t("availability.nextCheck", { duration: countdown })}. ${nextCheckTooltip}`}
+          className="nextCheckBadge"
+          data-tooltip={nextCheckTooltip}
+          tabIndex={0}
+        >
+          {t("availability.nextCheck", { duration: countdown })}
+        </span>
+      ) : null}
       {isOpen ? (
         <div className="checkedClubsPopover" role="dialog" aria-label={t("availability.checkedClubsTitle")}>
           <strong>{t("availability.checkedClubsTitle")}</strong>
@@ -2242,11 +2402,13 @@ function LoadProgressBadge({
 function DateCalendarPicker({
   value,
   minDate,
+  maxDate,
   language,
   onChange
 }: {
   value: string;
   minDate: string;
+  maxDate: string;
   language: LanguageCode;
   onChange: (date: string) => void;
 }) {
@@ -2258,6 +2420,7 @@ function DateCalendarPicker({
   const previousMonth = addMonthsToMonthInput(visibleMonth, -1);
   const nextMonth = addMonthsToMonthInput(visibleMonth, 1);
   const isPreviousMonthDisabled = monthEndDate(previousMonth) < minDate;
+  const isNextMonthDisabled = `${nextMonth}-01` > maxDate;
 
   useEffect(() => {
     if (isOpen) return;
@@ -2305,6 +2468,7 @@ function DateCalendarPicker({
             <button
               aria-label={t("date.nextMonth")}
               className="datePickerNavButton"
+              disabled={isNextMonthDisabled}
               type="button"
               onClick={() => setVisibleMonth(nextMonth)}
             >
@@ -2323,7 +2487,7 @@ function DateCalendarPicker({
                   aria-current={day === minDate ? "date" : undefined}
                   aria-pressed={day === value}
                   className={day === value ? "datePickerDay datePickerDay-selected" : "datePickerDay"}
-                  disabled={day < minDate}
+                  disabled={day < minDate || day > maxDate}
                   key={day}
                   type="button"
                   onClick={() => {
@@ -2591,14 +2755,11 @@ function FreshnessBadge({ availability }: { availability?: AvailabilityResult })
     return null;
   }
 
-  const state = availability.cache?.state;
-  const isStale = state === "stale";
   const checkedAt = availability.cache?.cachedAt ?? availability.fetchedAt;
 
   return (
-    <span className={isStale ? "freshnessBadge freshnessBadge-stale" : "freshnessBadge"}>
-      {isStale ? <TriangleAlert size={14} /> : <SearchCheck size={14} />}
-      {isStale ? t("availability.stale") : t("availability.checked")} {formatCheckedTime(checkedAt)}
+    <span className="freshnessBadge">
+      {t("availability.checked")} {formatCheckedTime(checkedAt)}
     </span>
   );
 }
@@ -3126,7 +3287,7 @@ function buildFaqStructuredData(canonicalUrl: string, language: LanguageCode): R
 
 function buildClubItemListStructuredData(clubs: Club[]): Record<string, unknown> {
   return {
-    "@id": `${SITE_ORIGIN}/?page=all-clubs#itemlist`,
+    "@id": `${SITE_ORIGIN}/clubs/#itemlist`,
     "@type": "ItemList",
     itemListElement: clubs.map((club, index) => ({
       "@type": "ListItem",
@@ -3183,15 +3344,7 @@ function buildBreadcrumbStructuredData(items: Array<{ name: string; url: string 
 }
 
 function canonicalUrlFor(page: Page, club: Club | null): string {
-  const url = new URL("/", SITE_ORIGIN);
-  if (club) {
-    url.searchParams.set("club", club.slug);
-    return url.toString();
-  }
-  if (page !== "clubs") {
-    url.searchParams.set("page", pageToParam(page));
-  }
-  return url.toString();
+  return new URL(pathForRoute(page, club?.slug ?? null), SITE_ORIGIN).toString();
 }
 
 function absoluteSiteUrl(path: string): string {
@@ -3235,18 +3388,16 @@ function openGraphLocale(locale: string): string {
   return "en_US";
 }
 
-function clubsHref(date: string): string {
-  const params = new URLSearchParams({ date });
-  return `?${params.toString()}`;
+function clubsHref(): string {
+  return "/";
 }
 
-function clubHref(date: string, clubSlug: string): string {
-  const params = new URLSearchParams({ date, club: clubSlug });
-  return `?${params.toString()}`;
+function clubHref(clubSlug: string): string {
+  return `/clubs/${encodeURIComponent(clubSlug)}/`;
 }
 
 function allClubsHref(): string {
-  return "?page=all-clubs";
+  return "/clubs/";
 }
 
 function assetPath(path: string): string {
@@ -3254,11 +3405,24 @@ function assetPath(path: string): string {
 }
 
 function aboutHref(): string {
-  return "?page=about";
+  return "/about/";
 }
 
 function legalHref(page: "privacy" | "terms" | "cookies"): string {
-  return `?page=${pageToParam(page)}`;
+  return pathForRoute(page, null);
+}
+
+function routeFromLocation(pathname: string, params: URLSearchParams): { page: Page; clubSlug: string | null } {
+  const segments = pathname.split("/").filter(Boolean).map(decodeURIComponent);
+  if (segments[0] === "clubs" && segments[1]) return { page: "clubs", clubSlug: segments[1] };
+  if (segments[0] === "clubs") return { page: "allClubs", clubSlug: null };
+  if (segments[0] === "about") return { page: "about", clubSlug: null };
+  if (segments[0] === "privacy-policy") return { page: "privacy", clubSlug: null };
+  if (segments[0] === "terms-of-use") return { page: "terms", clubSlug: null };
+  if (segments[0] === "cookie-policy") return { page: "cookies", clubSlug: null };
+
+  const page = pageFromParam(params.get("page"));
+  return { page, clubSlug: page === "clubs" ? params.get("club") : null };
 }
 
 function pageFromParam(page: string | null): Page {
@@ -3270,16 +3434,20 @@ function pageFromParam(page: string | null): Page {
   return "clubs";
 }
 
-function pageToParam(page: Page): string {
-  if (page === "allClubs") return "all-clubs";
-  if (page === "privacy") return "privacy-policy";
-  if (page === "terms") return "terms-of-use";
-  if (page === "cookies") return "cookie-policy";
-  return page;
+function pathForRoute(page: Page, clubSlug: string | null): string {
+  if (clubSlug) return `/clubs/${encodeURIComponent(clubSlug)}/`;
+  if (page === "allClubs") return "/clubs/";
+  if (page === "about") return "/about/";
+  if (page === "privacy") return "/privacy-policy/";
+  if (page === "terms") return "/terms-of-use/";
+  if (page === "cookies") return "/cookie-policy/";
+  return "/";
 }
 
 function selectableDate(date: string | null | undefined, currentDate: string): string {
   if (!date || date < currentDate) return currentDate;
+  const maximumDate = addDaysToDateInput(currentDate, MAX_SEARCH_DAYS_AHEAD);
+  if (date > maximumDate) return maximumDate;
   return date;
 }
 
@@ -3376,13 +3544,15 @@ function writeUrl({
   page?: Page;
 }) {
   const params = new URLSearchParams();
-  if (page !== "clubs") {
-    params.set("page", pageToParam(page));
-  } else {
+  if (page === "clubs") {
     params.set("date", date);
-    if (clubSlug) params.set("club", clubSlug);
   }
-  window.history[mode === "push" ? "pushState" : "replaceState"](null, "", `?${params.toString()}`);
+  const query = params.size > 0 ? `?${params.toString()}` : "";
+  window.history[mode === "push" ? "pushState" : "replaceState"](
+    null,
+    "",
+    `${pathForRoute(page, clubSlug)}${query}`
+  );
 }
 
 function nextTimeOption(time: string, options: string[]): string | undefined {

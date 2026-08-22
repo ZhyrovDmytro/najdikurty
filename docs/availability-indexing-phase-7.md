@@ -10,9 +10,9 @@ Phase 7 adds a database-backed scheduler and worker without changing the existin
 - Tomorrow: hourly from 08:00 through 22:00
 - 2–3 days ahead: every 3 hours from 09:00 through 21:00
 - 4–7 days ahead: every 6 hours from 10:00 through 22:00
-- 8–13 days ahead: once daily at 14:00
 - A target is paused after its target date's final run; a manual request can still reactivate it.
-- Default target horizon: 14 days for every enabled catalog club.
+- Default target horizon: today through 7 days ahead (8 calendar dates) for every enabled catalog club.
+- Targets outside the configured horizon are paused and are not claimed by the worker.
 - Manual refreshes can be queued at any time, including outside the active window.
 
 The scheduler uses local Prague wall-clock times, so UTC execution times move correctly when daylight saving time changes.
@@ -43,6 +43,8 @@ The scheduler uses local Prague wall-clock times, so UTC execution times move co
 It returns HTTP 202 after queueing or deduplicating the request. It never waits for a provider scrape. Repeated requests for the same club/date are deduplicated for five minutes, and a running target is not interrupted.
 
 The existing UI refresh button calls this endpoint and displays queue feedback. It does not perform the scrape inside the browser request.
+
+The UI then polls `GET /api/refresh/status` while showing a background-refresh spinner. When every requested club has completed a newer refresh, the UI automatically reloads the saved database results. The browser still never calls club booking providers directly in database-search mode.
 
 ## Local commands
 
@@ -89,7 +91,7 @@ See `apps/api/.env.example`. Important settings are:
 
 - `SCRAPE_SCHEDULE_START=08:00`
 - `SCRAPE_SCHEDULE_END=22:00`
-- `SCRAPE_TARGET_HORIZON_DAYS=14`
+- `SCRAPE_TARGET_HORIZON_DAYS=7`
 - `WORKER_CONCURRENCY=4`
 - `WORKER_PROVIDER_CONCURRENCY=1`
 - `WORKER_PROVIDER_CONCURRENCY_OVERRIDES={"playtomic":2,"padelslavia":1}`

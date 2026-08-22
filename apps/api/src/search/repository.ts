@@ -32,7 +32,7 @@ export class DrizzleSearchRepository implements SearchRepository {
       filters.push(eq(courts.indoor, query.indoor));
     }
 
-    return this.db
+    const rows = await this.db
       .select({
         id: availabilitySlots.id,
         clubId: clubs.id,
@@ -64,5 +64,20 @@ export class DrizzleSearchRepository implements SearchRepository {
       .innerJoin(bookingProviders, eq(bookingProviders.id, clubs.providerId))
       .where(and(...filters))
       .orderBy(asc(availabilitySlots.startsAt), asc(clubs.slug), asc(courts.name), asc(availabilitySlots.endsAt));
+
+    return rows.map((row) => ({
+      ...row,
+      windowStartsAt: databaseTimestamp(row.windowStartsAt, "windowStartsAt"),
+      windowEndsAt: databaseTimestamp(row.windowEndsAt, "windowEndsAt")
+    }));
   }
+}
+
+function databaseTimestamp(value: unknown, field: string): Date {
+  if (value instanceof Date) return value;
+  if (typeof value === "string" || typeof value === "number") {
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) return parsed;
+  }
+  throw new Error(`Database returned an invalid ${field}`);
 }

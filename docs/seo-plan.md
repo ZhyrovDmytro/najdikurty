@@ -1,17 +1,19 @@
 # HLEDEJKURTY SEO Audit And Action Plan
 
-Last updated: 2026-08-13
+Last updated: 2026-08-22
 
 ## Current Site Snapshot
 
 HLEDEJKURTY is a Vite/React single-page app for finding padel court availability around Prague. Production is configured for the custom domain `https://hledejkurty.cz` via `apps/web/public/CNAME`, with GitHub Pages deployment in `.github/workflows/deploy-pages.yml`.
 
-The app currently exposes these crawlable views through query parameters:
+The app exposes these crawlable views through stable path routes:
 
 - `/` for the main availability finder.
-- `/?page=all-clubs` for the club directory.
-- `/?club=<club-slug>` for stable club detail canonicals.
-- `/?page=about`, `/?page=privacy-policy`, `/?page=terms-of-use`, and `/?page=cookie-policy`.
+- `/clubs/` for the club directory.
+- `/clubs/<club-slug>/` for club detail canonicals.
+- `/about/`, `/privacy-policy/`, `/terms-of-use/`, and `/cookie-policy/`.
+
+The previous query-string routes remain compatible for existing links, but canonical metadata and all new internal links point to the stable paths.
 
 Google can render JavaScript, but the initial HTML still matters for discovery, sharing, and resilience. Google Search Central recommends crawlable resources, descriptive titles and snippets, sitemaps for important URLs, canonical handling for duplicates, and validation of structured data with Search Console and Rich Results Test.
 
@@ -26,25 +28,26 @@ References:
 
 ## Audit Findings
 
-### Critical
+### Critical findings resolved
 
-- The HTML shell had a generic title only, so search engines and social crawlers saw weak page identity before JavaScript rendered.
-- There was no meta description, canonical URL, Open Graph metadata, Twitter card metadata, or structured data.
-- There was no `robots.txt` or `sitemap.xml`, so important query-param pages had no explicit crawl discovery signal.
-- The main search page had no `h1`, and club detail pages used `h2` as the primary page heading.
+- Every sitemap URL now has generated initial HTML with a unique title, description, canonical, social metadata, visible `h1`, internal links, and JSON-LD before JavaScript runs.
+- `robots.txt` permits crawling and declares the production sitemap.
+- The sitemap contains only canonical stable paths, not date filters or query-string routes.
+- A build validation step checks every canonical page and fails deployment on missing or duplicate SEO signals.
 
-### High
+### High findings resolved
 
-- All SPA views shared the same document metadata, causing duplicate title/description signals across the home page, directory, legal pages, and every club.
-- The `date` query parameter creates many transient URL variants. The app needs stable canonical club URLs without the date parameter.
+- Static pages and each club now receive distinct initial metadata and page content.
+- Date/filter variants canonicalize to the corresponding stable page without the date parameter.
+- Internal navigation uses descriptive path routes while preserving the SPA experience.
 - Club images had descriptive filenames, but image `alt` text was generic and image elements did not provide intrinsic dimensions.
-- The club directory is valuable local-intent content, but it is still rendered entirely client-side.
+- The directory and club summaries are present in the generated HTML and then hydrated by React.
 
 ### Medium
 
 - Large PNG assets, including several multi-megabyte club images, can hurt LCP and mobile performance.
 - The app supports English, Czech, and Ukrainian, but language selection is handled through local storage rather than crawlable localized URLs.
-- Query-string routes are workable, but descriptive path routes such as `/clubs/padel-prosek` would be clearer to users and search engines.
+- Search Console must be revalidated after the path-route build is deployed; indexing is controlled by Google and is not immediate.
 - There is no Search Console verification or deployment-time sitemap freshness automation in the repo.
 
 ### Low
@@ -53,7 +56,7 @@ References:
 - Legal pages are present, which helps trust, but the operator identity could become stronger once the production entity is final.
 - Analytics exists through PostHog, but no SEO dashboard or Search Console workflow is documented yet.
 
-## Implemented In This Pass
+## Implemented
 
 - Added base SEO metadata to `apps/web/index.html`:
   - Unique title.
@@ -75,6 +78,10 @@ References:
 - Promoted club detail page heading from `h2` to `h1`.
 - Improved club image `alt` text and added intrinsic width/height hints.
 - Added localized home-page copy in English, Czech, and Ukrainian.
+- Added stable trailing-slash routes for the home, directory, club, about, privacy, terms, and cookie pages.
+- Added build-time prerendering for all 20 canonical URLs and a matching `404.html` fallback.
+- Regenerated the sitemap on every production build using the build date.
+- Added a deployment-time SEO validator covering sitemap parity, robots directives, canonical/OG URLs, unique titles, descriptions, initial headings, non-empty server HTML, social images, and valid JSON-LD.
 
 ## Target Search Intent
 
@@ -111,9 +118,9 @@ Status: mostly implemented.
 
 ### Phase 2: URL And Rendering Improvements
 
-Recommended next technical project.
+Status: implemented for the existing default-language routes.
 
-- Replace query-param content routes with path routes:
+- Path routes:
   - `/`
   - `/clubs`
   - `/clubs/padel-prosek`
@@ -121,14 +128,14 @@ Recommended next technical project.
   - `/privacy-policy`
   - `/terms-of-use`
   - `/cookie-policy`
-- Keep 301 redirects or canonical compatibility from current query URLs.
+- Canonical compatibility is kept for current query URLs. True HTTP redirects for those legacy query URLs require edge/hosting redirect support and should be added if hosting moves to a platform that supports query-based redirect rules.
 - Add crawlable localized routes:
   - `/cs/`
   - `/en/`
   - `/uk/`
   - `/cs/clubs/padel-prosek`, etc.
 - Add `hreflang` tags once localized URLs exist.
-- Consider prerendering the static shell for all directory and club URLs. For this Vite app, a build-time prerender step is likely enough because club names, addresses, prices, and images are static.
+- Build-time prerendering is enabled for all directory, club, informational, and legal URLs.
 
 ### Phase 3: Content Expansion
 
@@ -199,7 +206,7 @@ After deployment:
 - Open `https://hledejkurty.cz/robots.txt`.
 - Open `https://hledejkurty.cz/sitemap.xml`.
 - Inspect `https://hledejkurty.cz/` in Search Console.
-- Inspect at least one club URL, for example `https://hledejkurty.cz/?club=padel-prosek`.
+- Inspect at least one club URL, for example `https://hledejkurty.cz/clubs/padel-prosek/`.
 - Test structured data with Rich Results Test.
 - Test a social preview with Open Graph/Twitter card tooling.
 

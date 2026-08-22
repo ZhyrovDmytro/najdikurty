@@ -3,7 +3,7 @@ import { dateKeyInTimezone, localDateTimeInstant, timeInTimezone } from "@mameku
 export const DEFAULT_SCHEDULE_TIMEZONE = "Europe/Prague";
 export const DEFAULT_SCHEDULE_START = "08:00";
 export const DEFAULT_SCHEDULE_END = "22:00";
-export const DEFAULT_TARGET_HORIZON_DAYS = 14;
+export const DEFAULT_TARGET_HORIZON_DAYS = 7;
 
 export interface RefreshPolicyOptions {
   timezone?: string;
@@ -73,7 +73,7 @@ export function targetDates(now: Date, horizonDays = DEFAULT_TARGET_HORIZON_DAYS
     throw new Error("Target horizon must be between 1 and 31 days");
   }
   const today = dateKeyInTimezone(now, timezone);
-  return Array.from({ length: horizonDays }, (_, index) => addCalendarDays(today, index));
+  return Array.from({ length: horizonDays + 1 }, (_, index) => addCalendarDays(today, index));
 }
 
 export function isInsideScheduleWindow(now: Date, options: RefreshPolicyOptions = {}): boolean {
