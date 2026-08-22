@@ -211,15 +211,24 @@ export class DrizzleAvailabilityIndexRepository implements AvailabilityIndexRepo
       Partial<Pick<ScrapeRunRow, "errorCode" | "errorMessage" | "metadata">>
   ): Promise<ScrapeRunRow> {
     const completedAt = new Date();
+    const [existingRun] = await this.db
+      .select({ startedAt: scrapeRuns.startedAt })
+      .from(scrapeRuns)
+      .where(eq(scrapeRuns.id, id))
+      .limit(1);
+    const durationMs = Math.max(
+      0,
+      completedAt.getTime() - requiredRow(existingRun, "scrape run").startedAt.getTime()
+    );
     const [row] = await this.db
       .update(scrapeRuns)
       .set({
         ...input,
         completedAt,
-        durationMs: sql<number>`greatest(0, extract(epoch from (${completedAt}::timestamptz - ${scrapeRuns.startedAt})) * 1000)::integer`,
+        durationMs,
         updatedAt: completedAt
       })
-      .where(sql`${scrapeRuns.id} = ${id}`)
+      .where(eq(scrapeRuns.id, id))
       .returning();
     return requiredRow(row, "scrape run");
   }
