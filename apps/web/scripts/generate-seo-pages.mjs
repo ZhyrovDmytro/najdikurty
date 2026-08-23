@@ -106,9 +106,11 @@ function renderPage(page) {
   html = replaceMeta(html, "property", "og:description", page.description);
   html = replaceMeta(html, "property", "og:url", canonicalUrl);
   html = replaceMeta(html, "property", "og:image", imageUrl);
+  html = replaceMeta(html, "property", "og:image:alt", socialImageAlt(page));
   html = replaceMeta(html, "name", "twitter:title", page.title);
   html = replaceMeta(html, "name", "twitter:description", page.description);
   html = replaceMeta(html, "name", "twitter:image", imageUrl);
+  html = replaceMeta(html, "name", "twitter:image:alt", socialImageAlt(page));
   html = html.replace(/<link rel="canonical" href="[^"]*"\s*\/>/, `<link rel="canonical" href="${escapeAttribute(canonicalUrl)}" />`);
   html = html.replace("</head>", `<script id="seo-structured-data" type="application/ld+json">${safeJson(structuredData)}</script>\n  </head>`);
   html = html.replace('<div id="root"></div>', `<div id="root">${renderVisibleContent(page)}</div>`);
@@ -117,19 +119,41 @@ function renderPage(page) {
 
 function renderVisibleContent(page) {
   const clubLinks = clubs.map((club) => `<li><a href="/clubs/${escapeAttribute(club.slug)}/">${escapeHtml(club.name)}</a><span>${escapeHtml(club.courts)} · ${escapeHtml(club.address)}</span></li>`).join("");
-  const relatedLinks = page.path === "/" || page.path === "/clubs/"
-    ? `<ul class="seoPrerenderClubs">${clubLinks}</ul>`
-    : page.club
-      ? '<p><a href="/clubs/">Compare all padel clubs in Prague</a></p>'
-      : '<p><a href="/clubs/">Browse padel clubs in Prague</a></p>';
+  const details = page.path === "/"
+    ? `<section><h2>Search current padel availability</h2><p>Choose a date, playing time, session length, number of courts, and indoor or outdoor preference. HLEDEJKURTY compares the latest saved availability for supported Prague clubs in one search, including today and the following seven days.</p></section>
+      <section><h2>Compare courts before booking</h2><p>Results bring together available start times, published hourly prices, court type, opening hours, and Multisport information. Availability is refreshed throughout the day so you can narrow the options without opening every club's booking system.</p></section>
+      <section><h2>Book through the official club</h2><p>HLEDEJKURTY is a search and comparison service, not a booking provider. Open the club's official reservation page from a result to confirm that the time is still free, review the final price, and complete the booking directly with the venue.</p></section>
+      <section><h2>Padel clubs in Prague</h2><p>Browse all ${clubs.length} currently supported venues, from outdoor neighborhood courts to larger indoor centers.</p><ul class="seoPrerenderClubs">${clubLinks}</ul></section>`
+    : page.path === "/clubs/"
+      ? `<section><h2>Compare Prague padel venues</h2><p>Use each club page to review its address, number and type of courts, published pricing, Multisport support, and a direct route to the official booking system. The list covers venues across Prague and selected nearby locations.</p></section>
+        <section><h2>Check recent court availability</h2><p>Search results use availability saved from supported club systems for today and the next seven days. Data is refreshed on a rolling schedule during the day, but the club's own reservation system is always the final source before booking.</p></section>
+        <section><h2>All tracked clubs</h2><ul class="seoPrerenderClubs">${clubLinks}</ul></section>`
+      : page.club
+        ? renderClubDetails(page.club)
+        : `<section><h2>Explore the service</h2><p><a href="/clubs/">Browse all supported padel clubs in Prague</a> or return to the search to compare recent availability.</p></section>`;
   return `<main class="seoPrerender">
-    <a class="seoPrerenderBrand" href="/">HLEDEJKURTY</a>
+    <header class="seoPrerenderHeader">
+      <a class="seoPrerenderBrand" href="/">HLEDEJKURTY</a>
+      <nav class="seoPrerenderNav" aria-label="Primary navigation"><a href="/">Search availability</a><a href="/clubs/">Clubs</a><a href="/about/">How it works</a></nav>
+    </header>
     <article>
       <h1>${escapeHtml(page.h1)}</h1>
       <p>${escapeHtml(page.body)}</p>
-      ${relatedLinks}
+      ${details}
     </article>
+    <footer class="seoPrerenderFooter"><a href="/about/">About</a><a href="/privacy-policy/">Privacy</a><a href="/terms-of-use/">Terms</a><a href="/cookie-policy/">Cookies</a></footer>
   </main>`;
+}
+
+function renderClubDetails(club) {
+  return `<section><h2>${escapeHtml(club.name)} court information</h2>
+      <ul class="seoPrerenderFacts"><li><strong>Address</strong><span>${escapeHtml(club.address)}</span></li><li><strong>Courts</strong><span>${escapeHtml(club.courts)}</span></li><li><strong>Published price</strong><span>${escapeHtml(club.price)}</span></li><li><strong>Multisport</strong><span>${club.multisport ? "The club publishes Multisport support." : "Confirm accepted payment methods with the club."}</span></li></ul></section>
+    <section><h2>Availability and official booking</h2><p>HLEDEJKURTY stores availability for today and the next seven days and refreshes supported sources on a rolling schedule during the day. Times can change between checks, so open the venue's official reservation system to confirm the court, final price, and booking conditions.</p><a class="seoPrerenderCta" href="/">Search court availability</a></section>
+    <section><h2>Compare padel clubs in Prague</h2><p><a href="/clubs/">Browse every tracked venue</a> to compare addresses, indoor and outdoor courts, prices, and facilities before choosing where to play.</p></section>`;
+}
+
+function socialImageAlt(page) {
+  return page.club ? `${page.club.name} padel club in Prague` : "HLEDEJKURTY padel court finder in Prague";
 }
 
 function buildStructuredData(page, canonicalUrl, imageUrl) {

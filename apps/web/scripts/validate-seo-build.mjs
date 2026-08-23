@@ -40,16 +40,41 @@ for (const location of locations) {
   const description = metaContent(html, "name", "description");
   const canonical = match(html, /<link\s+rel="canonical"\s+href="([^"]+)"\s*\/>/i);
   const ogUrl = metaContent(html, "property", "og:url");
+  const ogImageAlt = metaContent(html, "property", "og:image:alt");
   const h1Count = (html.match(/<h1(?:\s[^>]*)?>/gi) ?? []).length;
+  const h2Count = (html.match(/<h2(?:\s[^>]*)?>/gi) ?? []).length;
   const structuredData = match(html, /<script id="seo-structured-data" type="application\/ld\+json">([^<]+)<\/script>/i);
+  const stylesheetHref = match(html, /<link rel="preload" as="style" href="([^"]+\.css)"/i);
+  const criticalCss = match(html, /<style id="critical-css">([^<]+)<\/style>/i);
+  const initialContent = match(html, /<div id="root">([\s\S]*)<\/div>\s*<\/body>/i);
+  const initialWordCount = initialContent.replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
+  const isAuditedContentPage = url.pathname === "/" || url.pathname === "/clubs/" || /^\/clubs\/[^/]+\/$/.test(url.pathname);
 
   check(Boolean(title), `${location} has no title`);
   check(Boolean(description), `${location} has no meta description`);
   check(description.length >= 70 && description.length <= 180, `${location} description length is ${description.length}`);
   check(canonical === location, `${location} canonical is ${canonical || "missing"}`);
   check(ogUrl === location, `${location} Open Graph URL is ${ogUrl || "missing"}`);
+  check(Boolean(ogImageAlt), `${location} has no Open Graph image description`);
   check(h1Count === 1, `${location} has ${h1Count} initial HTML h1 elements`);
   check(!html.includes('<div id="root"></div>'), `${location} has an empty initial app shell`);
+  check(Boolean(stylesheetHref), `${location} does not preload the full stylesheet`);
+  check(html.includes(`<noscript><link rel="stylesheet" href="${stylesheetHref}"></noscript>`), `${location} has no stylesheet fallback without JavaScript`);
+  check(criticalCss.length > 0 && criticalCss.length < 5000, `${location} has missing or oversized critical CSS`);
+
+  if (isAuditedContentPage) {
+    check(html.includes('<nav class="seoPrerenderNav"'), `${location} has no initial semantic navigation`);
+    check(h2Count >= 3, `${location} has only ${h2Count} initial HTML h2 elements`);
+    check(initialWordCount >= 120, `${location} has only ${initialWordCount} visible initial words`);
+  }
+
+  if (stylesheetHref) {
+    try {
+      await access(path.join(distDir, stylesheetHref.replace(/^\//, "")));
+    } catch {
+      errors.push(`${location} references a missing stylesheet: ${stylesheetHref}`);
+    }
+  }
 
   if (title) {
     if (titles.has(title)) errors.push(`Duplicate title on ${locations[titles.get(title)]} and ${location}: ${title}`);

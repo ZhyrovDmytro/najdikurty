@@ -99,6 +99,27 @@ body {
   text-decoration: none;
 }
 
+.seoPrerenderHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.seoPrerenderNav,
+.seoPrerenderFooter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.seoPrerenderNav a,
+.seoPrerenderFooter a {
+  color: var(--text-muted);
+  font-weight: 700;
+  text-decoration: none;
+}
+
 .seoPrerender article {
   margin-top: 20px;
   padding: 24px;
@@ -112,6 +133,11 @@ body {
   margin: 0 0 12px;
   font-size: clamp(2rem, 5vw, 3.5rem);
   line-height: 1.08;
+}
+
+.seoPrerender h2 {
+  margin: 28px 0 8px;
+  font-size: 1.35rem;
 }
 
 .seoPrerender p,
@@ -143,6 +169,44 @@ body {
 
 .seoPrerenderClubs a {
   font-weight: 800;
+}
+
+.seoPrerenderFacts {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.seoPrerenderFacts li {
+  display: grid;
+  gap: 3px;
+  padding: 10px;
+  background: var(--surface-muted);
+  border-radius: 8px;
+}
+
+.seoPrerenderCta {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 11px 16px;
+  color: white !important;
+  background: var(--brand);
+  border-radius: 8px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.seoPrerenderFooter {
+  margin-top: 18px;
+  padding: 0 4px;
+}
+
+@media (max-width: 600px) {
+  .seoPrerenderHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 
 button,
