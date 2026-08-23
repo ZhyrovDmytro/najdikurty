@@ -19,6 +19,67 @@ export interface DatabaseSearchResponse {
   results: DatabaseSearchResult[];
 }
 
+export interface DatabaseSearchRetryOptions {
+  attempts?: number;
+  delay?: (milliseconds: number) => Promise<void>;
+  retryDelayMs?: number;
+}
+
+export async function fetchDatabaseSearchWithRetry(
+  url: string,
+  request: (url: string) => Promise<Response>,
+  options: DatabaseSearchRetryOptions = {}
+): Promise<DatabaseSearchResponse> {
+  const attempts = options.attempts ?? 2;
+  const retryDelayMs = options.retryDelayMs ?? 1_000;
+  const delay = options.delay ?? ((milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)));
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      const response = await request(url);
+      const payload = await parseDatabaseSearchResponse(response);
+      if (!response.ok) {
+        const error = new Error(payload.error ?? `Database search failed (${response.status})`);
+        if (!isRetryableStatus(response.status)) throw new NonRetryableDatabaseSearchError(error);
+        lastError = error;
+      } else {
+        return payload;
+      }
+    } catch (error) {
+      lastError = error;
+      if (error instanceof NonRetryableDatabaseSearchError) throw error.cause;
+    }
+
+    if (attempt < attempts) await delay(retryDelayMs);
+  }
+
+  throw lastError instanceof Error ? lastError : new Error("Database search failed");
+}
+
+async function parseDatabaseSearchResponse(
+  response: Response
+): Promise<DatabaseSearchResponse & { error?: string }> {
+  try {
+    return await response.json() as DatabaseSearchResponse & { error?: string };
+  } catch (error) {
+    if (!response.ok && !isRetryableStatus(response.status)) {
+      throw new NonRetryableDatabaseSearchError(error);
+    }
+    throw new Error(`Database search returned an invalid response (${response.status})`);
+  }
+}
+
+function isRetryableStatus(status: number): boolean {
+  return status === 408 || status === 429 || status >= 500;
+}
+
+class NonRetryableDatabaseSearchError extends Error {
+  constructor(readonly cause: unknown) {
+    super("Database search failed with a non-retryable response");
+  }
+}
+
 export function databaseSearchToAvailabilityByClub(
   response: DatabaseSearchResponse,
   options: {

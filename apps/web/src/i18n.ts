@@ -73,7 +73,7 @@ export const resources = {
             question: "How does the search work?"
           },
           updates: {
-            answer: "Availability is refreshed automatically between 08:00 and 22:00 Prague time. Today's availability is normally checked about every 20 minutes; later dates are checked less often. Individual results show their last check time, while the status beside the checked-club count shows an approximate countdown to the next regular cycle. You can also request a fresh check manually, and the displayed results update automatically when it finishes.",
+            answer: "Availability for today and the next seven days is refreshed automatically about every 20 minutes between 08:00 and 22:00 Prague time. Individual results show their last check time, while the status beside the checked-club count shows an approximate countdown to the next regular cycle. You can also request a fresh check manually, and the displayed results update automatically when it finishes.",
             question: "How often is availability updated?"
           },
           booking: {
@@ -100,7 +100,7 @@ export const resources = {
         failedLoad: "Failed to load availability",
         noCheckedClubs: "No clubs checked yet",
         nextCheck: "Next in ~{{duration}}",
-        nextCheckTooltip: "Today's availability is checked about every 20 minutes. Next check in ~{{duration}}. Use the refresh button to request fresh data.",
+        nextCheckTooltip: "Availability for all tracked dates is checked about every 20 minutes. Next check in ~{{duration}}. Use the refresh button to request fresh data.",
         notLoaded: "Court availability is not loaded",
         recent: "recently",
         refreshAlreadyQueued: "A fresh availability check is already queued or running.",
@@ -309,7 +309,7 @@ export const resources = {
             question: "Як працює пошук?"
           },
           updates: {
-            answer: "Доступність автоматично оновлюється між 08:00 і 22:00 за празьким часом. Дані на сьогодні зазвичай перевіряються приблизно кожні 20 хвилин, а пізніші дати — рідше. Окремі результати показують час останньої перевірки, а статус біля кількості перевірених клубів — приблизний відлік до наступного регулярного циклу. Також можна вручну запросити свіжу перевірку, і після її завершення показані результати оновляться автоматично.",
+            answer: "Доступність на сьогодні та наступні сім днів автоматично оновлюється приблизно кожні 20 хвилин між 08:00 і 22:00 за празьким часом. Окремі результати показують час останньої перевірки, а статус біля кількості перевірених клубів — приблизний відлік до наступного регулярного циклу. Також можна вручну запросити свіжу перевірку, і після її завершення показані результати оновляться автоматично.",
             question: "Як часто оновлюється доступність?"
           },
           booking: {
@@ -336,7 +336,7 @@ export const resources = {
         failedLoad: "Не вдалося завантажити доступність",
         noCheckedClubs: "Клуби ще не перевірено",
         nextCheck: "Наступна через ~{{duration}}",
-        nextCheckTooltip: "Дані на сьогодні перевіряються приблизно кожні 20 хвилин. Наступна перевірка через ~{{duration}}. Натисніть кнопку оновлення, щоб запросити свіжі дані.",
+        nextCheckTooltip: "Дані для всіх відстежуваних дат перевіряються приблизно кожні 20 хвилин. Наступна перевірка через ~{{duration}}. Натисніть кнопку оновлення, щоб запросити свіжі дані.",
         notLoaded: "Доступність кортів не завантажена",
         recent: "щойно",
         refreshAlreadyQueued: "Нова перевірка доступності вже в черзі або виконується.",
@@ -545,7 +545,7 @@ export const resources = {
             question: "Jak vyhledávání funguje?"
           },
           updates: {
-            answer: "Dostupnost se automaticky aktualizuje mezi 08:00 a 22:00 pražského času. Dnešní dostupnost se běžně kontroluje přibližně každých 20 minut, pozdější data méně často. Jednotlivé výsledky ukazují čas poslední kontroly a stav vedle počtu zkontrolovaných klubů přibližný odpočet do dalšího pravidelného cyklu. Novou kontrolu můžete také vyžádat ručně a po jejím dokončení se zobrazené výsledky automaticky aktualizují.",
+            answer: "Dostupnost pro dnešek a následujících sedm dní se mezi 08:00 a 22:00 pražského času automaticky aktualizuje přibližně každých 20 minut. Jednotlivé výsledky ukazují čas poslední kontroly a stav vedle počtu zkontrolovaných klubů přibližný odpočet do dalšího pravidelného cyklu. Novou kontrolu můžete také vyžádat ručně a po jejím dokončení se zobrazené výsledky automaticky aktualizují.",
             question: "Jak často se dostupnost aktualizuje?"
           },
           booking: {
@@ -572,7 +572,7 @@ export const resources = {
         failedLoad: "Nepodařilo se načíst dostupnost",
         noCheckedClubs: "Zatím nebyly zkontrolovány žádné kluby",
         nextCheck: "Další za ~{{duration}}",
-        nextCheckTooltip: "Dnešní dostupnost se kontroluje přibližně každých 20 minut. Další kontrola za ~{{duration}}. Čerstvá data si vyžádáte tlačítkem obnovení.",
+        nextCheckTooltip: "Dostupnost pro všechny sledované dny se kontroluje přibližně každých 20 minut. Další kontrola za ~{{duration}}. Čerstvá data si vyžádáte tlačítkem obnovení.",
         notLoaded: "Dostupnost kurtů není načtená",
         recent: "nedávno",
         refreshAlreadyQueued: "Nová kontrola dostupnosti už čeká ve frontě nebo právě probíhá.",

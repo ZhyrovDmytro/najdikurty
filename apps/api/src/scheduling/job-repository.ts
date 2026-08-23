@@ -56,7 +56,14 @@ export class ScrapeJobRepository {
     await this.db
       .insert(scrapeTargets)
       .values({ clubId, targetDate, nextRefreshAt, priority, status })
-      .onConflictDoNothing({ target: [scrapeTargets.clubId, scrapeTargets.targetDate] });
+      .onConflictDoUpdate({
+        target: [scrapeTargets.clubId, scrapeTargets.targetDate],
+        set: { nextRefreshAt },
+        setWhere: and(
+          inArray(scrapeTargets.status, ["pending", "failed"]),
+          gt(scrapeTargets.nextRefreshAt, nextRefreshAt)
+        )
+      });
   }
 
   async pauseTargetsOutsideRange(firstDate: string, lastDate: string, now = new Date()): Promise<number> {

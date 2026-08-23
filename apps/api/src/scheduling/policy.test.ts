@@ -2,13 +2,18 @@ import { describe, expect, it } from "vitest";
 import { nextScheduledRefresh, refreshCadenceMinutes, scheduleTimes, targetDates } from "./policy.js";
 
 describe("refresh scheduling policy", () => {
-  it("reduces cadence as the target date gets farther away", () => {
+  it("refreshes today through the seven-day horizon every 20 minutes", () => {
     const now = new Date("2026-08-21T10:00:00Z");
     expect(refreshCadenceMinutes("2026-08-21", now)).toBe(20);
-    expect(refreshCadenceMinutes("2026-08-22", now)).toBe(60);
-    expect(refreshCadenceMinutes("2026-08-24", now)).toBe(180);
-    expect(refreshCadenceMinutes("2026-08-28", now)).toBe(360);
+    expect(refreshCadenceMinutes("2026-08-22", now)).toBe(20);
+    expect(refreshCadenceMinutes("2026-08-24", now)).toBe(20);
+    expect(refreshCadenceMinutes("2026-08-28", now)).toBe(20);
     expect(refreshCadenceMinutes("2026-08-29", now)).toBe(1_440);
+  });
+
+  it("uses the same 20-minute schedule for a date six days ahead", () => {
+    const now = new Date("2026-08-23T13:51:00Z");
+    expect(nextScheduledRefresh(now, "2026-08-29").toISOString()).toBe("2026-08-23T14:00:00.000Z");
   });
 
   it("always includes the final 22:00 run", () => {

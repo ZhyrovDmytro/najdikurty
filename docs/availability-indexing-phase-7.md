@@ -6,10 +6,7 @@ Phase 7 adds a database-backed scheduler and worker without changing the existin
 
 - Timezone: `Europe/Prague`
 - Active window: 08:00–22:00 inclusive
-- Today: every 20 minutes from 08:00 through 22:00
-- Tomorrow: hourly from 08:00 through 22:00
-- 2–3 days ahead: every 3 hours from 09:00 through 21:00
-- 4–7 days ahead: every 6 hours from 10:00 through 22:00
+- Today through 7 days ahead: every 20 minutes from 08:00 through 22:00
 - A target is paused after its target date's final run; a manual request can still reactivate it.
 - Default target horizon: today through 7 days ahead (8 calendar dates) for every enabled catalog club.
 - Targets outside the configured horizon are paused and are not claimed by the worker.
@@ -81,7 +78,7 @@ Low-cost Render Cron command (recommended for the initial deployment):
 npm run start:jobs:once -w @mamekurt/api
 ```
 
-The initial Render deployment runs every ten minutes only during the daytime window. Render evaluates cron expressions in UTC, so use `*/10 6-19 * * *` during Prague summer time (CEST) and `*/10 7-20 * * *` during standard time (CET). This produces invocations from 08:00 through 21:50 Prague time. The command seeds missing targets, drains all work that is currently due, and exits. Manual targets queued outside this window wait for the next daytime invocation.
+The initial Render deployment runs every ten minutes during the daytime window. Render evaluates cron expressions in UTC, so use `*/10 6-20 * * *` during Prague summer time (CEST) and `*/10 7-21 * * *` during standard time (CET). This covers the final 22:00 Prague refresh; invocations after that final target find no regular work. The command seeds missing targets, accelerates targets that still carry an older, slower schedule, drains all work that is currently due, and exits. Manual targets queued outside this window wait for the next daytime invocation.
 
 Both processes require `DATABASE_URL` and the provider credentials already documented in `apps/api/.env.example`. The scheduler and worker are separate from the API web process so a slow provider cannot consume web request capacity.
 

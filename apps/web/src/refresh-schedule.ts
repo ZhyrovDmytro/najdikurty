@@ -25,10 +25,8 @@ export function approximateCountdown(target: Date, now: Date): string {
 }
 
 function scheduleTimesForDaysAhead(daysAhead: number): string[] {
-  if (daysAhead <= 0) return scheduleTimes("08:00", "22:00", 20);
-  if (daysAhead === 1) return scheduleTimes("08:00", "22:00", 60);
-  if (daysAhead <= 3) return scheduleTimes("09:00", "21:00", 180);
-  return scheduleTimes("10:00", "22:00", 360);
+  if (daysAhead <= 7) return scheduleTimes("08:00", "22:00", 20);
+  return ["14:00"];
 }
 
 function scheduleTimes(startTime: string, endTime: string, cadenceMinutes: number): string[] {

@@ -13,10 +13,7 @@ export interface RefreshPolicyOptions {
 
 export function refreshCadenceMinutes(targetDate: string, now: Date, timezone = DEFAULT_SCHEDULE_TIMEZONE): number {
   const daysAhead = calendarDayDifference(dateKeyInTimezone(now, timezone), targetDate);
-  if (daysAhead <= 0) return 20;
-  if (daysAhead === 1) return 60;
-  if (daysAhead <= 3) return 180;
-  if (daysAhead <= 7) return 360;
+  if (daysAhead <= DEFAULT_TARGET_HORIZON_DAYS) return 20;
   return 1_440;
 }
 
@@ -48,10 +45,7 @@ export function nextScheduledRefresh(
 }
 
 export function policyScheduleTimes(daysAhead: number, startTime = DEFAULT_SCHEDULE_START, endTime = DEFAULT_SCHEDULE_END): string[] {
-  if (daysAhead <= 0) return scheduleTimes(startTime, endTime, 20);
-  if (daysAhead === 1) return scheduleTimes(startTime, endTime, 60);
-  if (daysAhead <= 3) return scheduleTimes(laterTime(startTime, "09:00"), earlierTime(endTime, "21:00"), 180);
-  if (daysAhead <= 7) return scheduleTimes(laterTime(startTime, "10:00"), endTime, 360);
+  if (daysAhead <= DEFAULT_TARGET_HORIZON_DAYS) return scheduleTimes(startTime, endTime, 20);
   const onceDaily = laterTime(startTime, "14:00");
   return onceDaily <= endTime ? [onceDaily] : [endTime];
 }
@@ -103,8 +97,4 @@ function formatMinutes(value: number): string {
 
 function laterTime(left: string, right: string): string {
   return left >= right ? left : right;
-}
-
-function earlierTime(left: string, right: string): string {
-  return left <= right ? left : right;
 }

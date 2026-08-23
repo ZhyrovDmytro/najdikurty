@@ -1,5 +1,6 @@
 import cors from "cors";
 import { config as loadEnvironment } from "dotenv";
+import { sql } from "drizzle-orm";
 import express from "express";
 import { z } from "zod";
 import {
@@ -68,6 +69,15 @@ app.use(express.json({ limit: "16kb" }));
 
 app.get("/health", (_request, response) => {
   response.json({ ok: true });
+});
+
+app.get("/api/ready", async (_request, response, next) => {
+  try {
+    await getDatabaseConnection().db.execute(sql`select 1`);
+    response.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
 });
 
 app.get("/api/availability", async (request, response, next) => {

@@ -8,9 +8,9 @@ describe("availability refresh schedule", () => {
     expect(approximateCountdown(nextApproximateCheck("2026-08-22", now), now)).toBe("16 min");
   });
 
-  it("uses a less frequent check for dates farther ahead", () => {
+  it("uses the next 20-minute check for dates through seven days ahead", () => {
     const now = new Date("2026-08-22T08:04:00Z");
-    expect(nextApproximateCheck("2026-08-26", now).toISOString()).toBe("2026-08-22T14:00:00.000Z");
+    expect(nextApproximateCheck("2026-08-28", now).toISOString()).toBe("2026-08-22T08:20:00.000Z");
   });
 
   it("moves the estimate to the next morning outside the active window", () => {

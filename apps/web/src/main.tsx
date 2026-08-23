@@ -46,7 +46,7 @@ import {
 } from "./availability";
 import {
   databaseSearchToAvailabilityByClub,
-  type DatabaseSearchResponse
+  fetchDatabaseSearchWithRetry
 } from "./database-search";
 import { Alert, Badge, Button, Card, EmptyState, Field, Input, Select, Skeleton } from "./ui";
 import i18n, { LANGUAGE_OPTIONS, LANGUAGE_STORAGE_KEY, type LanguageCode } from "./i18n";
@@ -82,9 +82,16 @@ const AVAILABILITY_REQUEST_TIMEOUT_MS = 30_000;
 const AVAILABILITY_REQUEST_MAX_ATTEMPTS = 2;
 const AVAILABILITY_REQUEST_RETRY_DELAY_MS = 1_000;
 const AVAILABILITY_REQUEST_CONCURRENCY = 3;
+const DATABASE_SEARCH_REQUEST_TIMEOUT_MS = 20_000;
+const DATABASE_SEARCH_REQUEST_MAX_ATTEMPTS = 3;
 const DATABASE_SEARCH_MAX_DURATION_MINUTES = 8 * 60;
 const MANUAL_REFRESH_POLL_INTERVAL_MS = 5_000;
 const MANUAL_REFRESH_WAIT_TIMEOUT_MS = 15 * 60_000;
+const databaseBackendWarmup = USE_DATABASE_SEARCH
+  ? fetchAvailabilityRequest(`${API_BASE_URL}/api/ready`).then((response) => {
+      if (!response.ok) throw new Error(`Database readiness check failed (${response.status})`);
+    }).catch(() => undefined)
+  : Promise.resolve();
 const localeByLanguage: Record<LanguageCode, string> = {
   cz: "cs",
   en: "en",
@@ -416,15 +423,18 @@ async function parseAvailabilityResponse(response: Response): Promise<Availabili
   );
 }
 
-async function fetchAvailabilityRequest(url: string): Promise<Response> {
+async function fetchAvailabilityRequest(
+  url: string,
+  timeoutMs = AVAILABILITY_REQUEST_TIMEOUT_MS
+): Promise<Response> {
   const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), AVAILABILITY_REQUEST_TIMEOUT_MS);
+  const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     return await fetch(url, { signal: controller.signal });
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") {
-      throw new Error(i18n.t("availability.timeout", { seconds: Math.round(AVAILABILITY_REQUEST_TIMEOUT_MS / 1000) }));
+      throw new Error(i18n.t("availability.timeout", { seconds: Math.round(timeoutMs / 1000) }));
     }
 
     throw error;
@@ -454,13 +464,6 @@ async function fetchAvailabilityWithRetry(url: string, clubName: string): Promis
   }
 
   throw lastError instanceof Error ? lastError : new Error(i18n.t("availability.unknownCheckFailure"));
-}
-
-async function fetchDatabaseSearch(url: string): Promise<DatabaseSearchResponse> {
-  const response = await fetchAvailabilityRequest(url);
-  const payload = await response.json() as DatabaseSearchResponse & { error?: string };
-  if (!response.ok) throw new Error(payload.error ?? `Database search failed (${response.status})`);
-  return payload;
 }
 
 function delay(milliseconds: number): Promise<void> {
@@ -585,7 +588,16 @@ function App() {
       }
 
       try {
-        const response = await fetchDatabaseSearch(`${API_BASE_URL}/api/search?${params}`);
+        await databaseBackendWarmup;
+        const response = await fetchDatabaseSearchWithRetry(
+          `${API_BASE_URL}/api/search?${params}`,
+          (url) => fetchAvailabilityRequest(url, DATABASE_SEARCH_REQUEST_TIMEOUT_MS),
+          {
+            attempts: DATABASE_SEARCH_REQUEST_MAX_ATTEMPTS,
+            delay,
+            retryDelayMs: AVAILABILITY_REQUEST_RETRY_DELAY_MS
+          }
+        );
         if (loadSequenceRef.current !== loadId) return;
         const dayRangeByClub = Object.fromEntries(targetClubs.map((club) => [
           club.slug,
@@ -955,7 +967,7 @@ function App() {
     <Button
       className="searchSubmitButton"
       disabled={isLoading}
-      icon={isLoading ? <RefreshCw size={18} /> : <SearchCheck size={18} />}
+      icon={isLoading ? <RefreshCw className="refreshSpinner" size={18} /> : <SearchCheck size={18} />}
       onClick={() => {
         captureEvent("availability_searched", {
           court_type: courtTypeFilter,
