@@ -25,7 +25,7 @@ export function jobConfig(environment: NodeJS.ProcessEnv = process.env): JobConf
     providerConcurrency: envInteger(environment, "WORKER_PROVIDER_CONCURRENCY", 1, 1, 10),
     providerConcurrencyOverrides: concurrencyOverrides(environment.WORKER_PROVIDER_CONCURRENCY_OVERRIDES),
     pollIntervalMs: envInteger(environment, "WORKER_POLL_INTERVAL_MS", 5_000, 500, 300_000),
-    scrapeTimeoutMs: envInteger(environment, "WORKER_SCRAPE_TIMEOUT_MS", 45_000, 1_000, 180_000),
+    scrapeTimeoutMs: envInteger(environment, "WORKER_SCRAPE_TIMEOUT_MS", 150_000, 1_000, 180_000),
     lockTimeoutMs: envInteger(environment, "WORKER_LOCK_TIMEOUT_MS", 5 * 60_000, 10_000, 60 * 60_000),
     maxAttempts: envInteger(environment, "WORKER_MAX_ATTEMPTS", 3, 1, 10),
     retryBaseMs: envInteger(environment, "WORKER_RETRY_BASE_MS", 60_000, 1_000, 60 * 60_000),

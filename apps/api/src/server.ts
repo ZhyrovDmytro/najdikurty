@@ -7,6 +7,7 @@ import {
   fetchBookaballAvailability,
   fetchCourtyOneAvailability,
   fetchISportSystemAvailability,
+  fetchISportSystemAvailabilityWithApify,
   fetchJdemeNaToAvailability,
   fetchJdemeNaToPortalSearchAvailability,
   fetchPadelosAvailability,
@@ -34,6 +35,7 @@ const DEFAULT_AVAILABILITY_TIMEOUT_MS = 25_000;
 const DEFAULT_TK_SPARTA_AVAILABILITY_TIMEOUT_MS = 60_000;
 const DEFAULT_JDEMENATO_BROWSER_TIMEOUT_MS = 45_000;
 const DEFAULT_ISPORTSYSTEM_BROWSER_TIMEOUT_MS = 90_000;
+const DEFAULT_ISPORTSYSTEM_APIFY_TIMEOUT_MS = 150_000;
 const DEFAULT_PADEL_SLAVIA_AVAILABILITY_TIMEOUT_MS = 45_000;
 const DEFAULT_PADEL_SLAVIA_BROWSER_TIMEOUT_MS = 45_000;
 const DEFAULT_AVAILABILITY_CACHE_TTL_MS = 15 * 60_000;
@@ -395,7 +397,17 @@ async function fetchAvailabilityByClub(query: z.infer<typeof querySchema>, signa
   }
 
   if (query.club === "head-tenis-centrum-vestec") {
-    throw new Error("Head Tenis Centrum availability is temporarily disabled");
+    return fetchISportSystemAvailabilityWithApify({
+      token: apifyToken(),
+      actorId: process.env.ISPORTSYSTEM_APIFY_ACTOR_ID?.trim() || undefined,
+      actorTimeoutSecs: optionalNumber(process.env.ISPORTSYSTEM_APIFY_ACTOR_TIMEOUT_SECS),
+      apiUrl: process.env.ISPORTSYSTEM_APIFY_API_URL?.trim() || undefined,
+      cacheTtlMs: optionalNumber(process.env.ISPORTSYSTEM_APIFY_CACHE_TTL_MS),
+      clubSlug: query.club,
+      date: query.date,
+      fetchImpl,
+      sport: query.sport
+    });
   }
 
   if (query.club === "padel-radotin") {
@@ -520,6 +532,12 @@ function padelSlaviaCredentials() {
   return { email: email.trim(), password: password.trim() };
 }
 
+function apifyToken(): string {
+  const token = process.env.APIFY_TOKEN?.trim();
+  if (!token) throw new Error("APIFY_TOKEN is required for Head Tenis Centrum availability");
+  return token;
+}
+
 function padelSlaviaBrowserOptions(live?: string, signal?: AbortSignal) {
   if (process.env.PADEL_SLAVIA_BROWSER === "0") {
     return false;
@@ -606,6 +624,8 @@ function providerTimeoutMs(clubSlug: string): number {
       ? optionalNumber(process.env.TK_SPARTA_AVAILABILITY_TIMEOUT_MS) ?? DEFAULT_TK_SPARTA_AVAILABILITY_TIMEOUT_MS
       : clubSlug === "sk-slavia-praha-padel"
         ? optionalNumber(process.env.PADEL_SLAVIA_AVAILABILITY_TIMEOUT_MS) ?? DEFAULT_PADEL_SLAVIA_AVAILABILITY_TIMEOUT_MS
+      : clubSlug === "head-tenis-centrum-vestec"
+        ? optionalNumber(process.env.ISPORTSYSTEM_APIFY_AVAILABILITY_TIMEOUT_MS) ?? DEFAULT_ISPORTSYSTEM_APIFY_TIMEOUT_MS
       : clubSlug === "padel-radotin" || clubSlug === "padel-cakovice"
         ? optionalNumber(process.env.ISPORTSYSTEM_AVAILABILITY_TIMEOUT_MS) ?? DEFAULT_ISPORTSYSTEM_BROWSER_TIMEOUT_MS
       : undefined;

@@ -75,10 +75,12 @@ npm run scrape -w @mamekurt/api -- --club=padel-club-spoje --date=2026-08-22
 The Phase 6 command supports every currently enabled club:
 
 ```text
+tk-sparta-praha
 padel-prosek
 padel-club-spoje
 tenis-a-padel-klub-pisecna
 sk-slavia-praha-padel
+head-tenis-centrum-vestec
 padel-neride
 padel-dzus
 padel-powers-smichov
@@ -87,7 +89,7 @@ cisarska-louka-padel
 sk-satalice
 ```
 
-`--date` is optional and defaults to today in the club timezone; `--timeout=25000` can be adjusted for manual diagnostics. The command writes normalized courts and availability, reconciles a complete provider response, and records the execution in `scrape_runs`. Padel Slavia needs `PADEL_SLAVIA_EMAIL` and `PADEL_SLAVIA_PASSWORD` for non-current dates. It does not change the public API response path.
+`--date` is optional and defaults to today in the club timezone. The default timeout is 25 seconds, except for Head Tenis Centrum where it is 150 seconds to accommodate the Apify Actor; `--timeout` can be adjusted up to 180 seconds for manual diagnostics. The command writes normalized courts and availability, reconciles a complete provider response, and records the execution in `scrape_runs`. Padel Slavia needs `PADEL_SLAVIA_EMAIL` and `PADEL_SLAVIA_PASSWORD` for non-current dates. It does not change the public API response path.
 
 Phase 5 adds a database-only search endpoint. It never contacts a booking provider during the request:
 
@@ -153,6 +155,19 @@ Padel Džus uses Bookaball. Availability can be read from the booking API, and c
 export BOOKABALL_EMAIL="your-email"
 export BOOKABALL_PASSWORD="your-password"
 ```
+
+Head Tenis Centrum uses the free `vietaro/cloudflare-bypass-scraper` Apify Actor. Configure the token only on the API and worker runtimes:
+
+```bash
+export APIFY_TOKEN="your-apify-api-token"
+export ISPORTSYSTEM_APIFY_ACTOR_ID="vietaro~cloudflare-bypass-scraper"
+export ISPORTSYSTEM_APIFY_CACHE_TTL_MS="900000"
+export ISPORTSYSTEM_APIFY_ACTOR_TIMEOUT_SECS="120"
+export ISPORTSYSTEM_APIFY_AVAILABILITY_TIMEOUT_MS="150000"
+export WORKER_SCRAPE_TIMEOUT_MS="150000"
+```
+
+Each Actor run fetches two week pages concurrently. The scraper keeps the successful batch in memory for 15 minutes so all eight per-date indexing jobs share one paid platform run within a worker process.
 
 Padel Radotín uses Cloudflare protection on iSportSystem, so its availability is disabled. The current cache is in memory. For fully reliable unattended scanning of protected booking systems, add persistent storage or use an authorized non-interactive route: ask the club or provider for API/feed access, a server IP allowlist, or another documented integration endpoint.
 

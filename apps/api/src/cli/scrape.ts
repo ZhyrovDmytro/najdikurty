@@ -13,7 +13,7 @@ const { values } = parseArgs({
   options: {
     club: { type: "string" },
     date: { type: "string" },
-    timeout: { type: "string", default: "25000" }
+    timeout: { type: "string" }
   }
 });
 const args = z.object({
@@ -21,14 +21,15 @@ const args = z.object({
     message: `Supported clubs: ${indexedClubSlugs().join(", ")}`
   }),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  timeout: z.coerce.number().int().positive().max(120_000)
+  timeout: z.coerce.number().int().positive().max(180_000).optional()
 }).parse(values);
 const registration = getIndexedClubRegistration(args.club);
 const club = registration.club;
 const date = args.date ?? dateKeyInTimezone(new Date(), club.timezone);
+const timeoutMs = args.timeout ?? (club.slug === "head-tenis-centrum-vestec" ? 150_000 : 25_000);
 const connection = createDatabaseFromEnvironment();
 const controller = new AbortController();
-const timeout = setTimeout(() => controller.abort(new Error("Playtomic scrape timed out")), args.timeout);
+const timeout = setTimeout(() => controller.abort(new Error(`${club.slug} scrape timed out`)), timeoutMs);
 
 try {
   const repository = new DrizzleAvailabilityIndexRepository(connection.db);

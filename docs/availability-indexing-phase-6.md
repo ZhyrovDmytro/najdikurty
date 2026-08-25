@@ -2,13 +2,15 @@
 
 ## Scope
 
-Phase 6 represents all 10 clubs currently enabled in the product through nine provider-level adapters. The frontend and legacy live endpoint remain unchanged.
+The indexed catalog represents all 12 clubs currently enabled in the product through eleven provider-level adapters.
 
 | Provider | Retrieval | Configured clubs | Live verification |
 | --- | --- | --- | --- |
+| JdemeNaTo | Public portal search + timetable HTML; authenticated fallback when configured | TK Sparta Praha | 2 courts across all 8 indexed dates |
 | SkySportCity | HTTP + HTML parser | Padel Prosek | 4 courts / 94 normalized segments |
 | Playtomic | JSON API | Padel Club Spoje; Tenis & Padel klub Písečná | 2/4 courts; 75/24 options |
 | Padel Slavia | HTTP + HTML parser; authenticated/browser fallback when configured | SK Slavia Praha Padel | Public current day completed; future dates require credentials |
+| iSportSystem via Apify | Two concurrent stealth-rendered week pages, Markdown parser, and a shared 15-minute batch cache | Head Tenis Centrum Vestec | 4 courts across the rolling indexed horizon |
 | Reservanto | HTTP form + calendar XHR/HTML | Padel Neride | 3 courts / 97 segments |
 | Bookaball | JSON API with optional authenticated session | Padel Džus | 4 courts / 39 segments |
 | Padelos | JSON API | Padel Powers Smíchov | 8 courts / 107 exact options |
@@ -39,10 +41,8 @@ The same command works for every enabled slug listed in the root README. `DATABA
 
 ## Explicit blockers
 
-These clubs are not counted among the 10 enabled sources and are not silently advertised as indexed:
+These clubs are not counted among the 12 enabled sources and are not silently advertised as indexed:
 
-- `tk-sparta-praha` / JdemeNaTo: disabled in the current product because unattended retrieval can require credentials or a browser fallback.
-- `head-tenis-centrum-vestec` / iSportSystem: reliable unattended availability is not established.
 - `padel-radotin` / iSportSystem: Cloudflare blocks unattended direct HTTP retrieval.
 - `padel-cakovice` / iSportSystem: disabled; Cloudflare may require a maintained browser profile.
 

@@ -166,21 +166,17 @@ The rendered page includes a weekly set of padel tables:
 - Empty cells with `a.empty` are bookable.
 - Cells with `booked`, `old`, or any other class are treated as unavailable.
 
-Direct HTTP requests can receive a Cloudflare challenge page. Normal API requests therefore try direct HTTP only and do not launch Chrome. For Head Tenis Centrum, browser rendering is an explicit live refresh path via `live=1`.
+Direct HTTP requests receive a Cloudflare challenge page. Head Tenis Centrum therefore uses the free `vietaro/cloudflare-bypass-scraper` Apify Actor in forced-stealth mode. One Actor run receives two dated booking URLs concurrently, covering the current and following calendar weeks. The Actor returns rendered Markdown tables; empty Markdown links correspond to `a.empty` bookable half-hour cells, while blank cells are unavailable.
 
-The rendered page's JavaScript loads timetable data from:
-
-`/ajax/ajax.schema.php`
-
-When requested, the browser-backed fetcher opens the padel tab, waits for the timetable, then calls that AJAX endpoint from inside the browser session with `id_sport=13` and the requested `day`, `month`, and `year`. This gives the parser rendered timetable HTML for the requested date while reusing browser cookies and Cloudflare state.
+The existing index still reconciles one local date at a time. A module-level 15-minute cache shares the two-page Actor result across all eight date jobs in one worker process, so the 20-minute indexing cadence creates one Actor run rather than eight.
 
 Configuration:
 
-- `ISPORTSYSTEM_BROWSER=0` disables the browser fallback.
-- `ISPORTSYSTEM_BROWSER_PROFILE_DIR` controls the persistent browser profile directory.
-- `ISPORTSYSTEM_BROWSER_HEADLESS=true` runs Chrome headless, but headed mode is more likely to pass Cloudflare on a local machine.
-- `ISPORTSYSTEM_BROWSER_CHANNEL` defaults to `chrome`.
-- `ISPORTSYSTEM_BROWSER_EXECUTABLE_PATH` can point to a specific Chrome/Chromium executable.
+- `APIFY_TOKEN` is required and remains server-side.
+- `ISPORTSYSTEM_APIFY_ACTOR_ID` defaults to `vietaro~cloudflare-bypass-scraper`.
+- `ISPORTSYSTEM_APIFY_CACHE_TTL_MS` defaults to 15 minutes.
+- `ISPORTSYSTEM_APIFY_ACTOR_TIMEOUT_SECS` defaults to 120 seconds.
+- `ISPORTSYSTEM_APIFY_AVAILABILITY_TIMEOUT_MS` defaults to 150 seconds for the live API route.
 
 ## Provider: Bookaball / Padel Džus
 

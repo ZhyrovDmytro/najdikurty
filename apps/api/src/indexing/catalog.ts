@@ -1,6 +1,9 @@
 import {
   fetchBookaballAvailability,
   fetchCourtyOneAvailability,
+  fetchISportSystemAvailabilityWithApify,
+  fetchJdemeNaToAvailability,
+  fetchJdemeNaToPortalSearchAvailability,
   fetchPadelosAvailability,
   fetchPadelSlaviaAvailability,
   fetchReenioAvailability,
@@ -33,6 +36,18 @@ export interface ProblematicClub {
 type RegistrationFactory = () => IndexedClubRegistration;
 
 const REGISTRATIONS: Record<string, RegistrationFactory> = {
+  "tk-sparta-praha": () => legacyRegistration(
+    club({
+      slug: "tk-sparta-praha",
+      name: "TK Sparta Praha",
+      providerId: "jdemenato",
+      providerExternalId: "TK Sparta Praha",
+      bookingUrl: "https://jdemenato.cz/reservation/tk-sparta-praha/reservationcalendaroverview",
+      courtIndoor: false
+    }),
+    "JdemeNaTo",
+    fetchTkSpartaAvailability
+  ),
   "padel-prosek": () => legacyRegistration(
     club({
       slug: "padel-prosek",
@@ -69,6 +84,25 @@ const REGISTRATIONS: Record<string, RegistrationFactory> = {
       ...legacyOptions(input),
       credentials: padelSlaviaCredentials(),
       browser: padelSlaviaBrowser(input.signal)
+    })
+  ),
+  "head-tenis-centrum-vestec": () => legacyRegistration(
+    club({
+      slug: "head-tenis-centrum-vestec",
+      name: "Head Tenis Centrum Vestec",
+      providerId: "isportsystem",
+      providerExternalId: "sport-13",
+      bookingUrl: "https://teniscentrum.isportsystem.cz/?op=tab-id-13",
+      courtIndoor: true
+    }),
+    "iSportSystem via Apify",
+    (input) => fetchISportSystemAvailabilityWithApify({
+      ...legacyOptions(input),
+      token: apifyToken(),
+      actorId: process.env.ISPORTSYSTEM_APIFY_ACTOR_ID?.trim() || undefined,
+      apiUrl: process.env.ISPORTSYSTEM_APIFY_API_URL?.trim() || undefined,
+      cacheTtlMs: optionalNumber(process.env.ISPORTSYSTEM_APIFY_CACHE_TTL_MS),
+      actorTimeoutSecs: optionalNumber(process.env.ISPORTSYSTEM_APIFY_ACTOR_TIMEOUT_SECS)
     })
   ),
   "padel-neride": () => legacyRegistration(
@@ -163,16 +197,6 @@ const REGISTRATIONS: Record<string, RegistrationFactory> = {
 
 export const problematicClubs: readonly ProblematicClub[] = [
   {
-    slug: "tk-sparta-praha",
-    providerId: "jdemenato",
-    reason: "Disabled in the current product because unattended retrieval may require credentials or a browser fallback."
-  },
-  {
-    slug: "head-tenis-centrum-vestec",
-    providerId: "isportsystem",
-    reason: "Temporarily disabled; reliable unattended availability is not established."
-  },
-  {
     slug: "padel-radotin",
     providerId: "isportsystem",
     reason: "Cloudflare blocks unattended direct HTTP retrieval."
@@ -244,6 +268,26 @@ function legacyOptions(input: LegacyProviderFetchInput) {
   };
 }
 
+async function fetchTkSpartaAvailability(input: LegacyProviderFetchInput): Promise<AvailabilityResult> {
+  try {
+    return await fetchJdemeNaToPortalSearchAvailability({
+      ...legacyOptions(input),
+      organizationName: "TK Sparta Praha",
+      timeoutMs: 20_000
+    });
+  } catch (portalError) {
+    const credentials = tkSpartaCredentials();
+    if (!credentials) {
+      throw portalError;
+    }
+
+    return fetchJdemeNaToAvailability({
+      ...legacyOptions(input),
+      credentials
+    });
+  }
+}
+
 function abortableFetch(signal?: AbortSignal): typeof fetch {
   return (request, init) => fetch(request, { ...init, signal: signal ?? init?.signal });
 }
@@ -254,10 +298,22 @@ function padelSlaviaCredentials() {
   return email && password ? { email, password } : undefined;
 }
 
+function tkSpartaCredentials() {
+  const email = process.env.TK_SPARTA_EMAIL?.trim();
+  const password = process.env.TK_SPARTA_PASSWORD?.trim();
+  return email && password ? { email, password } : undefined;
+}
+
 function bookaballCredentials() {
   const email = process.env.BOOKABALL_EMAIL?.trim();
   const password = process.env.BOOKABALL_PASSWORD?.trim();
   return email && password ? { email, password } : undefined;
+}
+
+function apifyToken(): string {
+  const token = process.env.APIFY_TOKEN?.trim();
+  if (!token) throw new Error("APIFY_TOKEN is required for Head Tenis Centrum availability");
+  return token;
 }
 
 function padelSlaviaBrowser(signal?: AbortSignal) {

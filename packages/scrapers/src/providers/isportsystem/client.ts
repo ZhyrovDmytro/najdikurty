@@ -176,6 +176,7 @@ function throwIfAborted(signal?: AbortSignal): void {
 }
 
 async function waitForTimetableOrChallenge(page: import("playwright-core").Page, timeoutMs: number): Promise<void> {
+  const startedAt = Date.now();
   const earlyTimetable = await page
     .waitForSelector("table.schema_sport_13", { timeout: Math.min(timeoutMs, CLOUDFLARE_DETECTION_TIMEOUT_MS) })
     .then(() => true)
@@ -185,11 +186,17 @@ async function waitForTimetableOrChallenge(page: import("playwright-core").Page,
     return;
   }
 
-  if (isCloudflareChallenge(await page.content())) {
-    throw new Error("iSportSystem rendered a Cloudflare challenge in the browser-backed fetcher.");
+  const remainingTimeoutMs = Math.max(1_000, timeoutMs - (Date.now() - startedAt));
+  try {
+    await page.waitForSelector("table.schema_sport_13", { timeout: remainingTimeoutMs });
+  } catch (error) {
+    if (isCloudflareChallenge(await page.content())) {
+      throw new Error(
+        "iSportSystem browser verification did not complete. Open the persistent browser profile once, pass the Cloudflare check, then retry."
+      );
+    }
+    throw error;
   }
-
-  await page.waitForSelector("table.schema_sport_13", { timeout: timeoutMs });
 }
 
 async function fetchTimetableHtmlFromPage(

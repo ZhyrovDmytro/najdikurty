@@ -142,7 +142,6 @@ const CLUBS: Club[] = [
     courtTypes: ["outdoor"],
     courtTypeLabel: "2 outdoor courts",
     acceptsMultisport: true,
-    availabilityEnabled: false,
     openingHours: dailyOpeningHours({ start: "08:00", end: "21:00" }),
     bookingUrl: (date: string) =>
       `https://jdemenato.cz/reservation/myportalorganizationcalendar.navigation.daynavigationbar:selectdayinternal/${date}`
@@ -2125,21 +2124,41 @@ function ClubList({
 
   if (isLoading && results.length === 0) {
     return (
-      <section className={compact ? "clubCompactList" : "clubGrid"} aria-label={t("nav.clubs")}>
+      <section
+        aria-busy="true"
+        aria-label={t("nav.clubs")}
+        className={compact ? "clubCompactList" : "clubGrid"}
+      >
         {resultsToolbar}
         {Array.from({ length: 6 }, (_, index) => (
           compact ? (
-            <Card className="clubCompactRow loadingCard" key={index}>
-              <Skeleton className="lineSkeleton wide" />
-              <Skeleton className="lineSkeleton" />
+            <Card className="clubCompactRow clubCompactRowSkeleton" key={index}>
+              <div className="compactSkeletonMain">
+                <Skeleton className="lineSkeleton compactNameSkeleton" />
+                <Skeleton className="lineSkeleton compactCountSkeleton" />
+              </div>
+              <div className="compactSkeletonMeta">
+                <Skeleton className="pillSkeleton compactPillSkeleton" />
+                <Skeleton className="pillSkeleton compactPillSkeleton" />
+                <Skeleton className="pillSkeleton compactChevronSkeleton" />
+              </div>
             </Card>
           ) : (
-            <Card className="clubCard loadingCard" key={index}>
+            <Card className="clubCard clubCardSkeleton" key={index}>
               <Skeleton className="imageSkeleton" />
               <div className="clubBody">
-                <Skeleton className="lineSkeleton wide" />
+                <div className="cardSkeletonTitle">
+                  <Skeleton className="lineSkeleton wide" />
+                  <Skeleton className="lineSkeleton short" />
+                </div>
+                <div className="cardSkeletonBadges">
+                  <Skeleton className="pillSkeleton widePill" />
+                  <Skeleton className="pillSkeleton" />
+                </div>
+                <Skeleton className="lineSkeleton cardSkeletonMeta" />
+              </div>
+              <div className="cardSkeletonAddress">
                 <Skeleton className="lineSkeleton" />
-                <Skeleton className="lineSkeleton short" />
               </div>
             </Card>
           )
