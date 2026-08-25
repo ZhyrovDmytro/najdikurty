@@ -9,6 +9,7 @@ export interface RefreshPolicyOptions {
   timezone?: string;
   startTime?: string;
   endTime?: string;
+  cadenceMinutes?: number;
 }
 
 export function refreshCadenceMinutes(targetDate: string, now: Date, timezone = DEFAULT_SCHEDULE_TIMEZONE): number {
@@ -34,7 +35,7 @@ export function nextScheduledRefresh(
 
   for (let dayOffset = 0; dayOffset < 3; dayOffset += 1) {
     const daysAhead = calendarDayDifference(scheduleDate, targetDate);
-    for (const time of policyScheduleTimes(daysAhead, startTime, endTime)) {
+    for (const time of policyScheduleTimes(daysAhead, startTime, endTime, options.cadenceMinutes)) {
       const candidate = localDateTimeInstant(scheduleDate, time, timezone);
       if (candidate.getTime() > now.getTime()) return candidate;
     }
@@ -44,8 +45,8 @@ export function nextScheduledRefresh(
   throw new Error(`Could not calculate the next refresh after ${now.toISOString()}`);
 }
 
-export function policyScheduleTimes(daysAhead: number, startTime = DEFAULT_SCHEDULE_START, endTime = DEFAULT_SCHEDULE_END): string[] {
-  if (daysAhead <= DEFAULT_TARGET_HORIZON_DAYS) return scheduleTimes(startTime, endTime, 20);
+export function policyScheduleTimes(daysAhead: number, startTime = DEFAULT_SCHEDULE_START, endTime = DEFAULT_SCHEDULE_END, cadenceMinutes?: number): string[] {
+  if (daysAhead <= DEFAULT_TARGET_HORIZON_DAYS) return scheduleTimes(startTime, endTime, cadenceMinutes ?? 20);
   const onceDaily = laterTime(startTime, "14:00");
   return onceDaily <= endTime ? [onceDaily] : [endTime];
 }

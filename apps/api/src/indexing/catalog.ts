@@ -25,6 +25,7 @@ export interface IndexedClubRegistration {
   club: Club;
   provider: AvailabilityProvider;
   providerName: string;
+  refreshCadenceMinutes?: number;
 }
 
 export interface ProblematicClub {
@@ -86,25 +87,28 @@ const REGISTRATIONS: Record<string, RegistrationFactory> = {
       browser: padelSlaviaBrowser(input.signal)
     })
   ),
-  "head-tenis-centrum-vestec": () => legacyRegistration(
-    club({
-      slug: "head-tenis-centrum-vestec",
-      name: "Head Tenis Centrum Vestec",
-      providerId: "isportsystem",
-      providerExternalId: "sport-13",
-      bookingUrl: "https://teniscentrum.isportsystem.cz/?op=tab-id-13",
-      courtIndoor: true
-    }),
-    "iSportSystem via Apify",
-    (input) => fetchISportSystemAvailabilityWithApify({
-      ...legacyOptions(input),
-      token: apifyToken(),
-      actorId: process.env.ISPORTSYSTEM_APIFY_ACTOR_ID?.trim() || undefined,
-      apiUrl: process.env.ISPORTSYSTEM_APIFY_API_URL?.trim() || undefined,
-      cacheTtlMs: optionalNumber(process.env.ISPORTSYSTEM_APIFY_CACHE_TTL_MS),
-      actorTimeoutSecs: optionalNumber(process.env.ISPORTSYSTEM_APIFY_ACTOR_TIMEOUT_SECS)
-    })
-  ),
+  "head-tenis-centrum-vestec": () => ({
+    ...legacyRegistration(
+      club({
+        slug: "head-tenis-centrum-vestec",
+        name: "Head Tenis Centrum Vestec",
+        providerId: "isportsystem",
+        providerExternalId: "sport-13",
+        bookingUrl: "https://teniscentrum.isportsystem.cz/?op=tab-id-13",
+        courtIndoor: true
+      }),
+      "iSportSystem via Apify",
+      (input) => fetchISportSystemAvailabilityWithApify({
+        ...legacyOptions(input),
+        token: apifyToken(),
+        actorId: process.env.ISPORTSYSTEM_APIFY_ACTOR_ID?.trim() || undefined,
+        apiUrl: process.env.ISPORTSYSTEM_APIFY_API_URL?.trim() || undefined,
+        cacheTtlMs: optionalNumber(process.env.ISPORTSYSTEM_APIFY_CACHE_TTL_MS),
+        actorTimeoutSecs: optionalNumber(process.env.ISPORTSYSTEM_APIFY_ACTOR_TIMEOUT_SECS)
+      })
+    ),
+    refreshCadenceMinutes: 300
+  }),
   "padel-neride": () => legacyRegistration(
     club({
       slug: "padel-neride",

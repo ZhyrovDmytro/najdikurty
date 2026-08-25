@@ -78,7 +78,8 @@ async function processTarget(target: ClaimedScrapeTarget): Promise<void> {
     const nextRefreshAt = nextScheduledRefresh(now, target.targetDate, {
       timezone: settings.timezone,
       startTime: settings.scheduleStart,
-      endTime: settings.scheduleEnd
+      endTime: settings.scheduleEnd,
+      cadenceMinutes: registration.refreshCadenceMinutes
     });
     await jobRepository.complete(
       target,
@@ -94,7 +95,8 @@ async function processTarget(target: ClaimedScrapeTarget): Promise<void> {
       ? nextScheduledRefresh(now, target.targetDate, {
           timezone: settings.timezone,
           startTime: settings.scheduleStart,
-          endTime: settings.scheduleEnd
+          endTime: settings.scheduleEnd,
+          cadenceMinutes: getIndexedClubRegistration(target.clubSlug).refreshCadenceMinutes
         })
       : new Date(now.getTime() + retryDelayMs(target.attemptCount, settings.retryBaseMs, settings.retryMaxMs));
     if (exhausted && dateKeyInTimezone(nextRefreshAt, settings.timezone) > target.targetDate) nextRefreshAt = null;

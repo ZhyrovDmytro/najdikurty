@@ -29,7 +29,7 @@ interface ActorDatasetItem {
   url: string;
   fetchedAt: string;
   success: boolean;
-  statusCode: number;
+  statusCode?: number;
   markdown: string;
   error?: string;
 }
@@ -56,9 +56,9 @@ const actorRunSchema = z.object({
 const actorDatasetSchema = z.array(z.object({
   url: z.string().url(),
   fetchedAt: z.string().min(1),
-  success: z.boolean(),
-  statusCode: z.number(),
-  markdown: z.string(),
+  success: z.boolean().optional().default(false),
+  statusCode: z.number().optional(),
+  markdown: z.string().optional().default(""),
   error: z.string().optional()
 }));
 
@@ -89,7 +89,7 @@ export async function fetchISportSystemAvailabilityWithApify(
     })
   );
 
-  const item = items.find((candidate) => candidate.success && isISportSystemDateInMarkdown(candidate.markdown, date));
+  const item = items.find((candidate) => candidate.success && candidate.markdown && isISportSystemDateInMarkdown(candidate.markdown, date));
   if (!item) {
     const actorError = items.find((candidate) => !candidate.success)?.error;
     throw new Error(actorError ?? `Date ${date} is not present in the Head Tenis Centrum Actor output`);
@@ -139,6 +139,48 @@ async function runActorBatch(options: {
   dates: string[];
 }): Promise<ActorDatasetItem[]> {
   const actorUrls = [...new Set(options.dates.map((date) => datedBookingUrl(options.bookingUrl, date)))];
+  let initialItems: ActorDatasetItem[] = [];
+  try {
+    initialItems = await runActorUrls(options, actorUrls, Math.min(options.actorTimeoutSecs, 120));
+  } catch {
+    // A batch-level timeout should not discard both anchor pages. Retry each
+    // page independently below, where one difficult week cannot block another.
+  }
+
+  const itemsByUrl = new Map(initialItems.map((item) => [item.url, item]));
+  const retryUrls = actorUrls.filter((url) => {
+    const item = itemsByUrl.get(url);
+    return !item?.success || !item.markdown;
+  });
+  for (const url of retryUrls) {
+    try {
+      const [retried] = await runActorUrls(options, [url], Math.min(options.actorTimeoutSecs, 180));
+      if (retried) itemsByUrl.set(url, retried);
+    } catch (error) {
+      itemsByUrl.set(url, {
+        url,
+        fetchedAt: new Date().toISOString(),
+        success: false,
+        markdown: "",
+        error: error instanceof Error ? error.message : "Apify retry failed"
+      });
+    }
+  }
+
+  return actorUrls.map((url) => itemsByUrl.get(url)).filter((item): item is ActorDatasetItem => Boolean(item));
+}
+
+async function runActorUrls(
+  options: {
+    actorId: string;
+    actorTimeoutSecs: number;
+    apiUrl: string;
+    fetchImpl: typeof fetch;
+    token: string;
+  },
+  actorUrls: string[],
+  fetchTimeoutSecs: number
+): Promise<ActorDatasetItem[]> {
   const startUrl = new URL(`${options.apiUrl}/acts/${encodeURIComponent(options.actorId)}/runs`);
   startUrl.searchParams.set("memory", "1024");
   startUrl.searchParams.set("timeout", String(options.actorTimeoutSecs));
@@ -155,14 +197,15 @@ async function runActorBatch(options: {
       // anchor pages sequential so they fit reliably in its 1 GB container.
       maxConcurrency: 1,
       maxUrlsPerRun: actorUrls.length,
-      fetchTimeoutSecs: Math.min(options.actorTimeoutSecs, 120),
+      fetchTimeoutSecs,
       proxyConfiguration: { useApifyProxy: true }
     })
   });
   const run = actorStartSchema.parse(started).data;
 
   let status = run.status;
-  for (let attempt = 0; !TERMINAL_STATUSES.has(status) && attempt < 4; attempt += 1) {
+  const pollingAttempts = Math.ceil(options.actorTimeoutSecs / 45) + 1;
+  for (let attempt = 0; !TERMINAL_STATUSES.has(status) && attempt < pollingAttempts; attempt += 1) {
     const runUrl = new URL(`${options.apiUrl}/actor-runs/${encodeURIComponent(run.id)}`);
     runUrl.searchParams.set("waitForFinish", "45");
     const current = actorRunSchema.parse(await apifyJson(options.fetchImpl, runUrl, options.token)).data;
@@ -175,9 +218,6 @@ async function runActorBatch(options: {
   datasetUrl.searchParams.set("format", "json");
   datasetUrl.searchParams.set("limit", String(actorUrls.length));
   const items = actorDatasetSchema.parse(await apifyJson(options.fetchImpl, datasetUrl, options.token));
-  if (items.length !== actorUrls.length) {
-    throw new Error(`Apify Actor returned ${items.length} of ${actorUrls.length} expected timetable pages`);
-  }
   return items;
 }
 

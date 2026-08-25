@@ -16,6 +16,12 @@ describe("refresh scheduling policy", () => {
     expect(nextScheduledRefresh(now, "2026-08-29").toISOString()).toBe("2026-08-23T14:00:00.000Z");
   });
 
+  it("supports a lower-cost per-club cadence override", () => {
+    expect(nextScheduledRefresh(new Date("2026-08-21T07:00:00Z"), "2026-08-21", {
+      cadenceMinutes: 300
+    }).toISOString()).toBe("2026-08-21T11:00:00.000Z");
+  });
+
   it("always includes the final 22:00 run", () => {
     expect(scheduleTimes("08:00", "22:00", 180)).toEqual(["08:00", "11:00", "14:00", "17:00", "20:00", "22:00"]);
   });

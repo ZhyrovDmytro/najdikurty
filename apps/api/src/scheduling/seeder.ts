@@ -19,7 +19,8 @@ export async function seedScrapeTargets(
       const nextRefreshAt = nextScheduledRefresh(now, date, {
         timezone: settings.timezone,
         startTime: settings.scheduleStart,
-        endTime: settings.scheduleEnd
+        endTime: settings.scheduleEnd,
+        cadenceMinutes: registration.refreshCadenceMinutes
       });
       await repository.ensureTarget(
         club.id,

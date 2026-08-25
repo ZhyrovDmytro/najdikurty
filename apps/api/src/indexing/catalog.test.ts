@@ -32,6 +32,7 @@ describe("indexed provider catalog", () => {
       "padel-radotin"
     ]);
     expect(() => getIndexedClubRegistration("head-tenis-centrum-vestec")).not.toThrow();
+    expect(getIndexedClubRegistration("head-tenis-centrum-vestec").refreshCadenceMinutes).toBe(300);
     expect(() => getIndexedClubRegistration("tk-sparta-praha")).not.toThrow();
     expect(() => getIndexedClubRegistration("padel-radotin")).toThrow("not an enabled indexed club");
   });
