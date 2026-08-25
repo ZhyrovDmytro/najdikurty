@@ -223,7 +223,7 @@ const CLUBS: Club[] = [
     courtTypes: ["indoor"],
     courtTypeLabel: "4 indoor courts",
     acceptsMultisport: true,
-    availabilityEnabled: false,
+    availabilityEnabled: true,
     openingHours: dailyOpeningHours({ start: "07:00", end: "24:00" }),
     bookingUrl: () => "https://teniscentrum.isportsystem.cz/?op=tab-id-13"
   },
