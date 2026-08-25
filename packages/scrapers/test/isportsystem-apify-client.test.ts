@@ -21,7 +21,7 @@ describe("fetchISportSystemAvailabilityWithApify", () => {
       if (url.pathname.endsWith("/datasets/dataset-1/items")) {
         return jsonResponse([
           actorItem("2026-08-25", "Úterý 25.8.", "https://teniscentrum.isportsystem.cz/?op=tab-id-13&day=25&month=8&year=2026"),
-          actorItem("2026-08-31", "Pondělí 31.8.", "https://teniscentrum.isportsystem.cz/?op=tab-id-13&day=1&month=9&year=2026")
+          actorItem("2026-08-31", "Pondělí 31.8.", "https://teniscentrum.isportsystem.cz/?op=tab-id-13&day=31&month=8&year=2026")
         ]);
       }
       throw new Error(`Unexpected request: ${url}`);
@@ -72,7 +72,7 @@ describe("fetchISportSystemAvailabilityWithApify", () => {
             fetchedAt: "2026-08-25T10:00:00.000Z",
             error: "TimeoutError: fetch did not complete within 120s"
           },
-          actorItem("2026-08-31", "Pondělí 31.8.", "https://teniscentrum.isportsystem.cz/?op=tab-id-13&day=1&month=9&year=2026")
+          actorItem("2026-08-31", "Pondělí 31.8.", "https://teniscentrum.isportsystem.cz/?op=tab-id-13&day=31&month=8&year=2026")
         ]);
       }
       if (url.pathname.endsWith("/datasets/dataset-2/items")) {

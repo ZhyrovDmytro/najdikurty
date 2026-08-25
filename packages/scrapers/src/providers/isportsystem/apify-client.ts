@@ -85,7 +85,9 @@ export async function fetchISportSystemAvailabilityWithApify(
       bookingUrl,
       fetchImpl: options.fetchImpl ?? fetch,
       token,
-      dates: [anchorDate, addCalendarDays(anchorDate, 7)]
+      // iSportSystem renders six consecutive timetable days from the selected
+      // date, so the second anchor starts on day 6 to avoid a one-day gap.
+      dates: [anchorDate, addCalendarDays(anchorDate, 6)]
     })
   );
 
