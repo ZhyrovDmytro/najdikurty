@@ -8,7 +8,7 @@ const DEFAULT_BOOKING_URL = "https://teniscentrum.isportsystem.cz/?op=tab-id-13"
 const DEFAULT_ACTOR_ID = "vietaro~cloudflare-bypass-scraper";
 const DEFAULT_APIFY_API_URL = "https://api.apify.com/v2";
 const DEFAULT_CACHE_TTL_MS = 15 * 60_000;
-const DEFAULT_ACTOR_TIMEOUT_SECS = 120;
+const DEFAULT_ACTOR_TIMEOUT_SECS = 300;
 const TERMINAL_STATUSES = new Set(["SUCCEEDED", "FAILED", "ABORTED", "TIMED-OUT"]);
 
 export interface ISportSystemApifyFetchOptions {
@@ -151,7 +151,9 @@ async function runActorBatch(options: {
       extractionSchema: [],
       forceStealth: true,
       markdownThreshold: 0,
-      maxConcurrency: actorUrls.length,
+      // The Actor runs a full stealth browser per URL. Keep the two weekly
+      // anchor pages sequential so they fit reliably in its 1 GB container.
+      maxConcurrency: 1,
       maxUrlsPerRun: actorUrls.length,
       fetchTimeoutSecs: Math.min(options.actorTimeoutSecs, 120),
       proxyConfiguration: { useApifyProxy: true }

@@ -11,7 +11,7 @@ describe("fetchISportSystemAvailabilityWithApify", () => {
       if (url.pathname.endsWith("/acts/test-actor/runs")) {
         const actorInput = JSON.parse(String(init?.body));
         expect(actorInput.startUrls).toHaveLength(2);
-        expect(actorInput.maxConcurrency).toBe(2);
+        expect(actorInput.maxConcurrency).toBe(1);
         expect(new Headers(init?.headers).get("Authorization")).toBe("Bearer test-token");
         return jsonResponse({ data: { id: "run-1", defaultDatasetId: "dataset-1", status: "READY" } });
       }
