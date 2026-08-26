@@ -15,12 +15,10 @@ describe("language routes", () => {
     expect(languageFromPathname("/clubs/padel-prosek/")).toBe("cz");
     expect(languageFromPathname("/en/clubs/padel-prosek/")).toBe("en");
     expect(languageFromPathname("/ua/about/")).toBe("ua");
-    expect(languageFromPathname("/uk/about/")).toBe("ua");
   });
 
-  it("builds Ukrainian URLs with the ua prefix and migrates legacy uk paths", () => {
+  it("builds Ukrainian URLs with the ua prefix", () => {
     expect(pathnameForLanguage("/clubs/padel-prosek/", "ua")).toBe("/ua/clubs/padel-prosek/");
-    expect(pathnameForLanguage("/uk/clubs/padel-prosek/", "ua")).toBe("/ua/clubs/padel-prosek/");
     expect(pathnameForLanguage("/ua/about/", "cz")).toBe("/about/");
   });
 });

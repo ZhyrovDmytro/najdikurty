@@ -98,16 +98,6 @@ for (const page of pages) {
   await mkdir(path.dirname(output), { recursive: true });
   await writeFile(output, renderPage(page));
 }
-for (const page of pages.filter((candidate) => candidate.language.code === "ua")) {
-  const legacyPath = page.path.replace(/^\/ua(?=\/)/, "/uk");
-  const output = path.join(distDir, legacyPath.slice(1), "index.html");
-  const redirectUrl = new URL(page.path, SITE_ORIGIN).toString();
-  const legacyHtml = renderPage(page)
-    .replace(/<meta name="robots" content="index,follow"\s*\/>/, '<meta name="robots" content="noindex,follow" />')
-    .replace("</head>", `    <meta http-equiv="refresh" content="0;url=${redirectUrl}" />\n  </head>`);
-  await mkdir(path.dirname(output), { recursive: true });
-  await writeFile(output, legacyHtml);
-}
 await writeFile(path.join(distDir, "404.html"), renderPage(pages.find((page) => page.path === "/")));
 await writeFile(path.join(distDir, "sitemap.xml"), buildSitemap(pages));
 

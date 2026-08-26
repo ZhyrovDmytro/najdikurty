@@ -3650,7 +3650,7 @@ function legalHref(page: "privacy" | "terms" | "cookies", language: LanguageCode
 function routeFromLocation(pathname: string, params: URLSearchParams): { page: Page; clubSlug: string | null; language: LanguageCode } {
   const language = languageFromPathname(pathname);
   const segments = pathname.split("/").filter(Boolean).map(decodeURIComponent);
-  if (segments[0] === "en" || segments[0] === "ua" || segments[0] === "uk") segments.shift();
+  if (segments[0] === "en" || segments[0] === "ua") segments.shift();
   if (segments[0] === "clubs" && segments[1]) return { page: "clubs", clubSlug: segments[1], language };
   if (segments[0] === "clubs") return { page: "allClubs", clubSlug: null, language };
   if (segments[0] === "about") return { page: "about", clubSlug: null, language };

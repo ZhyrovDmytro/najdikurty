@@ -20,14 +20,14 @@ export function isLanguageCode(value: string | null): value is LanguageCode {
 export function languageFromPathname(pathname: string): LanguageCode {
   const firstSegment = pathname.split("/").filter(Boolean)[0]?.toLowerCase();
   if (firstSegment === "en") return "en";
-  if (firstSegment === "ua" || firstSegment === "uk") return "ua";
+  if (firstSegment === "ua") return "ua";
   return "cz";
 }
 
 export function pathnameForLanguage(pathname: string, language: LanguageCode): string {
   const hasTrailingSlash = pathname.endsWith("/");
   const segments = pathname.split("/").filter(Boolean);
-  if (["en", "ua", "uk"].includes(segments[0]?.toLowerCase())) segments.shift();
+  if (["en", "ua"].includes(segments[0]?.toLowerCase())) segments.shift();
   const prefix = language === "en" ? ["en"] : language === "ua" ? ["ua"] : [];
   const localizedSegments = [...prefix, ...segments];
   if (localizedSegments.length === 0) return "/";
@@ -38,13 +38,12 @@ function initializeLanguageRoute(): LanguageCode {
   if (typeof window === "undefined") return "cz";
   const firstSegment = window.location.pathname.split("/").filter(Boolean)[0]?.toLowerCase();
   const storedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY);
-  const hasExplicitLanguage = firstSegment === "en" || firstSegment === "ua" || firstSegment === "uk";
+  const hasExplicitLanguage = firstSegment === "en" || firstSegment === "ua";
   const preferredLanguage = isLanguageCode(storedLanguage) ? storedLanguage : "cz";
   const routeLanguage = hasExplicitLanguage ? languageFromPathname(window.location.pathname) : preferredLanguage;
-  const shouldNormalizeLegacyRoute = firstSegment === "uk";
   const shouldApplySavedPreference = !hasExplicitLanguage && preferredLanguage !== "cz";
 
-  if (shouldNormalizeLegacyRoute || shouldApplySavedPreference) {
+  if (shouldApplySavedPreference) {
     const pathname = pathnameForLanguage(window.location.pathname, routeLanguage);
     window.history.replaceState(null, "", `${pathname}${window.location.search}${window.location.hash}`);
   }
