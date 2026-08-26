@@ -12,7 +12,7 @@ const locations = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => m
 const errors = [];
 const titles = new Map();
 
-check(locations.length === 20, `Expected 20 sitemap URLs, found ${locations.length}`);
+check(locations.length === 60, `Expected 60 sitemap URLs, found ${locations.length}`);
 check(new Set(locations).size === locations.length, "Sitemap contains duplicate URLs");
 check(robots.includes("User-agent: *"), "robots.txt is missing the general user-agent rule");
 check(robots.includes("Allow: /"), "robots.txt does not allow the public site");
@@ -39,6 +39,8 @@ for (const location of locations) {
   const title = match(html, /<title>([^<]+)<\/title>/i);
   const description = metaContent(html, "name", "description");
   const canonical = match(html, /<link\s+rel="canonical"\s+href="([^"]+)"\s*\/>/i);
+  const htmlLanguage = match(html, /<html\s+lang="([^"]+)"/i);
+  const hreflangs = new Map([...html.matchAll(/<link\s+rel="alternate"\s+hreflang="([^"]+)"\s+href="([^"]+)"\s*\/>/gi)].map((entry) => [entry[1], entry[2]]));
   const ogUrl = metaContent(html, "property", "og:url");
   const ogImageAlt = metaContent(html, "property", "og:image:alt");
   const h1Count = (html.match(/<h1(?:\s[^>]*)?>/gi) ?? []).length;
@@ -48,12 +50,21 @@ for (const location of locations) {
   const criticalCss = match(html, /<style id="critical-css">([^<]+)<\/style>/i);
   const initialContent = match(html, /<div id="root">([\s\S]*)<\/div>\s*<\/body>/i);
   const initialWordCount = initialContent.replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
-  const isAuditedContentPage = url.pathname === "/" || url.pathname === "/clubs/" || /^\/clubs\/[^/]+\/$/.test(url.pathname);
+  const languagePrefix = url.pathname.match(/^\/(en|ua)(?:\/|$)/)?.[1] ?? "cs";
+  const expectedLanguage = languagePrefix === "en" ? "en" : languagePrefix === "ua" ? "uk" : "cs";
+  const basePath = url.pathname.replace(/^\/(?:en|ua)(?=\/)/, "") || "/";
+  const localizedUrl = (prefix) => new URL(prefix ? `${prefix}${basePath}` : basePath, SITE_ORIGIN).toString();
+  const isAuditedContentPage = /^(?:\/(?:en|ua))?\/$/.test(url.pathname) || /^(?:\/(?:en|ua))?\/clubs\/$/.test(url.pathname) || /^(?:\/(?:en|ua))?\/clubs\/[^/]+\/$/.test(url.pathname);
 
   check(Boolean(title), `${location} has no title`);
   check(Boolean(description), `${location} has no meta description`);
   check(description.length >= 70 && description.length <= 180, `${location} description length is ${description.length}`);
   check(canonical === location, `${location} canonical is ${canonical || "missing"}`);
+  check(htmlLanguage === expectedLanguage, `${location} html language is ${htmlLanguage || "missing"}`);
+  check(hreflangs.get("cs") === localizedUrl(""), `${location} has a wrong Czech alternate`);
+  check(hreflangs.get("en") === localizedUrl("/en"), `${location} has a wrong English alternate`);
+  check(hreflangs.get("uk") === localizedUrl("/ua"), `${location} has a wrong Ukrainian alternate`);
+  check(hreflangs.get("x-default") === localizedUrl(""), `${location} has a wrong x-default alternate`);
   check(ogUrl === location, `${location} Open Graph URL is ${ogUrl || "missing"}`);
   check(Boolean(ogImageAlt), `${location} has no Open Graph image description`);
   check(h1Count === 1, `${location} has ${h1Count} initial HTML h1 elements`);

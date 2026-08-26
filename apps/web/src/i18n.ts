@@ -11,11 +11,45 @@ export const LANGUAGE_OPTIONS: Array<{ code: LanguageCode; label: string }> = [
   { code: "cz", label: "CZ" }
 ];
 
-const storedLanguage = typeof localStorage === "undefined" ? null : localStorage.getItem(LANGUAGE_STORAGE_KEY);
-const initialLanguage = isLanguageCode(storedLanguage) ? storedLanguage : "en";
+const initialLanguage = initializeLanguageRoute();
 
 export function isLanguageCode(value: string | null): value is LanguageCode {
   return value === "ua" || value === "en" || value === "cz";
+}
+
+export function languageFromPathname(pathname: string): LanguageCode {
+  const firstSegment = pathname.split("/").filter(Boolean)[0]?.toLowerCase();
+  if (firstSegment === "en") return "en";
+  if (firstSegment === "ua" || firstSegment === "uk") return "ua";
+  return "cz";
+}
+
+export function pathnameForLanguage(pathname: string, language: LanguageCode): string {
+  const hasTrailingSlash = pathname.endsWith("/");
+  const segments = pathname.split("/").filter(Boolean);
+  if (["en", "ua", "uk"].includes(segments[0]?.toLowerCase())) segments.shift();
+  const prefix = language === "en" ? ["en"] : language === "ua" ? ["ua"] : [];
+  const localizedSegments = [...prefix, ...segments];
+  if (localizedSegments.length === 0) return "/";
+  return `/${localizedSegments.join("/")}${hasTrailingSlash ? "/" : ""}`;
+}
+
+function initializeLanguageRoute(): LanguageCode {
+  if (typeof window === "undefined") return "cz";
+  const firstSegment = window.location.pathname.split("/").filter(Boolean)[0]?.toLowerCase();
+  const storedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+  const hasExplicitLanguage = firstSegment === "en" || firstSegment === "ua" || firstSegment === "uk";
+  const preferredLanguage = isLanguageCode(storedLanguage) ? storedLanguage : "cz";
+  const routeLanguage = hasExplicitLanguage ? languageFromPathname(window.location.pathname) : preferredLanguage;
+  const shouldNormalizeLegacyRoute = firstSegment === "uk";
+  const shouldApplySavedPreference = !hasExplicitLanguage && preferredLanguage !== "cz";
+
+  if (shouldNormalizeLegacyRoute || shouldApplySavedPreference) {
+    const pathname = pathnameForLanguage(window.location.pathname, routeLanguage);
+    window.history.replaceState(null, "", `${pathname}${window.location.search}${window.location.hash}`);
+  }
+
+  return routeLanguage;
 }
 
 export const resources = {
@@ -125,6 +159,8 @@ export const resources = {
         courtType: "Court type",
         courtTypes: "Court types",
         daily: "Daily",
+        distanceFromYou: "{{distance}} km from you",
+        distanceStraightLine: "Approximate straight-line distance",
         providerCourtPrefix: "Court",
         date: "Date",
         duration: "Duration",
@@ -189,6 +225,9 @@ export const resources = {
         trackedCourts_other: "{{count}} padel courts",
         trackedCourtsHelp: "Actively checked for availability"
       },
+      location: {
+        enableDistanceHelp: "Enable location access to see how far this club is from you."
+      },
       legal: {
         badgeCookies: "Cookies",
         badgeLegal: "Legal",
@@ -207,12 +246,12 @@ export const resources = {
         lastUpdated: "Last updated: August 5, 2026",
         privacyIntro: "This policy explains what data HLEDEJKURTY uses while helping visitors find padel court availability in Prague.",
         privacySection1Title: "Who operates this service",
-        privacySection2Body1: "The app does not create user accounts, take payments, or accept bookings. Your selected date, duration, court count, court type, and time window are used to request availability. Theme and language preferences are stored in your browser as local storage under",
+        privacySection2Body1: "The app does not create user accounts, take payments, or accept bookings. Your selected date, duration, court count, court type, and time window are used to request availability. If you allow browser location after searching, your coordinates are used only in browser memory to calculate approximate distances to clubs. They are not stored or sent to HLEDEJKURTY. Theme and language preferences are stored in your browser as local storage under",
         privacySection2Body2: "Hosting, API infrastructure, and PostHog analytics may process standard technical data such as IP address, request URL, browser user agent, timestamps, error diagnostics, page views, filter changes, club selections, and booking-link clicks for security, operation, and product improvement.",
         privacySection2Title: "What we process",
         privacySection3Body: "Data is used to provide the search feature, keep the app secure, diagnose errors, remember basic interface preferences, and understand which parts of the app are useful. Club booking pages opened from this app are external services with their own privacy rules.",
         privacySection3Title: "Why we process it",
-        privacySection4Body: "The app itself does not store visitor profiles. Technical logs, if enabled by hosting infrastructure, should be kept only for a limited operational period. Visitors in the EU can request access, correction, deletion, restriction, or objection under GDPR once the production operator contact is published.",
+        privacySection4Body: "The app itself does not store visitor profiles. Technical logs, if enabled by hosting infrastructure, should be kept only for a limited operational period. Visitors in the EU can request access, correction, deletion, restriction, or objection under GDPR using the operator contact above.",
         privacySection4Title: "Retention and rights",
         privacyTitle: "Privacy Policy",
         termsIntro: "These terms describe how to use HLEDEJKURTY and what limits apply to the availability information shown here.",
@@ -361,6 +400,8 @@ export const resources = {
         courtType: "Тип корту",
         courtTypes: "Типи кортів",
         daily: "Щодня",
+        distanceFromYou: "{{distance}} км від вас",
+        distanceStraightLine: "Приблизна відстань по прямій",
         providerCourtPrefix: "Корт",
         date: "Дата",
         duration: "Тривалість",
@@ -425,6 +466,9 @@ export const resources = {
         trackedCourts_other: "{{count}} падел-кортів",
         trackedCourtsHelp: "Активно перевіряються на доступність"
       },
+      location: {
+        enableDistanceHelp: "Увімкніть доступ до геолокації, щоб побачити відстань до цього клубу."
+      },
       legal: {
         badgeCookies: "Cookies",
         badgeLegal: "Юридичне",
@@ -443,12 +487,12 @@ export const resources = {
         lastUpdated: "Останнє оновлення: 5 серпня 2026",
         privacyIntro: "Ця політика пояснює, які дані HLEDEJKURTY використовує, допомагаючи відвідувачам знаходити доступність падел-кортів у Празі.",
         privacySection1Title: "Хто керує сервісом",
-        privacySection2Body1: "Застосунок не створює облікові записи, не приймає платежі й не приймає бронювання. Вибрана дата, тривалість, кількість кортів, тип корту та часове вікно використовуються для запиту доступності. Налаштування теми та мови зберігаються у браузері як local storage під",
+        privacySection2Body1: "Застосунок не створює облікові записи, не приймає платежі й не приймає бронювання. Вибрана дата, тривалість, кількість кортів, тип корту та часове вікно використовуються для запиту доступності. Якщо після пошуку ви дозволите браузеру доступ до геолокації, координати використовуються лише в пам’яті браузера для розрахунку приблизної відстані до клубів. Вони не зберігаються й не надсилаються HLEDEJKURTY. Налаштування теми та мови зберігаються у браузері як local storage під",
         privacySection2Body2: "Хостингова й API-інфраструктура, а також аналітика PostHog можуть обробляти стандартні технічні дані: IP-адресу, URL запиту, user agent браузера, часові позначки, діагностику помилок, перегляди сторінок, зміни фільтрів, вибір клубів і кліки на посилання бронювання для безпеки, роботи сервісу та покращення продукту.",
         privacySection2Title: "Що ми обробляємо",
         privacySection3Body: "Дані використовуються для роботи пошуку, безпеки застосунку, діагностики помилок, запам'ятовування базових налаштувань інтерфейсу та розуміння, які частини застосунку корисні. Сторінки бронювання клубів, відкриті із застосунку, є зовнішніми сервісами з власними правилами приватності.",
         privacySection3Title: "Навіщо ми це обробляємо",
-        privacySection4Body: "Сам застосунок не зберігає профілі відвідувачів. Технічні журнали, якщо вони ввімкнені хостинговою інфраструктурою, мають зберігатися лише протягом обмеженого операційного періоду. Відвідувачі в ЄС можуть запитувати доступ, виправлення, видалення, обмеження або заперечення згідно з GDPR після публікації контакту оператора.",
+        privacySection4Body: "Сам застосунок не зберігає профілі відвідувачів. Технічні журнали, якщо вони ввімкнені хостинговою інфраструктурою, мають зберігатися лише протягом обмеженого операційного періоду. Відвідувачі в ЄС можуть запитувати доступ, виправлення, видалення, обмеження або заперечення згідно з GDPR через контакт оператора, наведений вище.",
         privacySection4Title: "Зберігання та права",
         privacyTitle: "Політика приватності",
         termsIntro: "Ці умови описують, як користуватися HLEDEJKURTY і які обмеження застосовуються до показаної інформації про доступність.",
@@ -597,6 +641,8 @@ export const resources = {
         courtType: "Typ kurtu",
         courtTypes: "Typy kurtů",
         daily: "Denně",
+        distanceFromYou: "{{distance}} km od vás",
+        distanceStraightLine: "Přibližná vzdálenost vzdušnou čarou",
         providerCourtPrefix: "Kurt",
         date: "Datum",
         duration: "Délka",
@@ -661,6 +707,9 @@ export const resources = {
         trackedCourts_other: "{{count}} padelových kurtů",
         trackedCourtsHelp: "Aktivně kontrolováno pro dostupnost"
       },
+      location: {
+        enableDistanceHelp: "Povolte přístup k poloze, abyste viděli vzdálenost k tomuto klubu."
+      },
       legal: {
         badgeCookies: "Cookies",
         badgeLegal: "Právní",
@@ -679,12 +728,12 @@ export const resources = {
         lastUpdated: "Poslední aktualizace: 5. srpna 2026",
         privacyIntro: "Tyto zásady vysvětlují, jaká data HLEDEJKURTY používá při pomoci návštěvníkům najít dostupnost padelových kurtů v Praze.",
         privacySection1Title: "Kdo službu provozuje",
-        privacySection2Body1: "Aplikace nevytváří uživatelské účty, nepřijímá platby ani rezervace. Vybrané datum, délka, počet kurtů, typ kurtu a časové okno se používají k načtení dostupnosti. Nastavení tématu a jazyka jsou uložena ve vašem prohlížeči jako local storage pod",
+        privacySection2Body1: "Aplikace nevytváří uživatelské účty, nepřijímá platby ani rezervace. Vybrané datum, délka, počet kurtů, typ kurtu a časové okno se používají k načtení dostupnosti. Pokud po vyhledání povolíte prohlížeči přístup k poloze, souřadnice se použijí pouze v paměti prohlížeče k výpočtu přibližné vzdálenosti ke klubům. Neukládají se ani se neposílají službě HLEDEJKURTY. Nastavení tématu a jazyka jsou uložena ve vašem prohlížeči jako local storage pod",
         privacySection2Body2: "Hostingová a API infrastruktura a analytika PostHog mohou zpracovávat standardní technická data, jako je IP adresa, URL požadavku, user agent prohlížeče, časové značky, diagnostika chyb, zobrazení stránek, změny filtrů, výběry klubů a kliknutí na rezervační odkazy pro bezpečnost, provoz a zlepšování produktu.",
         privacySection2Title: "Co zpracováváme",
         privacySection3Body: "Data se používají k poskytnutí vyhledávání, zabezpečení aplikace, diagnostice chyb, zapamatování základních nastavení rozhraní a porozumění tomu, které části aplikace jsou užitečné. Rezervační stránky klubů otevřené z aplikace jsou externí služby s vlastními pravidly ochrany soukromí.",
         privacySection3Title: "Proč to zpracováváme",
-        privacySection4Body: "Aplikace sama neukládá profily návštěvníků. Technické logy, pokud jsou v hostingové infrastruktuře zapnuté, by měly být uchovávány jen po omezenou provozní dobu. Návštěvníci v EU mohou požádat o přístup, opravu, výmaz, omezení nebo námitku podle GDPR po zveřejnění kontaktu provozovatele.",
+        privacySection4Body: "Aplikace sama neukládá profily návštěvníků. Technické logy, pokud jsou v hostingové infrastruktuře zapnuté, by měly být uchovávány jen po omezenou provozní dobu. Návštěvníci v EU mohou požádat o přístup, opravu, výmaz, omezení nebo námitku podle GDPR prostřednictvím výše uvedeného kontaktu provozovatele.",
         privacySection4Title: "Uchování a práva",
         privacyTitle: "Zásady ochrany soukromí",
         termsIntro: "Tyto podmínky popisují, jak používat HLEDEJKURTY a jaké limity se vztahují na zobrazené informace o dostupnosti.",
