@@ -4,7 +4,7 @@ import type { AvailabilityResult, CourtAvailability, CourtBlock, TimeRange } fro
 
 const PROVIDER = "isportsystem";
 const SLOT_MINUTES = 30;
-const PADEL_SPORT_ID = "13";
+const DEFAULT_PADEL_SPORT_ID = "13";
 
 interface ParseOptions {
   sourceUrl: string;
@@ -12,6 +12,8 @@ interface ParseOptions {
   date: string;
   sport?: string;
   fetchedAt?: string;
+  sportId?: string;
+  courtNames?: readonly string[];
 }
 
 interface OpeningRange {
@@ -21,8 +23,9 @@ interface OpeningRange {
 
 export function parseISportSystemAvailability(html: string, options: ParseOptions): AvailabilityResult {
   const $ = cheerio.load(html);
-  const container = findDateContainer($, options.date);
-  const table = container.find("table.schema_sport_13").first();
+  const sportId = options.sportId ?? DEFAULT_PADEL_SPORT_ID;
+  const container = findDateContainer($, options.date, sportId);
+  const table = container.find(`table.schema_sport_${sportId}`).first();
 
   if (table.length === 0) {
     throw new Error(`No iSportSystem padel timetable found for ${options.date}`);
@@ -34,6 +37,9 @@ export function parseISportSystemAvailability(html: string, options: ParseOption
   table.find("tbody tr").each((_, row) => {
     const rowElement = $(row);
     if (rowElement.hasClass("prices")) return;
+
+    const courtName = normalizeText(rowElement.children("th").first().text());
+    if (!courtName || (options.courtNames && !options.courtNames.includes(courtName))) return;
 
     const timeCells = rowElement.children("td");
     if (timeCells.length === 0) return;
@@ -63,7 +69,7 @@ export function parseISportSystemAvailability(html: string, options: ParseOption
       clubSlug: options.clubSlug,
       sport: options.sport ?? "padel",
       date: options.date,
-      court: formatCourtName(courts.length),
+      court: courtName,
       blocks: mergeSlotMinutes([...occupiedSlotMinutes].sort((a, b) => a - b)).map<CourtBlock>((range) => ({
         ...range,
         status: "occupied",
@@ -92,11 +98,11 @@ export function parseISportSystemAvailability(html: string, options: ParseOption
   };
 }
 
-function findDateContainer($: cheerio.CheerioAPI, date: string): cheerio.Cheerio<Element> {
+function findDateContainer($: cheerio.CheerioAPI, date: string, sportId: string): cheerio.Cheerio<Element> {
   const datedContainer = $(".schemaFullContainer")
     .filter((_, element) => {
       const container = $(element);
-      return container.find(`[data-id_sport="${PADEL_SPORT_ID}"][data-date="${date}"]`).length > 0;
+      return container.find(`[data-id_sport="${sportId}"][data-date="${date}"]`).length > 0;
     })
     .first();
 
@@ -168,8 +174,4 @@ function minuteToTime(totalMinutes: number): string {
 
 function normalizeText(value: string): string {
   return value.replace(/\s+/g, " ").trim();
-}
-
-function formatCourtName(courtIndex: number): string {
-  return `Kurt ${courtIndex + 1}`;
 }

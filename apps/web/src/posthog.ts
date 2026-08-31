@@ -1,13 +1,21 @@
 import type { PostHog, Properties } from "posthog-js/dist/module.slim.no-external";
+import {
+  clearLegacyPosthogStorage,
+  readAnalyticsConsent,
+  writeAnalyticsConsent,
+  type AnalyticsConsent
+} from "./analytics-consent";
 
 const ANALYTICS_LOAD_DELAY_MS = 8_000;
 const posthogKey = import.meta.env.VITE_POSTHOG_KEY;
 const posthogHost = import.meta.env.VITE_POSTHOG_HOST ?? "https://eu.i.posthog.com";
 const isConfigured = typeof posthogKey === "string" && posthogKey.length > 0 && !shouldSkipAnalytics();
 let posthogClientPromise: Promise<PostHog> | undefined;
+clearLegacyPosthogStorage();
+let analyticsConsent = readAnalyticsConsent();
 
 function getPosthogClient(): Promise<PostHog> | undefined {
-  if (!isConfigured) return undefined;
+  if (!isConfigured || analyticsConsent !== "granted") return undefined;
 
   posthogClientPromise ??= deferAnalyticsStartup()
     .then(() => import("posthog-js/dist/module.slim.no-external"))
@@ -29,7 +37,8 @@ function getPosthogClient(): Promise<PostHog> | undefined {
         disable_surveys_automatic_display: true,
         mask_all_element_attributes: true,
         mask_all_text: true,
-        persistence: "localStorage",
+        persistence: "memory",
+        person_profiles: "never",
         respect_dnt: true
       });
 
@@ -91,8 +100,10 @@ if (!isConfigured && import.meta.env.DEV) {
 }
 
 export function captureEvent(name: string, properties?: Properties): void {
-  if (!isConfigured) return;
-  void getPosthogClient()?.then((posthog) => posthog.capture(name, properties));
+  if (!isAnalyticsEnabled()) return;
+  void getPosthogClient()?.then((posthog) => {
+    if (analyticsConsent === "granted") posthog.capture(name, properties);
+  });
 }
 
 export function capturePageView(properties?: Properties): void {
@@ -100,5 +111,20 @@ export function capturePageView(properties?: Properties): void {
 }
 
 export function isAnalyticsEnabled(): boolean {
+  return isConfigured && analyticsConsent === "granted";
+}
+
+export function isAnalyticsAvailable(): boolean {
   return isConfigured;
+}
+
+export function setAnalyticsConsent(consent: AnalyticsConsent): void {
+  analyticsConsent = consent;
+  writeAnalyticsConsent(consent);
+
+  if (consent === "granted") {
+    return;
+  }
+
+  void posthogClientPromise?.then((posthog) => posthog.reset(true));
 }

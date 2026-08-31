@@ -26,7 +26,7 @@ const args = z.object({
 const registration = getIndexedClubRegistration(args.club);
 const club = registration.club;
 const date = args.date ?? dateKeyInTimezone(new Date(), club.timezone);
-const timeoutMs = args.timeout ?? (club.slug === "head-tenis-centrum-vestec" ? 150_000 : 25_000);
+const timeoutMs = args.timeout ?? 25_000;
 const connection = createDatabaseFromEnvironment();
 const controller = new AbortController();
 const timeout = setTimeout(() => controller.abort(new Error(`${club.slug} scrape timed out`)), timeoutMs);

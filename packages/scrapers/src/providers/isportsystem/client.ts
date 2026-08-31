@@ -3,7 +3,7 @@ import type { AvailabilityResult } from "../../types.js";
 
 const PRAGUE_TIMEZONE = "Europe/Prague";
 const DEFAULT_URL = "https://teniscentrum.isportsystem.cz/?op=tab-id-13";
-const PADEL_SPORT_ID = "13";
+const DEFAULT_PADEL_SPORT_ID = "13";
 const DEFAULT_BROWSER_PROFILE_DIR = ".mamekurt/browser-profiles/isportsystem";
 const DEFAULT_BROWSER_TIMEOUT_MS = 90_000;
 const CLOUDFLARE_DETECTION_TIMEOUT_MS = 8_000;
@@ -15,6 +15,8 @@ export interface ISportSystemFetchOptions {
   sport?: string;
   fetchImpl?: typeof fetch;
   browser?: ISportSystemBrowserOptions | false;
+  sportId?: string;
+  courtNames?: readonly string[];
 }
 
 export interface ISportSystemBrowserOptions {
@@ -31,6 +33,7 @@ export interface ISportSystemBrowserOptions {
 export interface ISportSystemBrowserRenderOptions {
   url: string;
   date: string;
+  sportId: string;
   userDataDir: string;
   channel?: string;
   executablePath?: string;
@@ -52,6 +55,7 @@ export async function fetchISportSystemAvailability(options: ISportSystemFetchOp
   const fetchImpl = options.fetchImpl ?? fetch;
   const date = options.date ?? pragueDateInputValue(new Date());
   const url = options.url ?? DEFAULT_URL;
+  const sportId = options.sportId ?? DEFAULT_PADEL_SPORT_ID;
 
   try {
     const response = await fetchImpl(url, {
@@ -69,7 +73,9 @@ export async function fetchISportSystemAvailability(options: ISportSystemFetchOp
         sourceUrl: response.url || url,
         clubSlug: options.clubSlug,
         date,
-        sport: options.sport
+        sport: options.sport,
+        sportId,
+        courtNames: options.courtNames
       });
     }
   } catch {
@@ -87,6 +93,7 @@ export async function fetchISportSystemAvailability(options: ISportSystemFetchOp
   const rendered = await renderer({
     url,
     date,
+    sportId,
     userDataDir: browserOptions.userDataDir ?? DEFAULT_BROWSER_PROFILE_DIR,
     channel: browserOptions.channel,
     executablePath: browserOptions.executablePath,
@@ -105,7 +112,9 @@ export async function fetchISportSystemAvailability(options: ISportSystemFetchOp
     sourceUrl: rendered.sourceUrl,
     clubSlug: options.clubSlug,
     date,
-    sport: options.sport
+    sport: options.sport,
+    sportId,
+    courtNames: options.courtNames
   });
 }
 
@@ -137,14 +146,14 @@ async function fetchRenderedHtmlWithBrowser(
 
     await page.goto(options.url, { waitUntil: "domcontentloaded", timeout: options.timeoutMs });
 
-    const earlyAjaxHtml = await fetchTimetableHtmlFromPage(page, options.date);
+    const earlyAjaxHtml = await fetchTimetableHtmlFromPage(page, options.date, options.sportId);
     if (earlyAjaxHtml && !isCloudflareChallenge(earlyAjaxHtml.html)) {
       return earlyAjaxHtml;
     }
 
-    await waitForTimetableOrChallenge(page, options.timeoutMs);
+    await waitForTimetableOrChallenge(page, options.timeoutMs, options.sportId);
 
-    const ajaxHtml = await fetchTimetableHtmlFromPage(page, options.date);
+    const ajaxHtml = await fetchTimetableHtmlFromPage(page, options.date, options.sportId);
     if (ajaxHtml && !isCloudflareChallenge(ajaxHtml.html)) {
       return ajaxHtml;
     }
@@ -175,10 +184,14 @@ function throwIfAborted(signal?: AbortSignal): void {
   }
 }
 
-async function waitForTimetableOrChallenge(page: import("playwright-core").Page, timeoutMs: number): Promise<void> {
+async function waitForTimetableOrChallenge(
+  page: import("playwright-core").Page,
+  timeoutMs: number,
+  sportId: string
+): Promise<void> {
   const startedAt = Date.now();
   const earlyTimetable = await page
-    .waitForSelector("table.schema_sport_13", { timeout: Math.min(timeoutMs, CLOUDFLARE_DETECTION_TIMEOUT_MS) })
+    .waitForSelector(`table.schema_sport_${sportId}`, { timeout: Math.min(timeoutMs, CLOUDFLARE_DETECTION_TIMEOUT_MS) })
     .then(() => true)
     .catch(() => false);
 
@@ -188,7 +201,7 @@ async function waitForTimetableOrChallenge(page: import("playwright-core").Page,
 
   const remainingTimeoutMs = Math.max(1_000, timeoutMs - (Date.now() - startedAt));
   try {
-    await page.waitForSelector("table.schema_sport_13", { timeout: remainingTimeoutMs });
+    await page.waitForSelector(`table.schema_sport_${sportId}`, { timeout: remainingTimeoutMs });
   } catch (error) {
     if (isCloudflareChallenge(await page.content())) {
       throw new Error(
@@ -201,7 +214,8 @@ async function waitForTimetableOrChallenge(page: import("playwright-core").Page,
 
 async function fetchTimetableHtmlFromPage(
   page: import("playwright-core").Page,
-  date: string
+  date: string,
+  sportId: string
 ): Promise<ISportSystemRenderedHtml | undefined> {
   const result = await page.evaluate(
     async ({ date, sportId }) => {
@@ -231,10 +245,10 @@ async function fetchTimetableHtmlFromPage(
         html: await response.text()
       };
     },
-    { date, sportId: PADEL_SPORT_ID }
+    { date, sportId }
   );
 
-  if (!result.ok || !result.html.includes("schema_sport_13")) {
+  if (!result.ok || !result.html.includes(`schema_sport_${sportId}`)) {
     return undefined;
   }
 

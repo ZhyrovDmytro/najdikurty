@@ -12,7 +12,7 @@ const locations = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => m
 const errors = [];
 const titles = new Map();
 
-check(locations.length === 60, `Expected 60 sitemap URLs, found ${locations.length}`);
+check(locations.length === 63, `Expected 63 sitemap URLs, found ${locations.length}`);
 check(new Set(locations).size === locations.length, "Sitemap contains duplicate URLs");
 check(robots.includes("User-agent: *"), "robots.txt is missing the general user-agent rule");
 check(robots.includes("Allow: /"), "robots.txt does not allow the public site");

@@ -19,6 +19,7 @@ const clubImageNames = [
   "padel-powers-smichov",
   "padel-prosek",
   "padel-radotin",
+  "plechovka-dubec",
   "sk-satalice",
   "sk-slavia-praha-padel",
   "tenis-a-padel-klub-pisecna",

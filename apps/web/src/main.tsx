@@ -51,11 +51,22 @@ import {
   databaseSearchToAvailabilityByClub,
   fetchDatabaseSearchWithRetry
 } from "./database-search";
+import {
+  ANALYTICS_CONSENT_STORAGE_KEY,
+  readAnalyticsConsent,
+  type AnalyticsConsent
+} from "./analytics-consent";
 import { browserCoordinates, distanceInKilometers, type Coordinates } from "./distance";
 import { Alert, Badge, Button, Card, EmptyState, Field, Input, Select, Skeleton } from "./ui";
 import i18n, { LANGUAGE_OPTIONS, LANGUAGE_STORAGE_KEY, languageFromPathname, type LanguageCode } from "./i18n";
 import { hasManualRefreshCompleted, type ManualRefreshStatusResponse } from "./manual-refresh";
-import { captureEvent, capturePageView, isAnalyticsEnabled } from "./posthog";
+import {
+  captureEvent,
+  capturePageView,
+  isAnalyticsAvailable,
+  isAnalyticsEnabled,
+  setAnalyticsConsent
+} from "./posthog";
 import { approximateCountdown, nextApproximateCheck } from "./refresh-schedule";
 import "./styles.css";
 
@@ -242,6 +253,31 @@ const CLUBS: Club[] = [
     bookingUrl: () => "https://teniscentrum.isportsystem.cz/?op=tab-id-13"
   },
   {
+    slug: "plechovka-dubec",
+    name: "Plechovka Dubeč",
+    sport: "padel",
+    imageUrl: assetPath("clubs/plechovka-dubec.png"),
+    address: "Kalašova, č.e. 196, 107 00 Praha-Dubeč",
+    coordinates: { latitude: 50.0633123, longitude: 14.589826 },
+    phone: "+420 281 931 829",
+    priceInfo: "1 h: Po-Pá 8-22 760 Kč; víkend 9-21 760 Kč.",
+    courtCount: 3,
+    courtTypes: ["indoor"],
+    courtTypeLabel: "3 indoor courts",
+    acceptsMultisport: true,
+    availabilityEnabled: true,
+    openingHours: weekdayOpeningHours({
+      0: { start: "09:00", end: "21:00" },
+      1: { start: "08:00", end: "22:00" },
+      2: { start: "08:00", end: "22:00" },
+      3: { start: "08:00", end: "22:00" },
+      4: { start: "08:00", end: "22:00" },
+      5: { start: "08:00", end: "22:00" },
+      6: { start: "09:00", end: "21:00" }
+    }),
+    bookingUrl: () => "https://plechovka.isportsystem.cz/?op=tab-id-20"
+  },
+  {
     slug: "padel-radotin",
     name: "Padel Radotín",
     sport: "padel",
@@ -255,7 +291,7 @@ const CLUBS: Club[] = [
     courtTypes: ["outdoor"],
     courtTypeLabel: "3 outdoor courts",
     acceptsMultisport: true,
-    availabilityEnabled: false,
+    availabilityEnabled: true,
     openingHours: dailyOpeningHours({ start: "07:00", end: "22:00" }),
     bookingUrl: () => "https://padelradotin.isportsystem.cz/"
   },
@@ -271,7 +307,7 @@ const CLUBS: Club[] = [
     courtCount: 2,
     courtTypes: ["indoor"],
     courtTypeLabel: "2 indoor courts",
-    availabilityEnabled: false,
+    availabilityEnabled: true,
     openingHours: dailyOpeningHours({ start: "07:00", end: "22:00" }),
     bookingUrl: () => "https://padelautomat.isportsystem.cz/"
   },
@@ -393,6 +429,7 @@ const CLUB_IMAGE_DIMENSIONS: Record<string, { height: number; width: number }> =
   "cisarska-louka-padel": { height: 768, width: 1024 },
   "head-tenis-centrum-vestec": { height: 1536, width: 2048 },
   "one-padel": { height: 497, width: 402 },
+  "plechovka-dubec": { height: 726, width: 2167 },
   "padel-cakovice": { height: 612, width: 900 },
   "padel-club-spoje": { height: 833, width: 1360 },
   "padel-dzus": { height: 640, width: 480 },
@@ -542,6 +579,8 @@ function App() {
   const [hasSearchedAvailability, setHasSearchedAvailability] = useState(initialPage === "clubs" && Boolean(initialRoute.clubSlug));
   const [userCoordinates, setUserCoordinates] = useState<Coordinates | null>(null);
   const [locationStatus, setLocationStatus] = useState<LocationStatus>("idle");
+  const [analyticsConsent, setAnalyticsConsentState] = useState<AnalyticsConsent | null>(() => readAnalyticsConsent());
+  const [isCookieSettingsOpen, setIsCookieSettingsOpen] = useState(false);
   const loadSequenceRef = useRef(0);
   const manualRefreshSequenceRef = useRef(0);
   const currentPragueDate = pragueDateInputValue(now);
@@ -992,7 +1031,7 @@ function App() {
       path: window.location.pathname,
       search: window.location.search
     });
-  }, [date, page, selectedClubSlug]);
+  }, [analyticsConsent, date, language, page, selectedClubSlug]);
 
   const refreshAvailabilityButton = (
       <Button
@@ -1405,7 +1444,19 @@ function App() {
         onNavigateToAllClubs={() => navigateToAllClubs("push")}
         onNavigateToAbout={() => navigateToAbout("push")}
         onNavigateToLegalPage={(nextPage) => navigateToLegalPage(nextPage, "push")}
+        onOpenCookieSettings={() => setIsCookieSettingsOpen(true)}
       />
+      {isAnalyticsAvailable() && (analyticsConsent === null || isCookieSettingsOpen) ? (
+        <CookieConsentBanner
+          onChoose={(consent) => {
+            setAnalyticsConsent(consent);
+            setAnalyticsConsentState(consent);
+            setIsCookieSettingsOpen(false);
+            if (consent === "granted") captureEvent("analytics_consent_granted");
+          }}
+          onOpenCookiePolicy={() => navigateToLegalPage("cookies", "push")}
+        />
+      ) : null}
     </main>
   );
 
@@ -1583,13 +1634,15 @@ function SiteFooter({
   onNavigateToClubs,
   onNavigateToAllClubs,
   onNavigateToAbout,
-  onNavigateToLegalPage
+  onNavigateToLegalPage,
+  onOpenCookieSettings
 }: {
   currentPage: Page;
   onNavigateToClubs: () => void;
   onNavigateToAllClubs: () => void;
   onNavigateToAbout: () => void;
   onNavigateToLegalPage: (page: "privacy" | "terms" | "cookies") => void;
+  onOpenCookieSettings: () => void;
 }) {
   const { t } = useTranslation();
 
@@ -1627,6 +1680,9 @@ function SiteFooter({
           <a href={legalHref("cookies")} aria-current={currentPage === "cookies" ? "page" : undefined} onClick={(event) => handleInternalNavigation(event, () => onNavigateToLegalPage("cookies"))}>
             {t("nav.cookies")}
           </a>
+          <button className="footerTextButton" onClick={onOpenCookieSettings} type="button">
+            {t("consent.settings")}
+          </button>
         </div>
       </nav>
 
@@ -1636,6 +1692,39 @@ function SiteFooter({
         <span>{t("footer.bookingNotice")}</span>
       </div>
     </footer>
+  );
+}
+
+function CookieConsentBanner({
+  onChoose,
+  onOpenCookiePolicy
+}: {
+  onChoose: (consent: AnalyticsConsent) => void;
+  onOpenCookiePolicy: () => void;
+}) {
+  const { t } = useTranslation();
+
+  return (
+    <section className="cookieConsent" aria-label={t("consent.title")} role="region">
+      <div className="cookieConsentCopy">
+        <Cookie aria-hidden="true" size={18} />
+        <div>
+          <h2>{t("consent.title")}</h2>
+          <p>{t("consent.body")}</p>
+          <button className="cookiePolicyButton" onClick={onOpenCookiePolicy} type="button">
+            {t("consent.learnMore")}
+          </button>
+        </div>
+      </div>
+      <div className="cookieConsentActions">
+        <Button onClick={() => onChoose("denied")} size="sm" type="button" variant="secondary">
+          {t("consent.reject")}
+        </Button>
+        <Button onClick={() => onChoose("granted")} size="sm" type="button" variant="primary">
+          {t("consent.accept")}
+        </Button>
+      </div>
+    </section>
   );
 }
 
@@ -1994,7 +2083,8 @@ function PrivacyPage() {
       </LegalSection>
       <LegalSection title={t("legal.privacySection2Title")}>
         <p>
-          {t("legal.privacySection2Body1")} <code>mamekurt-theme</code> / <code>{LANGUAGE_STORAGE_KEY}</code>.
+          {t("legal.privacySection2Body1")} <code>mamekurt-theme</code> / <code>{LANGUAGE_STORAGE_KEY}</code> /{" "}
+          <code>mamekurt-results-view</code> / <code>{ANALYTICS_CONSENT_STORAGE_KEY}</code>.
         </p>
         <p>{t("legal.privacySection2Body2")}</p>
       </LegalSection>

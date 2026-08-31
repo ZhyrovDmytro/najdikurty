@@ -18,7 +18,10 @@ const club: Club = {
 describe("LegacyAvailabilityProviderAdapter", () => {
   it("converts merged free coverage into normalized atomic segments", () => {
     const result = normalizeLegacyAvailability(legacyResult({
-      courts: [courtAvailability([{ start: "09:00", end: "10:30" }])]
+      courts: [courtAvailability(
+        [{ start: "09:00", end: "10:30" }],
+        { "09:00": 300, "09:30": 300, "10:00": 350 }
+      )]
     }), club, "example-provider");
 
     expect(result.courts).toEqual([
@@ -29,8 +32,11 @@ describe("LegacyAvailabilityProviderAdapter", () => {
       startsAt: new Date("2026-08-21T07:00:00Z"),
       endsAt: new Date("2026-08-21T07:30:00Z"),
       bookingUrl: club.bookingUrl,
-      available: true
+      available: true,
+      price: 300,
+      currency: "CZK"
     });
+    expect(result.slots.map(({ price }) => price)).toEqual([300, 300, 350]);
   });
 
   it("preserves exact provider duration alternatives instead of merging them", () => {
@@ -78,7 +84,10 @@ function legacyResult(overrides: Partial<AvailabilityResult> = {}): Availability
   };
 }
 
-function courtAvailability(freeSlots: CourtAvailability["freeSlots"]): CourtAvailability {
+function courtAvailability(
+  freeSlots: CourtAvailability["freeSlots"],
+  slotPrices?: Record<string, number>
+): CourtAvailability {
   return {
     provider: "example-provider",
     clubSlug: club.slug,
@@ -86,6 +95,8 @@ function courtAvailability(freeSlots: CourtAvailability["freeSlots"]): CourtAvai
     date: "2026-08-21",
     court: "Kurt 1",
     blocks: [],
-    freeSlots
+    freeSlots,
+    slotPrices,
+    currency: slotPrices ? "CZK" : undefined
   };
 }

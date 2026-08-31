@@ -1,7 +1,7 @@
 import {
   fetchBookaballAvailability,
   fetchCourtyOneAvailability,
-  fetchISportSystemAvailabilityWithApify,
+  fetchISportSystemApiAvailability,
   fetchJdemeNaToAvailability,
   fetchJdemeNaToPortalSearchAvailability,
   fetchPadelosAvailability,
@@ -18,6 +18,7 @@ import {
   type Club,
   type LegacyProviderFetchInput
 } from "@mamekurt/scrapers";
+import { isportSystemClubConfig, ISPORTSYSTEM_CLUBS, type ISportSystemClubConfig } from "./isportsystem-clubs.js";
 
 const PRAGUE_TIMEZONE = "Europe/Prague";
 
@@ -87,28 +88,10 @@ const REGISTRATIONS: Record<string, RegistrationFactory> = {
       browser: padelSlaviaBrowser(input.signal)
     })
   ),
-  "head-tenis-centrum-vestec": () => ({
-    ...legacyRegistration(
-      club({
-        slug: "head-tenis-centrum-vestec",
-        name: "Head Tenis Centrum Vestec",
-        providerId: "isportsystem",
-        providerExternalId: "sport-13",
-        bookingUrl: "https://teniscentrum.isportsystem.cz/?op=tab-id-13",
-        courtIndoor: true
-      }),
-      "iSportSystem via Apify",
-      (input) => fetchISportSystemAvailabilityWithApify({
-        ...legacyOptions(input),
-        token: apifyToken(),
-        actorId: process.env.ISPORTSYSTEM_APIFY_ACTOR_ID?.trim() || undefined,
-        apiUrl: process.env.ISPORTSYSTEM_APIFY_API_URL?.trim() || undefined,
-        cacheTtlMs: optionalNumber(process.env.ISPORTSYSTEM_APIFY_CACHE_TTL_MS),
-        actorTimeoutSecs: optionalNumber(process.env.ISPORTSYSTEM_APIFY_ACTOR_TIMEOUT_SECS)
-      })
-    ),
-    refreshCadenceMinutes: 300
-  }),
+  "head-tenis-centrum-vestec": () => isportSystemRegistration(requiredISportSystemClub("head-tenis-centrum-vestec")),
+  "plechovka-dubec": () => isportSystemRegistration(requiredISportSystemClub("plechovka-dubec")),
+  "padel-radotin": () => isportSystemRegistration(requiredISportSystemClub("padel-radotin")),
+  "padel-cakovice": () => isportSystemRegistration(requiredISportSystemClub("padel-cakovice")),
   "padel-neride": () => legacyRegistration(
     club({
       slug: "padel-neride",
@@ -199,18 +182,7 @@ const REGISTRATIONS: Record<string, RegistrationFactory> = {
   )
 };
 
-export const problematicClubs: readonly ProblematicClub[] = [
-  {
-    slug: "padel-radotin",
-    providerId: "isportsystem",
-    reason: "Cloudflare blocks unattended direct HTTP retrieval."
-  },
-  {
-    slug: "padel-cakovice",
-    providerId: "isportsystem",
-    reason: "Disabled in the current product; retrieval requires a maintained browser profile when Cloudflare is active."
-  }
-] as const;
+export const problematicClubs: readonly ProblematicClub[] = [] as const;
 
 export function indexedClubSlugs(): string[] {
   return Object.keys(REGISTRATIONS);
@@ -234,6 +206,37 @@ function legacyRegistration(
     provider: new LegacyAvailabilityProviderAdapter({ id: configuredClub.providerId, fetchLegacy }),
     providerName
   };
+}
+
+function isportSystemRegistration(config: ISportSystemClubConfig): IndexedClubRegistration {
+  return legacyRegistration(
+    club({
+      slug: config.slug,
+      name: config.name,
+      providerId: "isportsystem",
+      providerExternalId: `${new URL(config.baseUrl).hostname}:sport-${config.sportId}`,
+      bookingUrl: config.bookingUrl,
+      courtIndoor: config.courtIndoor,
+      providerConfig: {
+        apiBaseUrl: config.baseUrl,
+        sportId: config.sportId,
+        courtNames: [...config.courtNames]
+      }
+    }),
+    "iSportSystem public API",
+    (input) => fetchISportSystemApiAvailability({
+      ...legacyOptions(input),
+      baseUrl: config.baseUrl,
+      sportId: config.sportId,
+      courtNames: config.courtNames
+    })
+  );
+}
+
+function requiredISportSystemClub(slug: keyof typeof ISPORTSYSTEM_CLUBS): ISportSystemClubConfig {
+  const config = isportSystemClubConfig(slug);
+  if (!config) throw new Error(`Missing iSportSystem configuration for ${slug}`);
+  return config;
 }
 
 function club(options: {
@@ -312,12 +315,6 @@ function bookaballCredentials() {
   const email = process.env.BOOKABALL_EMAIL?.trim();
   const password = process.env.BOOKABALL_PASSWORD?.trim();
   return email && password ? { email, password } : undefined;
-}
-
-function apifyToken(): string {
-  const token = process.env.APIFY_TOKEN?.trim();
-  if (!token) throw new Error("APIFY_TOKEN is required for Head Tenis Centrum availability");
-  return token;
 }
 
 function padelSlaviaBrowser(signal?: AbortSignal) {

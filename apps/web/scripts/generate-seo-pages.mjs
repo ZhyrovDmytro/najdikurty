@@ -20,6 +20,7 @@ const clubs = [
   ["tenis-a-padel-klub-pisecna", "Tenis & Padel klub Písečná", "K Sadu 590/1, Praha 8-Troja", 4, false],
   ["sk-slavia-praha-padel", "SK Slavia Praha Padel", "Vladivostocká 1460/10, Praha 10", 4, false],
   ["head-tenis-centrum-vestec", "Head Tenis Centrum, Vestec", "Sportovní 456, Vestec-Jesenice u Prahy", 4, true],
+  ["plechovka-dubec", "Plechovka Dubeč", "Kalašova, č.e. 196, Praha-Dubeč", 3, true],
   ["padel-radotin", "Padel Radotín", "Šárovo kolo 932/1, Praha 16", 3, true],
   ["padel-cakovice", "Padel Čakovice", "Jizerská 328/4, Praha-Čakovice", 2, false],
   ["padel-neride", "Padel Neride", "V Chotejně 700, Praha 15", 3, true],

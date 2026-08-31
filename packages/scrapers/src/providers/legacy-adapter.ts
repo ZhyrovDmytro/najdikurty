@@ -155,7 +155,9 @@ function atomicCoverageSlots(
           courtByName,
           availability.court,
           club,
-          fetchedAt
+          fetchedAt,
+          availability.slotPrices?.[minuteTime(cursor)] ?? null,
+          availability.currency ?? null
         ));
       }
       return slots;
@@ -169,7 +171,9 @@ function slotFromRange(
   courtByName: ReadonlyMap<string, Court>,
   courtName: string,
   club: Club,
-  fetchedAt: Date
+  fetchedAt: Date,
+  price: number | null = null,
+  currency: string | null = null
 ): NormalizedAvailabilitySlot {
   const court = courtByName.get(courtName);
   if (!court) throw new SyntaxError(`Availability references unknown court ${courtName}`);
@@ -179,8 +183,8 @@ function slotFromRange(
     startsAt: localDateTimeInstant(date, range.start, club.timezone),
     endsAt: localDateTimeInstant(date, range.end, club.timezone),
     available: true,
-    price: null,
-    currency: null,
+    price,
+    currency,
     bookingUrl: club.bookingUrl,
     fetchedAt
   };

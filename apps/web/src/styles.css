@@ -2621,11 +2621,91 @@ a.detailInfoRow:hover {
   text-decoration: none;
 }
 
+.footerTextButton,
+.cookiePolicyButton {
+  width: fit-content;
+  padding: 0;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
 .footerNav a:hover,
 .footerNav a:focus-visible,
-.footerNav a[aria-current="page"] {
+.footerNav a[aria-current="page"],
+.footerTextButton:hover,
+.footerTextButton:focus-visible,
+.cookiePolicyButton:hover,
+.cookiePolicyButton:focus-visible {
   color: var(--blue);
   outline: 0;
+}
+
+.cookieConsent {
+  position: fixed;
+  z-index: 1000;
+  right: max(12px, env(safe-area-inset-right));
+  bottom: max(12px, env(safe-area-inset-bottom));
+  left: max(12px, env(safe-area-inset-left));
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  width: min(720px, calc(100% - 24px));
+  margin: 0 auto;
+  padding: 12px 14px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 16px 48px rgb(15 23 42 / 28%);
+}
+
+.cookieConsentCopy {
+  display: flex;
+  align-items: start;
+  gap: 9px;
+}
+
+.cookieConsentCopy > svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--blue);
+}
+
+.cookieConsent h2,
+.cookieConsent p {
+  margin: 0;
+}
+
+.cookieConsent h2 {
+  font-size: 0.98rem;
+}
+
+.cookieConsent p {
+  max-width: 510px;
+  margin-top: 3px;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+.cookiePolicyButton {
+  margin-top: 4px;
+  color: var(--blue);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.cookieConsentActions {
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  gap: 8px;
 }
 
 .footerMeta {
@@ -3070,6 +3150,16 @@ a.detailInfoRow:hover {
   .siteFooter,
   .footerNav {
     grid-template-columns: 1fr;
+  }
+
+  .cookieConsent {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .cookieConsentActions {
+    grid-template-columns: 1fr 1fr;
   }
 }
 

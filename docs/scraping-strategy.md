@@ -151,32 +151,15 @@ Recommended approach:
 4. Normalize court names as `Kurt 1`, `Kurt 2`, `Kurt 3`, `Kurt 4`.
 5. Merge adjacent `volno` cells into free intervals.
 
-## Provider: iSportSystem / Head Tenis Centrum
+## Provider: iSportSystem
 
-Head Tenis Centrum, Vestec uses iSportSystem:
+Head Tenis Centrum, Plechovka Dubeč, Padel Radotín, and Padel Čakovice use iSportSystem's public read-only JSON API:
 
-`https://teniscentrum.isportsystem.cz/?op=tab-id-13`
+`https://<club>.isportsystem.cz/api/get-times.php?date=<YYYYMMDD>&id_sport=<ID>`
 
-The rendered page includes a weekly set of padel tables:
+The response contains each lane's name and ID, Unix timestamps in 30-minute steps, occupancy flags, and prices. Each club registration supplies its padel `id_sport` and an allow-list of real padel courts. This excludes substitute, child, closed, or maintenance lanes from search results.
 
-- The padel tab is `schema_sport_13`.
-- Each `.schemaFullContainer` exposes its date in hidden `data-date` elements.
-- Hour headers use two columns per hour, so each court cell is a 30-minute slot.
-- Court rows are rendered as `Kurt 1`, `Kurt 2`, `Kurt 3`, and `Kurt 4`; the parser still normalizes names by row order.
-- Empty cells with `a.empty` are bookable.
-- Cells with `booked`, `old`, or any other class are treated as unavailable.
-
-Direct HTTP requests receive a Cloudflare challenge page. Head Tenis Centrum therefore uses the free `vietaro/cloudflare-bypass-scraper` Apify Actor in forced-stealth mode. One Actor run receives two dated booking URLs concurrently, covering the current and following calendar weeks. The Actor returns rendered Markdown tables; empty Markdown links correspond to `a.empty` bookable half-hour cells, while blank cells are unavailable.
-
-The existing index still reconciles one local date at a time. A module-level 15-minute cache shares the two-page Actor result across all eight date jobs in one worker process, so the 20-minute indexing cadence creates one Actor run rather than eight.
-
-Configuration:
-
-- `APIFY_TOKEN` is required and remains server-side.
-- `ISPORTSYSTEM_APIFY_ACTOR_ID` defaults to `vietaro~cloudflare-bypass-scraper`.
-- `ISPORTSYSTEM_APIFY_CACHE_TTL_MS` defaults to 15 minutes.
-- `ISPORTSYSTEM_APIFY_ACTOR_TIMEOUT_SECS` defaults to 120 seconds.
-- `ISPORTSYSTEM_APIFY_AVAILABILITY_TIMEOUT_MS` defaults to 150 seconds for the live API route.
+The integration calls this endpoint directly. It does not use Apify, browser automation, provider credentials, or an API key.
 
 ## Provider: Bookaball / Padel Džus
 

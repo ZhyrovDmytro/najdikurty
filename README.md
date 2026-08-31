@@ -10,6 +10,9 @@ The first integrations target:
 - Tenis & Padel klub Písečná on Playtomic: https://playtomic.com/clubs/tenis-a-padel-klub-pisecna
 - SK Slavia Praha Padel: https://rezervace.padelslavia.cz/
 - Head Tenis Centrum, Vestec on iSportSystem: https://teniscentrum.isportsystem.cz/?op=tab-id-13
+- Plechovka Dubeč on iSportSystem: https://plechovka.isportsystem.cz/?op=tab-id-20
+- Padel Radotín on iSportSystem: https://padelradotin.isportsystem.cz/
+- Padel Čakovice on iSportSystem: https://padelautomat.isportsystem.cz/
 - Padel Neride on Reservanto: https://padelneride.cz/rezervace/
 - Padel Džus on Bookaball: https://padeldzus.bookaball.com/cs/bookings/create
 - Padel Powers Smíchov on Padelos: https://player.padelos.co/company/217?clubIds=216927&locale=cs
@@ -81,6 +84,9 @@ padel-club-spoje
 tenis-a-padel-klub-pisecna
 sk-slavia-praha-padel
 head-tenis-centrum-vestec
+plechovka-dubec
+padel-radotin
+padel-cakovice
 padel-neride
 padel-dzus
 padel-powers-smichov
@@ -89,7 +95,7 @@ cisarska-louka-padel
 sk-satalice
 ```
 
-`--date` is optional and defaults to today in the club timezone. The default timeout is 25 seconds, except for Head Tenis Centrum where it is 150 seconds to accommodate the Apify Actor; `--timeout` can be adjusted up to 180 seconds for manual diagnostics. The command writes normalized courts and availability, reconciles a complete provider response, and records the execution in `scrape_runs`. Padel Slavia needs `PADEL_SLAVIA_EMAIL` and `PADEL_SLAVIA_PASSWORD` for non-current dates. It does not change the public API response path.
+`--date` is optional and defaults to today in the club timezone. The default timeout is 25 seconds; `--timeout` can be adjusted up to 180 seconds for manual diagnostics. The command writes normalized courts and availability, reconciles a complete provider response, and records the execution in `scrape_runs`. Padel Slavia needs `PADEL_SLAVIA_EMAIL` and `PADEL_SLAVIA_PASSWORD` for non-current dates. It does not change the public API response path.
 
 Phase 5 adds a database-only search endpoint. It never contacts a booking provider during the request:
 
@@ -101,9 +107,9 @@ Optional filters are `clubs` (comma-separated slugs) and `indoor=true|false`. Th
 
 ## Web analytics
 
-The web app uses PostHog only when `VITE_POSTHOG_KEY` is configured. The SDK is lazy-loaded and uses manual event capture only:
+The web app offers PostHog only when `VITE_POSTHOG_KEY` is configured and loads the SDK only after the visitor explicitly accepts optional analytics. It uses manual event capture only:
 page views, filter changes, language/theme changes, club selections, view-mode changes, map clicks, availability refreshes, and booking-link exits.
-Autocapture and session recording are disabled.
+Autocapture, session recording, surveys, heatmaps, performance capture, and person profiles are disabled. PostHog identity persistence is memory-only; the visitor's accept/reject choice is stored in local storage for up to 12 months and can be changed through the footer's cookie settings.
 
 For local development, copy `apps/web/.env.example` to `apps/web/.env.local` and set your PostHog project token.
 For GitHub Pages, set repository variables:
@@ -156,20 +162,9 @@ export BOOKABALL_EMAIL="your-email"
 export BOOKABALL_PASSWORD="your-password"
 ```
 
-Head Tenis Centrum uses the free `vietaro/cloudflare-bypass-scraper` Apify Actor. Configure the token only on the API and worker runtimes:
+The four iSportSystem clubs use the provider's authorized public JSON endpoint at `/api/get-times.php`. No API key, browser automation, or Apify configuration is required. Each request specifies a date and the club's padel `id_sport`; configured court allow-lists exclude non-playable substitute, child, closed, or maintenance lanes.
 
-```bash
-export APIFY_TOKEN="your-apify-api-token"
-export ISPORTSYSTEM_APIFY_ACTOR_ID="vietaro~cloudflare-bypass-scraper"
-export ISPORTSYSTEM_APIFY_CACHE_TTL_MS="900000"
-export ISPORTSYSTEM_APIFY_ACTOR_TIMEOUT_SECS="120"
-export ISPORTSYSTEM_APIFY_AVAILABILITY_TIMEOUT_MS="150000"
-export WORKER_SCRAPE_TIMEOUT_MS="150000"
-```
-
-Each Actor run fetches two week pages concurrently. The scraper keeps the successful batch in memory for 15 minutes so all eight per-date indexing jobs share one paid platform run within a worker process.
-
-Padel Radotín uses Cloudflare protection on iSportSystem, so its availability is disabled. The current cache is in memory. For fully reliable unattended scanning of protected booking systems, add persistent storage or use an authorized non-interactive route: ask the club or provider for API/feed access, a server IP allowlist, or another documented integration endpoint.
+The indexing schedule refreshes the eight-day horizon every 20 minutes from 08:00 through 22:00 Prague time. Requests are cached on our side, and the worker's default per-provider concurrency of one keeps iSportSystem calls sequential and comfortably below the provider's current burst limit.
 
 ## API example
 
@@ -180,6 +175,9 @@ curl "http://localhost:4000/api/availability?club=padel-club-spoje&date=2026-08-
 curl "http://localhost:4000/api/availability?club=tenis-a-padel-klub-pisecna&date=2026-08-04&sport=padel"
 curl "http://localhost:4000/api/availability?club=sk-slavia-praha-padel&date=2026-08-04&sport=padel"
 curl "http://localhost:4000/api/availability?club=head-tenis-centrum-vestec&date=2026-08-04&sport=padel"
+curl "http://localhost:4000/api/availability?club=plechovka-dubec&date=2026-08-04&sport=padel"
+curl "http://localhost:4000/api/availability?club=padel-radotin&date=2026-08-04&sport=padel"
+curl "http://localhost:4000/api/availability?club=padel-cakovice&date=2026-08-04&sport=padel"
 curl "http://localhost:4000/api/availability?club=padel-neride&date=2026-08-04&sport=padel"
 curl "http://localhost:4000/api/availability?club=padel-dzus&date=2026-08-04&sport=padel"
 curl "http://localhost:4000/api/availability?club=padel-powers-smichov&date=2026-08-04&sport=padel"

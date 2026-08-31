@@ -18,6 +18,8 @@ export interface CourtAvailability {
   court: string;
   blocks: CourtBlock[];
   freeSlots: TimeRange[];
+  slotPrices?: Record<string, number>;
+  currency?: string;
 }
 
 export interface AvailabilityResult {
