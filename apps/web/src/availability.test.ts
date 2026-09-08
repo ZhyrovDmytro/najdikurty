@@ -5,6 +5,7 @@ import {
   buildTimeOptions,
   formatDuration,
   formatTimeWindow,
+  localizeCourtName,
   type AvailabilityResult
 } from "./availability";
 
@@ -29,6 +30,13 @@ const availability: AvailabilityResult = {
 };
 
 describe("availability helpers", () => {
+  it("localizes generic court prefixes while preserving court identifiers", () => {
+    expect(localizeCourtName("Court 1", "Kurt")).toBe("Kurt 1");
+    expect(localizeCourtName("Kurt 2", "Court")).toBe("Court 2");
+    expect(localizeCourtName("Корт 3", "Court")).toBe("Court 3");
+    expect(localizeCourtName("Center court", "Kurt")).toBe("Center court");
+  });
+
   it("returns only slots where enough courts are free at the same time", () => {
     expect(buildBookableSlots(availability, 60, 2)).toEqual([
       {

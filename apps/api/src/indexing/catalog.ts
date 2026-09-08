@@ -91,6 +91,7 @@ const REGISTRATIONS: Record<string, RegistrationFactory> = {
   "head-tenis-centrum-vestec": () => isportSystemRegistration(requiredISportSystemClub("head-tenis-centrum-vestec")),
   "plechovka-dubec": () => isportSystemRegistration(requiredISportSystemClub("plechovka-dubec")),
   "padel-radotin": () => isportSystemRegistration(requiredISportSystemClub("padel-radotin")),
+  "padel-hall-radotin": () => isportSystemRegistration(requiredISportSystemClub("padel-hall-radotin")),
   "padel-cakovice": () => isportSystemRegistration(requiredISportSystemClub("padel-cakovice")),
   "padel-neride": () => legacyRegistration(
     club({

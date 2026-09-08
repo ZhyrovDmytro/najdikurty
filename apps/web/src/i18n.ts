@@ -56,6 +56,7 @@ export const resources = {
     translation: {
       actions: {
         book: "Book",
+        cancel: "Cancel",
         closeMenu: "Close menu",
         darkMode: "Dark mode",
         findCourt: "Find Court",
@@ -64,8 +65,11 @@ export const resources = {
         lightMode: "Light mode",
         openBookingSystem: "Open booking system",
         openMenu: "Open menu",
+        preparingImage: "Preparing image…",
         refreshAvailability: "Refresh availability",
+        select: "Select",
         share: "Share",
+        shareSelected: "Share {{count}} selected",
         showCards: "Show cards",
         showClubCards: "Show club cards",
         showCompactList: "Show compact list",
@@ -73,6 +77,11 @@ export const resources = {
         switchToDarkMode: "Switch to dark mode",
         switchToLightMode: "Switch to light mode",
         searchAvailability: "Search"
+      },
+      share: {
+        title: "Available padel courts",
+        subtitle: "{{count}} selected slots",
+        availabilityNote: "Availability can change. Confirm the time in the club's booking system."
       },
       brand: {
         name: "HLEDEJKURTY"
@@ -126,7 +135,7 @@ export const resources = {
             question: "Do you show Multisport support?"
           },
           trackedClubs: {
-            answer: "Right now we can check reservations for these 10 clubs: Padel Prosek, Padel Club Spoje, Tenis & Padel klub Písečná, SK Slavia Praha Padel, Padel Neride, Padel Džus, Padel Powers Smíchov, One Padel, Císařská louka Padel, and SK Satalice. You can find the full padel club directory on the All clubs page.",
+            answer: "Right now we can check reservations for 16 clubs, including Padel Hall Olympia Radotín. You can find the complete list in the live search and on the All clubs page.",
             question: "Which clubs are tracked?"
           }
         },
@@ -166,6 +175,9 @@ export const resources = {
         courtType: "Court type",
         courtTypes: "Court types",
         daily: "Daily",
+        free: "Free",
+        freeSlot: "{{start}}–{{end}} free",
+        fullAvailability: "Full court availability",
         distanceFromYou: "{{distance}} km from you",
         distanceStraightLine: "Approximate straight-line distance",
         providerCourtPrefix: "Court",
@@ -190,6 +202,8 @@ export const resources = {
         priceUnknown: "Price unknown",
         slots_one: "{{count}} slot",
         slots_other: "{{count}} slots",
+        timelineLegend: "Availability legend",
+        unavailable: "Unavailable",
         startTime: "Start time",
         needed: "Courts needed",
         availableTimes: "Available times"
@@ -219,14 +233,14 @@ export const resources = {
         featureTimeTitle: "Choose the right date first",
         featuredClubsBody: "The full club list includes addresses, prices, court types, Multisport labels, and direct booking links.",
         featuredClubsTitle: "Popular tracked padel clubs in Prague",
-        intro: "Choose a date, duration, number of courts, court type, and time window, then search real-time padel court availability around Prague.",
+        intro: "Compare free times across tracked Prague padel clubs, then open the official booking system for the court you choose.",
         landingBody: "HLEDEJKURTY helps you find free padel courts in Prague without opening every booking system manually. Search by date, start time, duration, number of courts, indoor or outdoor courts, prices, Multisport support, and official booking links.",
         landingTitle: "Search padel court availability",
         multisportClubs_one: "{{count}} Multisport club",
         multisportClubs_other: "{{count}} Multisport clubs",
         multisportHelp: "Easy to spot before booking",
         statsLabel: "Tracked padel court statistics",
-        title: "Find free padel courts in Prague",
+        title: "Find free padel courts in Prague in one place",
         trackedClubsHelp: "Across Prague and nearby areas",
         trackedCourts_one: "{{count}} padel court",
         trackedCourts_other: "{{count}} padel courts",
@@ -240,7 +254,7 @@ export const resources = {
         badgeLegal: "Legal",
         badgeTerms: "Terms",
         cookiesIntro: "This page explains cookies and similar browser storage used by HLEDEJKURTY.",
-        cookiesSection1Body: "The app does not currently set its own HTTP cookies. It uses local storage for functional preferences: mamekurt-theme (light or dark theme), mamekurt-language (language), and mamekurt-results-view (results layout). It also stores mamekurt-analytics-consent-v1 so it can respect your analytics choice. Preferences remain until changed or cleared; the consent choice expires after 12 months.",
+        cookiesSection1Body: "The app does not currently set its own HTTP cookies. It uses local storage for functional preferences: mamekurt-theme (light or dark theme), mamekurt-language (language), mamekurt-results-view (results layout), mamekurt-results-sort (search-results order), and mamekurt-all-clubs-sort (all-clubs order). It also stores mamekurt-analytics-consent-v1 so it can respect your analytics choice. Preferences remain until changed or cleared; the consent choice expires after 12 months.",
         cookiesSection1Title: "Functional browser storage",
         cookiesSection2Body: "PostHog product analytics is optional and starts only after you select Accept analytics. We send selected page views and interactions such as filter changes, club selections, searches, sharing actions, and booking-link clicks, together with limited technical context. Autocapture, advertising, session recording, heatmaps, performance capture, surveys, and person profiles are disabled. The analytics identifier is kept in memory only for the current page session and is not persisted in cookies or local storage.",
         cookiesSection2Title: "Optional analytics",
@@ -305,6 +319,7 @@ export const resources = {
     translation: {
       actions: {
         book: "Бронювати",
+        cancel: "Скасувати",
         closeMenu: "Закрити меню",
         darkMode: "Темна тема",
         findCourt: "Знайти корт",
@@ -313,8 +328,11 @@ export const resources = {
         lightMode: "Світла тема",
         openBookingSystem: "Відкрити систему бронювання",
         openMenu: "Відкрити меню",
+        preparingImage: "Готуємо зображення…",
         refreshAvailability: "Оновити доступність",
+        select: "Вибрати",
         share: "Поділитися",
+        shareSelected: "Поділитися вибраними: {{count}}",
         showCards: "Показати картки",
         showClubCards: "Показати картки клубів",
         showCompactList: "Показати компактний список",
@@ -322,6 +340,11 @@ export const resources = {
         switchToDarkMode: "Перемкнути на темну тему",
         switchToLightMode: "Перемкнути на світлу тему",
         searchAvailability: "Шукати"
+      },
+      share: {
+        title: "Доступні корти для паделу",
+        subtitle: "Вибрано слотів: {{count}}",
+        availabilityNote: "Доступність може змінитися. Підтвердьте час у системі бронювання клубу."
       },
       brand: {
         name: "HLEDEJKURTY"
@@ -375,7 +398,7 @@ export const resources = {
             question: "Чи показуєте ви підтримку Multisport?"
           },
           trackedClubs: {
-            answer: "Зараз ми можемо перевіряти бронювання для цих 10 клубів: Padel Prosek, Padel Club Spoje, Tenis & Padel klub Písečná, SK Slavia Praha Padel, Padel Neride, Padel Džus, Padel Powers Smíchov, One Padel, Císařská louka Padel і SK Satalice. Повний каталог падел-клубів можна знайти на сторінці всіх клубів.",
+            answer: "Зараз ми можемо перевіряти бронювання для 16 клубів, зокрема Padel Hall Olympia Radotín. Повний список доступний у пошуку та на сторінці всіх клубів.",
             question: "Які клуби відстежуються?"
           }
         },
@@ -415,6 +438,9 @@ export const resources = {
         courtType: "Тип корту",
         courtTypes: "Типи кортів",
         daily: "Щодня",
+        free: "Вільно",
+        freeSlot: "Вільно {{start}}–{{end}}",
+        fullAvailability: "Повна доступність кортів",
         distanceFromYou: "{{distance}} км від вас",
         distanceStraightLine: "Приблизна відстань по прямій",
         providerCourtPrefix: "Корт",
@@ -439,6 +465,8 @@ export const resources = {
         priceUnknown: "Ціна невідома",
         slots_one: "{{count}} слот",
         slots_other: "{{count}} слотів",
+        timelineLegend: "Позначення доступності",
+        unavailable: "Недоступно",
         startTime: "Початок",
         needed: "Потрібно кортів",
         availableTimes: "Доступний час"
@@ -468,14 +496,14 @@ export const resources = {
         featureTimeTitle: "Спочатку виберіть потрібну дату",
         featuredClubsBody: "Повний список клубів містить адреси, ціни, типи кортів, позначки Multisport і прямі посилання на бронювання.",
         featuredClubsTitle: "Популярні падел-клуби у Празі",
-        intro: "Оберіть дату, тривалість, кількість кортів, тип корту й часовий проміжок, а потім перевірте доступність падел-кортів у Празі.",
+        intro: "Порівнюйте вільний час у відстежуваних падел-клубах Праги та переходьте до офіційної системи бронювання обраного корту.",
         landingBody: "HLEDEJKURTY допомагає знаходити вільні падел-корти у Празі без ручного відкривання кожної системи бронювання. Шукайте за датою, часом початку, тривалістю, кількістю кортів, критими чи відкритими кортами, цінами, Multisport і офіційними посиланнями на бронювання.",
         landingTitle: "Перевіряйте доступність падел-кортів",
         multisportClubs_one: "{{count}} клуб з Multisport",
         multisportClubs_other: "{{count}} клубів з Multisport",
         multisportHelp: "Легко побачити перед бронюванням",
         statsLabel: "Статистика відстежуваних падел-кортів",
-        title: "Знайдіть вільні падел-корти у Празі",
+        title: "Знайдіть вільні падел-корти Праги в одному місці",
         trackedClubsHelp: "У Празі та поблизу",
         trackedCourts_one: "{{count}} падел-корт",
         trackedCourts_other: "{{count}} падел-кортів",
@@ -489,7 +517,7 @@ export const resources = {
         badgeLegal: "Юридичне",
         badgeTerms: "Умови",
         cookiesIntro: "Ця сторінка пояснює використання cookies і подібного сховища браузера HLEDEJKURTY.",
-        cookiesSection1Body: "Застосунок зараз не встановлює власних HTTP cookies. Для функціональних налаштувань він використовує local storage: mamekurt-theme (світла або темна тема), mamekurt-language (мова) та mamekurt-results-view (вигляд результатів). Також зберігається mamekurt-analytics-consent-v1, щоб дотримуватися вашого вибору щодо аналітики. Налаштування залишаються до зміни чи очищення; вибір аналітики спливає через 12 місяців.",
+        cookiesSection1Body: "Застосунок зараз не встановлює власних HTTP cookies. Для функціональних налаштувань він використовує local storage: mamekurt-theme (світла або темна тема), mamekurt-language (мова), mamekurt-results-view (вигляд результатів), mamekurt-results-sort (порядок результатів пошуку) та mamekurt-all-clubs-sort (порядок усіх клубів). Також зберігається mamekurt-analytics-consent-v1, щоб дотримуватися вашого вибору щодо аналітики. Налаштування залишаються до зміни чи очищення; вибір аналітики спливає через 12 місяців.",
         cookiesSection1Title: "Функціональне сховище браузера",
         cookiesSection2Body: "Продуктова аналітика PostHog є необов'язковою й запускається лише після вибору «Дозволити аналітику». Ми надсилаємо вибрані перегляди сторінок та взаємодії, як-от зміни фільтрів, вибір клубів, пошуки, поширення й кліки на бронювання, разом з обмеженим технічним контекстом. Автозбір, реклама, запис сесій, теплові карти, вимірювання продуктивності, опитування та профілі осіб вимкнені. Аналітичний ідентифікатор зберігається лише в пам'яті поточної сторінки, а не в cookies чи local storage.",
         cookiesSection2Title: "Необов'язкова аналітика",
@@ -554,6 +582,7 @@ export const resources = {
     translation: {
       actions: {
         book: "Rezervovat",
+        cancel: "Zrušit",
         closeMenu: "Zavřít menu",
         darkMode: "Tmavý režim",
         findCourt: "Najít kurt",
@@ -562,8 +591,11 @@ export const resources = {
         lightMode: "Světlý režim",
         openBookingSystem: "Otevřít rezervační systém",
         openMenu: "Otevřít menu",
+        preparingImage: "Připravuji obrázek…",
         refreshAvailability: "Obnovit dostupnost",
+        select: "Vybrat",
         share: "Sdílet",
+        shareSelected: "Sdílet vybrané ({{count}})",
         showCards: "Zobrazit karty",
         showClubCards: "Zobrazit karty klubů",
         showCompactList: "Zobrazit kompaktní seznam",
@@ -571,6 +603,11 @@ export const resources = {
         switchToDarkMode: "Přepnout na tmavý režim",
         switchToLightMode: "Přepnout na světlý režim",
         searchAvailability: "Hledat"
+      },
+      share: {
+        title: "Dostupné padelové kurty",
+        subtitle: "Vybrané sloty: {{count}}",
+        availabilityNote: "Dostupnost se může změnit. Čas potvrďte v rezervačním systému klubu."
       },
       brand: {
         name: "HLEDEJKURTY"
@@ -624,7 +661,7 @@ export const resources = {
             question: "Zobrazujete podporu Multisport?"
           },
           trackedClubs: {
-            answer: "Právě teď umíme kontrolovat rezervace u těchto 10 klubů: Padel Prosek, Padel Club Spoje, Tenis & Padel klub Písečná, SK Slavia Praha Padel, Padel Neride, Padel Džus, Padel Powers Smíchov, One Padel, Císařská louka Padel a SK Satalice. Kompletní katalog padelových klubů najdete na stránce Všechny kluby.",
+            answer: "Právě teď umíme kontrolovat rezervace u 16 klubů, včetně Padel Hall Olympia Radotín. Kompletní seznam najdete ve vyhledávání a na stránce Všechny kluby.",
             question: "Které kluby sledujete?"
           }
         },
@@ -664,6 +701,9 @@ export const resources = {
         courtType: "Typ kurtu",
         courtTypes: "Typy kurtů",
         daily: "Denně",
+        free: "Volno",
+        freeSlot: "Volno {{start}}–{{end}}",
+        fullAvailability: "Celková dostupnost kurtů",
         distanceFromYou: "{{distance}} km od vás",
         distanceStraightLine: "Přibližná vzdálenost vzdušnou čarou",
         providerCourtPrefix: "Kurt",
@@ -688,6 +728,8 @@ export const resources = {
         priceUnknown: "Cena neznámá",
         slots_one: "{{count}} čas",
         slots_other: "{{count}} časů",
+        timelineLegend: "Legenda dostupnosti",
+        unavailable: "Obsazeno",
         startTime: "Začátek",
         needed: "Počet kurtů",
         availableTimes: "Dostupné časy"
@@ -717,14 +759,14 @@ export const resources = {
         featureTimeTitle: "Nejdřív vyberte správné datum",
         featuredClubsBody: "Úplný seznam klubů obsahuje adresy, ceny, typy kurtů, štítky Multisport a přímé odkazy na rezervaci.",
         featuredClubsTitle: "Oblíbené sledované padelové kluby v Praze",
-        intro: "Vyberte datum, délku hry, počet kurtů, typ kurtu a časové okno, potom zkontrolujte dostupnost padelových kurtů v Praze.",
+        intro: "Porovnejte volné časy ve sledovaných pražských padelových klubech a přejděte přímo do oficiálního rezervačního systému vybraného kurtu.",
         landingBody: "HLEDEJKURTY pomáhá najít volné padelové kurty v Praze bez ručního otevírání každého rezervačního systému. Hledejte podle data, začátku, délky hry, počtu kurtů, vnitřních nebo venkovních kurtů, cen, Multisport a oficiálních rezervačních odkazů.",
         landingTitle: "Zkontrolujte dostupnost padelových kurtů",
         multisportClubs_one: "{{count}} klub s Multisport",
         multisportClubs_other: "{{count}} klubů s Multisport",
         multisportHelp: "Viditelné ještě před rezervací",
         statsLabel: "Statistiky sledovaných padelových kurtů",
-        title: "Najděte volné padelové kurty v Praze",
+        title: "Najděte volné padelové kurty v Praze na jednom místě",
         trackedClubsHelp: "V Praze a okolí",
         trackedCourts_one: "{{count}} padelový kurt",
         trackedCourts_other: "{{count}} padelových kurtů",
@@ -738,7 +780,7 @@ export const resources = {
         badgeLegal: "Právní",
         badgeTerms: "Podmínky",
         cookiesIntro: "Tato stránka vysvětluje používání cookies a podobného úložiště prohlížeče službou HLEDEJKURTY.",
-        cookiesSection1Body: "Aplikace nyní nenastavuje vlastní HTTP cookies. Pro funkční předvolby používá local storage: mamekurt-theme (světlý nebo tmavý motiv), mamekurt-language (jazyk) a mamekurt-results-view (zobrazení výsledků). Ukládá také mamekurt-analytics-consent-v1, aby respektovala vaši volbu analytiky. Předvolby zůstávají do změny či vymazání; volba analytiky vyprší po 12 měsících.",
+        cookiesSection1Body: "Aplikace nyní nenastavuje vlastní HTTP cookies. Pro funkční předvolby používá local storage: mamekurt-theme (světlý nebo tmavý motiv), mamekurt-language (jazyk), mamekurt-results-view (zobrazení výsledků), mamekurt-results-sort (řazení výsledků hledání) a mamekurt-all-clubs-sort (řazení všech klubů). Ukládá také mamekurt-analytics-consent-v1, aby respektovala vaši volbu analytiky. Předvolby zůstávají do změny či vymazání; volba analytiky vyprší po 12 měsících.",
         cookiesSection1Title: "Funkční úložiště prohlížeče",
         cookiesSection2Body: "Produktová analytika PostHog je volitelná a spustí se až po volbě „Povolit analytiku“. Odesíláme vybraná zobrazení stránek a interakce, například změny filtrů, výběry klubů, hledání, sdílení a kliknutí na rezervaci, spolu s omezeným technickým kontextem. Automatický sběr, reklama, záznam relací, heatmapy, měření výkonu, průzkumy a profily osob jsou vypnuté. Analytický identifikátor je pouze v paměti aktuální relace stránky a neukládá se do cookies ani local storage.",
         cookiesSection2Title: "Volitelná analytika",

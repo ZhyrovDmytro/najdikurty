@@ -22,6 +22,7 @@ const clubs = [
   ["head-tenis-centrum-vestec", "Head Tenis Centrum, Vestec", "Sportovní 456, Vestec-Jesenice u Prahy", 4, true],
   ["plechovka-dubec", "Plechovka Dubeč", "Kalašova, č.e. 196, Praha-Dubeč", 3, true],
   ["padel-radotin", "Padel Radotín", "Šárovo kolo 932/1, Praha 16", 3, true],
+  ["padel-hall-radotin", "Padel Hall Olympia Radotín", "Ke Zděři 1741/21, Praha 16-Radotín", 1, false],
   ["padel-cakovice", "Padel Čakovice", "Jizerská 328/4, Praha-Čakovice", 2, false],
   ["padel-neride", "Padel Neride", "V Chotejně 700, Praha 15", 3, true],
   ["padel-dzus", "Padel Džus", "U Továren 999/31, Praha 15-Hostivař", 4, true],
@@ -35,7 +36,7 @@ const copy = {
   cz: {
     nav: ["Hledat dostupnost", "Kluby", "Jak to funguje", "Ochrana soukromí", "Podmínky", "Cookies"],
     pages: {
-      home: ["Volné padelové kurty Praha | HLEDEJKURTY", "Najděte volné padelové kurty v Praze. Porovnejte dostupnost, ceny, vnitřní i venkovní kurty, Multisport, adresy a rezervační odkazy.", "Najděte volné padelové kurty v Praze", "Prohledejte pravidelně aktualizovanou dostupnost podporovaných padelových klubů v Praze a rezervaci dokončete v oficiálním systému vybraného klubu."],
+      home: ["Volné padelové kurty Praha na jednom místě | HLEDEJKURTY", "Najděte volné padelové kurty v Praze na jednom místě. Porovnejte dostupnost, ceny, typ kurtu a Multisport a rezervujte přímo u klubu.", "Najděte volné padelové kurty v Praze na jednom místě", "Porovnejte pravidelně aktualizovanou dostupnost podporovaných pražských padelových klubů v jediném přehledu a rezervaci dokončete v oficiálním systému vybraného klubu."],
       allClubs: ["Padelové kluby v Praze | HLEDEJKURTY", "Seznam padelových klubů v Praze s adresami, cenami, typy kurtů, podporou Multisport a odkazy na oficiální rezervace.", "Všechny padelové kluby", "Porovnejte sledované padelové kluby v Praze a okolí. Na detailu najdete adresu, počet kurtů, ceny, dostupnost a odkaz na oficiální rezervaci."],
       about: ["O vyhledávači padelových kurtů | HLEDEJKURTY", "Zjistěte, jak HLEDEJKURTY shromažďuje a zobrazuje dostupnost padelových kurtů v Praze a jak dokončit rezervaci.", "Jak funguje hledání padelových kurtů", "HLEDEJKURTY pravidelně shromažďuje dostupnost z podporovaných rezervačních systémů v Praze. Vyhledávat můžete podle data, délky hry, počtu kurtů, času a typu kurtu."],
       privacy: ["Ochrana osobních údajů | HLEDEJKURTY", "Přečtěte si zásady ochrany soukromí HLEDEJKURTY včetně předvoleb prohlížeče, analytiky, technických logů a práv návštěvníků.", "Ochrana osobních údajů", "Službu HLEDEJKURTY provozuje Dmytro Zhyrov. Služba nevytváří uživatelské účty, nepřijímá platby ani rezervace kurtů. Zásady popisují omezené technické údaje používané k provozu služby."],
@@ -53,7 +54,7 @@ const copy = {
   en: {
     nav: ["Search availability", "Clubs", "How it works", "Privacy", "Terms", "Cookies"],
     pages: {
-      home: ["Find free padel courts in Prague | HLEDEJKURTY", "Find free padel courts in Prague. Compare current availability, prices, indoor and outdoor courts, Multisport support, and official booking links.", "Find free padel courts in Prague", "Search regularly updated padel court availability across supported clubs in Prague, then complete your reservation in the club's official booking system."],
+      home: ["Free padel courts in Prague in one place | HLEDEJKURTY", "Find free padel courts in Prague in one place. Compare availability, prices, court types, and Multisport, then book directly with the club.", "Find free padel courts in Prague in one place", "Compare regularly updated availability from supported Prague padel clubs in a single overview, then complete your reservation in the club's official booking system."],
       allClubs: ["Padel clubs in Prague | HLEDEJKURTY", "Browse padel clubs in Prague with addresses, court counts, indoor or outdoor facilities, published prices, Multisport information, and booking links.", "All padel clubs", "Compare tracked padel clubs around Prague and open a detailed page for court information, prices, availability, and official booking links."],
       about: ["About the Prague padel court finder | HLEDEJKURTY", "Learn how HLEDEJKURTY collects and presents padel court availability for supported clubs in Prague and how to confirm a booking.", "How the padel court finder works", "HLEDEJKURTY regularly gathers padel availability from supported club booking systems around Prague. Search by date, duration, court count, time window, and indoor or outdoor preference."],
       privacy: ["Privacy Policy | HLEDEJKURTY", "Read the HLEDEJKURTY privacy policy, including browser preferences, analytics, infrastructure logs, and visitor rights.", "Privacy Policy", "HLEDEJKURTY is operated by Dmytro Zhyrov. The service does not create visitor accounts, take payments, or accept court bookings. This policy explains the limited technical data used to operate the service."],
@@ -71,7 +72,7 @@ const copy = {
   ua: {
     nav: ["Пошук доступності", "Клуби", "Як це працює", "Конфіденційність", "Умови", "Cookies"],
     pages: {
-      home: ["Вільні падел-корти у Празі | HLEDEJKURTY", "Знайдіть вільні падел-корти у Празі. Порівняйте доступність, ціни, криті й відкриті корти, Multisport, адреси та бронювання.", "Знайдіть вільні падел-корти у Празі", "Переглядайте регулярно оновлювану доступність підтримуваних падел-клубів у Празі та завершуйте бронювання в офіційній системі обраного клубу."],
+      home: ["Вільні падел-корти Праги в одному місці | HLEDEJKURTY", "Знайдіть вільні падел-корти Праги в одному місці. Порівнюйте доступність, ціни, типи кортів і Multisport та бронюйте у клубі.", "Знайдіть вільні падел-корти Праги в одному місці", "Порівнюйте регулярно оновлювану доступність підтримуваних падел-клубів Праги в одному огляді та завершуйте бронювання в офіційній системі обраного клубу."],
       allClubs: ["Падел-клуби у Празі | HLEDEJKURTY", "Список падел-клубів у Празі з адресами, цінами, типами кортів, Multisport і посиланнями на офіційне бронювання.", "Усі падел-клуби", "Порівнюйте падел-клуби у Празі та поруч. На сторінці клубу доступні адреса, кількість кортів, ціни, доступність і офіційне бронювання."],
       about: ["Про пошук падел-кортів | HLEDEJKURTY", "Дізнайтеся, як HLEDEJKURTY збирає та показує доступність падел-кортів у Празі і як підтвердити бронювання.", "Як працює пошук падел-кортів", "HLEDEJKURTY регулярно збирає доступність із підтримуваних систем бронювання у Празі. Шукайте за датою, тривалістю, кількістю кортів, часом і типом корту."],
       privacy: ["Політика конфіденційності | HLEDEJKURTY", "Прочитайте політику конфіденційності HLEDEJKURTY про налаштування браузера, аналітику, технічні журнали та права відвідувачів.", "Політика конфіденційності", "Сервіс HLEDEJKURTY керується Dmytro Zhyrov. Сервіс не створює облікових записів, не приймає платежі й не бронює корти. Політика пояснює обмежені технічні дані для роботи сервісу."],

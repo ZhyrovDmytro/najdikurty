@@ -144,6 +144,10 @@ export function formatDuration(minutes: number, dayRange?: TimeRange): string {
   return remainder === 0 ? `${hours} h` : `${hours} h ${remainder} min`;
 }
 
+export function localizeCourtName(court: string, translatedPrefix: string): string {
+  return court.replace(/^(?:Court|Kurt|Корт)(?=\s|\d|$)/iu, translatedPrefix);
+}
+
 export function toMinutes(value: string): number {
   const [hours, minutes] = value.split(":").map(Number);
   return hours * 60 + minutes;

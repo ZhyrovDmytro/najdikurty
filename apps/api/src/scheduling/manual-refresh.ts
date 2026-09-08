@@ -5,9 +5,10 @@ import { ScrapeJobRepository, type ManualRefreshOutcome } from "./job-repository
 import { DEFAULT_TARGET_HORIZON_DAYS } from "./policy.js";
 
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+const maxManualRefreshClubs = indexedClubSlugs().length;
 
 export const manualRefreshRequestSchema = z.object({
-  clubSlugs: z.array(z.string()).min(1).max(10).transform((values) => [...new Set(values)]),
+  clubSlugs: z.array(z.string()).min(1).max(maxManualRefreshClubs).transform((values) => [...new Set(values)]),
   date: z.string().regex(datePattern)
 }).superRefine((input, context) => {
   const supported = new Set(indexedClubSlugs());
@@ -20,8 +21,8 @@ export const manualRefreshStatusQuerySchema = z.object({
   clubSlugs: z.string().transform((value) => [...new Set(value.split(",").filter(Boolean))]),
   date: z.string().regex(datePattern)
 }).superRefine((input, context) => {
-  if (input.clubSlugs.length < 1 || input.clubSlugs.length > 10) {
-    context.addIssue({ code: "custom", path: ["clubSlugs"], message: "Provide between 1 and 10 clubs" });
+  if (input.clubSlugs.length < 1 || input.clubSlugs.length > maxManualRefreshClubs) {
+    context.addIssue({ code: "custom", path: ["clubSlugs"], message: `Provide between 1 and ${maxManualRefreshClubs} clubs` });
     return;
   }
   const supported = new Set(indexedClubSlugs());

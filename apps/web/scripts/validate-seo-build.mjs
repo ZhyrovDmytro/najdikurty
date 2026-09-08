@@ -11,8 +11,11 @@ const robots = await readFile(path.join(distDir, "robots.txt"), "utf8");
 const locations = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
 const errors = [];
 const titles = new Map();
+const appSource = await readFile(path.join(appDir, "src/main.tsx"), "utf8");
+const sourceClubSlugs = new Set([...appSource.matchAll(/slug:\s*"([^"]+)"/g)].map((match) => match[1]));
+const expectedLocationCount = (6 + sourceClubSlugs.size) * 3;
 
-check(locations.length === 63, `Expected 63 sitemap URLs, found ${locations.length}`);
+check(locations.length === expectedLocationCount, `Expected ${expectedLocationCount} sitemap URLs, found ${locations.length}`);
 check(new Set(locations).size === locations.length, "Sitemap contains duplicate URLs");
 check(robots.includes("User-agent: *"), "robots.txt is missing the general user-agent rule");
 check(robots.includes("Allow: /"), "robots.txt does not allow the public site");
@@ -111,8 +114,6 @@ for (const location of locations) {
   }
 }
 
-const appSource = await readFile(path.join(appDir, "src/main.tsx"), "utf8");
-const sourceClubSlugs = new Set([...appSource.matchAll(/slug:\s*"([^"]+)"/g)].map((match) => match[1]));
 const sitemapClubSlugs = new Set(locations.flatMap((location) => {
   const match = new URL(location).pathname.match(/^\/clubs\/([^/]+)\/$/);
   return match ? [decodeURIComponent(match[1])] : [];

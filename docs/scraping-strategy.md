@@ -153,7 +153,7 @@ Recommended approach:
 
 ## Provider: iSportSystem
 
-Head Tenis Centrum, Plechovka Dubeč, Padel Radotín, and Padel Čakovice use iSportSystem's public read-only JSON API:
+Head Tenis Centrum, Plechovka Dubeč, Padel Radotín, Padel Hall Olympia Radotín, and Padel Čakovice use iSportSystem's public read-only JSON API:
 
 `https://<club>.isportsystem.cz/api/get-times.php?date=<YYYYMMDD>&id_sport=<ID>`
 

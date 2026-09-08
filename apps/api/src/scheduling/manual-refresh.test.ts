@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { ScrapeJobRepository } from "./job-repository.js";
-import { manualRefreshStatusQuerySchema, queueManualRefreshes } from "./manual-refresh.js";
+import { indexedClubSlugs } from "../indexing/catalog.js";
+import { manualRefreshRequestSchema, manualRefreshStatusQuerySchema, queueManualRefreshes } from "./manual-refresh.js";
 
 describe("manual refresh horizon", () => {
   const now = new Date("2026-08-21T12:00:00Z");
@@ -28,6 +29,19 @@ describe("manual refresh horizon", () => {
 });
 
 describe("manual refresh status query", () => {
+  it("accepts all currently indexed clubs in one refresh request", () => {
+    const clubSlugs = indexedClubSlugs();
+    expect(clubSlugs).toHaveLength(16);
+    expect(manualRefreshRequestSchema.safeParse({
+      clubSlugs,
+      date: "2026-08-22"
+    }).success).toBe(true);
+    expect(manualRefreshStatusQuerySchema.safeParse({
+      clubSlugs: clubSlugs.join(","),
+      date: "2026-08-22"
+    }).success).toBe(true);
+  });
+
   it("parses and deduplicates supported clubs", () => {
     expect(manualRefreshStatusQuerySchema.parse({
       clubSlugs: "padel-club-spoje,padel-club-spoje,padel-prosek",

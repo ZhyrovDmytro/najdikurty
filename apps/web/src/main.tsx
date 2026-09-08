@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import {
   AlertCircle,
   CalendarDays,
+  Check,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -16,6 +17,7 @@ import {
   ExternalLink,
   FileText,
   Info,
+  Image,
   Link2,
   ListOrdered,
   LayoutGrid,
@@ -35,13 +37,15 @@ import {
   Timer,
   TriangleAlert,
   UsersRound,
-  WalletCards
+  WalletCards,
+  X
 } from "lucide-react";
 import {
   buildBookableSlots,
   buildDurationOptions,
   buildTimeOptions,
   formatDuration,
+  localizeCourtName,
   toMinutes,
   type AvailabilityResult,
   type BookableSlot,
@@ -58,6 +62,7 @@ import {
 } from "./analytics-consent";
 import { browserCoordinates, distanceInKilometers, type Coordinates } from "./distance";
 import { Alert, Badge, Button, Card, EmptyState, Field, Input, Select, Skeleton } from "./ui";
+import { AvailabilityTimeline } from "./availability-timeline";
 import i18n, { LANGUAGE_OPTIONS, LANGUAGE_STORAGE_KEY, languageFromPathname, type LanguageCode } from "./i18n";
 import { hasManualRefreshCompleted, type ManualRefreshStatusResponse } from "./manual-refresh";
 import {
@@ -68,6 +73,7 @@ import {
   setAnalyticsConsent
 } from "./posthog";
 import { approximateCountdown, nextApproximateCheck } from "./refresh-schedule";
+import { shareSlotsAsImage, type ShareableSlot } from "./slot-share";
 import "./styles.css";
 
 const MAX_SEARCH_DAYS_AHEAD = 7;
@@ -88,9 +94,20 @@ const USE_DATABASE_SEARCH = import.meta.env.VITE_USE_DATABASE_SEARCH === "true";
 type Page = "clubs" | "allClubs" | "about" | "privacy" | "terms" | "cookies";
 const initialRoute = routeFromLocation(window.location.pathname, initialParams);
 const initialPage: Page = initialRoute.page;
+const shouldLoadInitialClubResults = initialPage === "clubs" && !initialRoute.clubSlug;
 type CourtType = "indoor" | "outdoor";
 type CourtTypeFilter = CourtType | "all";
 type FindCourtSort = "name" | "priceAsc" | "priceDesc" | "multisport" | "indoor" | "outdoor";
+const FIND_COURT_SORT_STORAGE_KEY = "mamekurt-results-sort";
+const ALL_CLUBS_SORT_STORAGE_KEY = "mamekurt-all-clubs-sort";
+const FIND_COURT_SORT_VALUES: readonly FindCourtSort[] = [
+  "name",
+  "priceAsc",
+  "priceDesc",
+  "multisport",
+  "indoor",
+  "outdoor"
+];
 type LocationStatus = "idle" | "requesting" | "available" | "denied" | "unavailable";
 type ManualRefreshTone = "info" | "success" | "warning";
 const TIME_PICKER_RANGE: TimeRange = { start: "00:00", end: "24:00" };
@@ -117,7 +134,7 @@ const SITE_ORIGIN = "https://hledejkurty.cz";
 const SERVICE_OPERATOR_NAME = "Dmytro Zhyrov";
 const SOCIAL_IMAGE_URL = `${SITE_ORIGIN}/logo.png`;
 const DEFAULT_META_DESCRIPTION =
-  "Find free padel courts in Prague. Search padel court availability by date, time, duration, indoor or outdoor courts, Multisport support, prices, and booking links.";
+  "Find free padel courts in Prague in one place. Compare availability, prices, court types, and Multisport, then book directly with the club.";
 
 interface SeoMeta {
   canonicalUrl: string;
@@ -296,6 +313,22 @@ const CLUBS: Club[] = [
     bookingUrl: () => "https://padelradotin.isportsystem.cz/"
   },
   {
+    slug: "padel-hall-radotin",
+    name: "Padel Hall Olympia Radotín",
+    sport: "padel",
+    imageUrl: assetPath("clubs/padel-hall-radotin.png"),
+    address: "Ke Zděři 1741/21, 153 00 Praha 16-Radotín",
+    coordinates: { latitude: 49.9792788, longitude: 14.3557589 },
+    phone: "+420 724 525 702",
+    priceInfo: "1 h: denně 8-16 650 Kč, 16-23 750 Kč.",
+    courtCount: 1,
+    courtTypes: ["outdoor"],
+    courtTypeLabel: "1 outdoor court",
+    availabilityEnabled: true,
+    openingHours: dailyOpeningHours({ start: "08:00", end: "23:00" }),
+    bookingUrl: () => "https://padelhall.isportsystem.cz/"
+  },
+  {
     slug: "padel-cakovice",
     name: "Padel Čakovice",
     sport: "padel",
@@ -429,6 +462,7 @@ const CLUB_IMAGE_DIMENSIONS: Record<string, { height: number; width: number }> =
   "cisarska-louka-padel": { height: 768, width: 1024 },
   "head-tenis-centrum-vestec": { height: 1536, width: 2048 },
   "one-padel": { height: 497, width: 402 },
+  "padel-hall-radotin": { height: 820, width: 1920 },
   "plechovka-dubec": { height: 726, width: 2167 },
   "padel-cakovice": { height: 612, width: 900 },
   "padel-club-spoje": { height: 833, width: 1360 },
@@ -559,8 +593,8 @@ function App() {
   const [now, setNow] = useState(() => new Date());
   const [availabilityByClub, setAvailabilityByClub] = useState<AvailabilityByClub>({});
   const [selectedClubSlug, setSelectedClubSlug] = useState<string | null>(initialPage === "clubs" ? initialRoute.clubSlug : null);
-  const [allClubsSort, setAllClubsSort] = useState<FindCourtSort>("name");
-  const [findCourtSort, setFindCourtSort] = useState<FindCourtSort>("name");
+  const [allClubsSort, setAllClubsSort] = useState<FindCourtSort>(() => storedSortPreference(ALL_CLUBS_SORT_STORAGE_KEY));
+  const [findCourtSort, setFindCourtSort] = useState<FindCourtSort>(() => storedSortPreference(FIND_COURT_SORT_STORAGE_KEY));
   const [theme, setTheme] = useState<"light" | "dark">(initialTheme);
   const [language, setLanguage] = useState<LanguageCode>(initialLanguage);
   const [isShortInfoMode, setIsShortInfoMode] = useState(initialShortInfoMode);
@@ -572,17 +606,26 @@ function App() {
   const [manualRefreshTone, setManualRefreshTone] = useState<ManualRefreshTone>("info");
   const [isManualRefreshRequesting, setIsManualRefreshRequesting] = useState(false);
   const [isManualRefreshWaiting, setIsManualRefreshWaiting] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [loadProgress, setLoadProgress] = useState<LoadProgress>({ completed: 0, total: 0 });
+  const [isLoading, setIsLoading] = useState(shouldLoadInitialClubResults);
+  const [loadProgress, setLoadProgress] = useState<LoadProgress>({
+    completed: 0,
+    total: shouldLoadInitialClubResults ? FETCHABLE_CLUBS.length : 0
+  });
   const [checkedClubSlugs, setCheckedClubSlugs] = useState<Set<string>>(() => new Set());
-  const [availabilityCheckClubs, setAvailabilityCheckClubs] = useState<Club[]>([]);
-  const [hasSearchedAvailability, setHasSearchedAvailability] = useState(initialPage === "clubs" && Boolean(initialRoute.clubSlug));
+  const [availabilityCheckClubs, setAvailabilityCheckClubs] = useState<Club[]>(
+    shouldLoadInitialClubResults ? FETCHABLE_CLUBS : []
+  );
+  const [hasSearchedAvailability, setHasSearchedAvailability] = useState(initialPage === "clubs");
   const [userCoordinates, setUserCoordinates] = useState<Coordinates | null>(null);
   const [locationStatus, setLocationStatus] = useState<LocationStatus>("idle");
   const [analyticsConsent, setAnalyticsConsentState] = useState<AnalyticsConsent | null>(() => readAnalyticsConsent());
   const [isCookieSettingsOpen, setIsCookieSettingsOpen] = useState(false);
+  const [isSlotSelectionMode, setIsSlotSelectionMode] = useState(false);
+  const [selectedShareSlotIds, setSelectedShareSlotIds] = useState<Set<string>>(() => new Set());
+  const [isSharingSlots, setIsSharingSlots] = useState(false);
   const loadSequenceRef = useRef(0);
   const manualRefreshSequenceRef = useRef(0);
+  const initialClubResultsRequestedRef = useRef(false);
   const currentPragueDate = pragueDateInputValue(now);
   const maximumSelectableDate = addDaysToDateInput(currentPragueDate, MAX_SEARCH_DAYS_AHEAD);
   const trackedClubs = useMemo(() => sortTrackedClubs(buildTrackedClubs(CLUBS), allClubsSort), [allClubsSort]);
@@ -758,6 +801,12 @@ function App() {
   }
 
   useEffect(() => {
+    if (!shouldLoadInitialClubResults || initialClubResultsRequestedRef.current) return;
+    initialClubResultsRequestedRef.current = true;
+    void loadAvailability();
+  }, []);
+
+  useEffect(() => {
     if (page !== "clubs") return;
     if (!selectedClubSlug) return;
     void loadAvailability();
@@ -784,6 +833,14 @@ function App() {
   }, [isShortInfoMode]);
 
   useEffect(() => {
+    localStorage.setItem(FIND_COURT_SORT_STORAGE_KEY, findCourtSort);
+  }, [findCourtSort]);
+
+  useEffect(() => {
+    localStorage.setItem(ALL_CLUBS_SORT_STORAGE_KEY, allClubsSort);
+  }, [allClubsSort]);
+
+  useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [page, selectedClubSlug]);
 
@@ -792,6 +849,11 @@ function App() {
     setIsManualRefreshWaiting(false);
     setManualRefreshMessage(null);
   }, [date, selectedClubSlug]);
+
+  useEffect(() => {
+    setIsSlotSelectionMode(false);
+    setSelectedShareSlotIds(new Set());
+  }, [courtTypeFilter, courtsNeeded, date, duration, selectedClubSlug, customStartTime, customEndTime]);
 
   useEffect(() => {
     function handlePopState() {
@@ -922,6 +984,12 @@ function App() {
           bookingUrl: selectedClub.bookingUrl(selectedAvailability.date)
         }))
       : [];
+  const shareableSlots: ShareableSlot[] = selectedClub
+    ? selectedSlots.map((slot) => toShareableSlot(selectedClub, selectedAvailability?.date ?? date, slot, language, courtsNeeded))
+    : visibleClubResults.flatMap(({ club, availability, bookableSlots }) =>
+        bookableSlots.map((slot) => toShareableSlot(club, availability?.date ?? date, slot, language))
+      );
+  const selectedShareSlots = shareableSlots.filter((slot) => selectedShareSlotIds.has(slot.id));
   const maxCourtCount = selectedClub
     ? selectedClub.courtCount
     : Math.max(
@@ -934,6 +1002,57 @@ function App() {
   const areAllCompactRowsExpanded =
     visibleClubSlugs.length > 0 && visibleClubSlugs.every((clubSlug) => expandedCompactClubSlugs.has(clubSlug));
   const shouldShowMainResults = Boolean(selectedClub) || hasSearchedAvailability;
+
+  function toggleShareSlot(slotId: string) {
+    setSelectedShareSlotIds((currentIds) => {
+      const nextIds = new Set(currentIds);
+      if (nextIds.has(slotId)) nextIds.delete(slotId);
+      else nextIds.add(slotId);
+      return nextIds;
+    });
+  }
+
+  function toggleSlotSelectionMode() {
+    if (isSlotSelectionMode) {
+      setIsSlotSelectionMode(false);
+      setSelectedShareSlotIds(new Set());
+      return;
+    }
+
+    setIsSlotSelectionMode(true);
+    setSelectedShareSlotIds(new Set());
+    if (!selectedClub) {
+      setIsShortInfoMode(true);
+      setExpandedCompactClubSlugs(new Set(visibleClubSlugs));
+    }
+    captureEvent("slot_selection_started", { club_count: selectedClub ? 1 : visibleClubSlugs.length, date });
+  }
+
+  async function shareSelectedSlots() {
+    if (selectedShareSlots.length === 0 || isSharingSlots) return;
+    setIsSharingSlots(true);
+    try {
+      const result = await shareSlotsAsImage(selectedShareSlots, {
+        title: t("share.title"),
+        subtitle: t("share.subtitle", { count: selectedShareSlots.length }),
+        availabilityNote: t("share.availabilityNote")
+      });
+      captureEvent("slots_shared", {
+        club_count: new Set(selectedShareSlots.map((slot) => slot.clubName)).size,
+        date,
+        method: result,
+        slot_count: selectedShareSlots.length
+      });
+      setIsSlotSelectionMode(false);
+      setSelectedShareSlotIds(new Set());
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === "AbortError")) {
+        captureEvent("slots_share_failed", { date, slot_count: selectedShareSlots.length });
+      }
+    } finally {
+      setIsSharingSlots(false);
+    }
+  }
 
   async function requestManualRefresh() {
     const clubSlugs = selectedClubSlug ? [selectedClubSlug] : FETCHABLE_CLUBS.map((club) => club.slug);
@@ -1112,6 +1231,17 @@ function App() {
           <option value="outdoor">{t("sort.outdoorFirst")}</option>
         </Select>
       </div>
+      {visibleClubResults.length > 0 ? (
+        <Button
+          aria-pressed={isSlotSelectionMode}
+          className="slotSelectModeButton"
+          icon={isSlotSelectionMode ? <X size={18} /> : <Check size={18} />}
+          onClick={toggleSlotSelectionMode}
+          variant={isSlotSelectionMode ? "primary" : "secondary"}
+        >
+          {isSlotSelectionMode ? t("actions.cancel") : t("actions.select")}
+        </Button>
+      ) : null}
       {isShortInfoMode && visibleClubSlugs.length > 0 ? (
         <Button
           aria-label={areAllCompactRowsExpanded ? t("actions.hideSlots") : t("actions.showSlots")}
@@ -1369,7 +1499,22 @@ function App() {
             {selectedClub ? t("club.slots", { count: selectedSlots.length }) : t("club.matchingClubs", { count: visibleClubResults.length })}
           </strong>
         </div>
-        {selectedClub ? <div className="resultActions">{refreshAvailabilityButton}</div> : null}
+        {selectedClub ? (
+          <div className="resultActions">
+            {selectedSlots.length > 0 ? (
+              <Button
+                aria-pressed={isSlotSelectionMode}
+                className="slotSelectModeButton"
+                icon={isSlotSelectionMode ? <X size={18} /> : <Check size={18} />}
+                onClick={toggleSlotSelectionMode}
+                variant={isSlotSelectionMode ? "primary" : "secondary"}
+              >
+                {isSlotSelectionMode ? t("actions.cancel") : t("actions.select")}
+              </Button>
+            ) : null}
+            {refreshAvailabilityButton}
+          </div>
+        ) : null}
             </section>
           ) : null}
 
@@ -1392,6 +1537,9 @@ function App() {
               slots={selectedSlots}
               courtsNeeded={courtsNeeded}
               directBookingUrl={selectedClub.bookingUrl(selectedAvailability.date)}
+              isSelectionMode={isSlotSelectionMode}
+              selectedSlotIds={selectedShareSlotIds}
+              onToggleSlot={toggleShareSlot}
               userCoordinates={userCoordinates}
             />
           ) : selectedClub && (isLoading || isSelectedClubSlotsLoading) ? (
@@ -1400,6 +1548,9 @@ function App() {
               slots={[]}
               courtsNeeded={courtsNeeded}
               directBookingUrl={selectedClub.bookingUrl(date)}
+              isSelectionMode={isSlotSelectionMode}
+              selectedSlotIds={selectedShareSlotIds}
+              onToggleSlot={toggleShareSlot}
               slotsLoading
               userCoordinates={userCoordinates}
             />
@@ -1411,6 +1562,9 @@ function App() {
               availabilityUnavailable
               unavailableReason={selectedClubFailure?.reason}
               directBookingUrl={selectedClub.bookingUrl(date)}
+              isSelectionMode={isSlotSelectionMode}
+              selectedSlotIds={selectedShareSlotIds}
+              onToggleSlot={toggleShareSlot}
               userCoordinates={userCoordinates}
             />
           ) : shouldShowMainResults ? (
@@ -1426,6 +1580,9 @@ function App() {
               expandedClubSlugs={expandedCompactClubSlugs}
               onExpandedClubSlugsChange={setExpandedCompactClubSlugs}
               onSelectClub={(club) => updateSelectedClub(club.slug)}
+              isSelectionMode={isSlotSelectionMode}
+              selectedSlotIds={selectedShareSlotIds}
+              onToggleSlot={toggleShareSlot}
               userCoordinates={userCoordinates}
             />
           ) : (
@@ -1446,6 +1603,21 @@ function App() {
         onNavigateToLegalPage={(nextPage) => navigateToLegalPage(nextPage, "push")}
         onOpenCookieSettings={() => setIsCookieSettingsOpen(true)}
       />
+      {isSlotSelectionMode && selectedShareSlots.length > 0 ? (
+        <div className="shareSelectionBar" role="status" aria-live="polite">
+          <Button
+            className="shareSelectionButton"
+            disabled={isSharingSlots}
+            icon={<Image size={20} />}
+            onClick={() => void shareSelectedSlots()}
+            variant="primary"
+          >
+            {isSharingSlots
+              ? t("actions.preparingImage")
+              : t("actions.shareSelected", { count: selectedShareSlots.length })}
+          </Button>
+        </div>
+      ) : null}
       {isAnalyticsAvailable() && (analyticsConsent === null || isCookieSettingsOpen) ? (
         <CookieConsentBanner
           onChoose={(consent) => {
@@ -2084,7 +2256,8 @@ function PrivacyPage() {
       <LegalSection title={t("legal.privacySection2Title")}>
         <p>
           {t("legal.privacySection2Body1")} <code>mamekurt-theme</code> / <code>{LANGUAGE_STORAGE_KEY}</code> /{" "}
-          <code>mamekurt-results-view</code> / <code>{ANALYTICS_CONSENT_STORAGE_KEY}</code>.
+          <code>mamekurt-results-view</code> / <code>{FIND_COURT_SORT_STORAGE_KEY}</code> /{" "}
+          <code>{ALL_CLUBS_SORT_STORAGE_KEY}</code> / <code>{ANALYTICS_CONSENT_STORAGE_KEY}</code>.
         </p>
         <p>{t("legal.privacySection2Body2")}</p>
       </LegalSection>
@@ -2254,6 +2427,9 @@ function ClubList({
   expandedClubSlugs,
   onExpandedClubSlugsChange,
   onSelectClub,
+  isSelectionMode,
+  selectedSlotIds,
+  onToggleSlot,
   userCoordinates
 }: {
   results: Array<{ club: Club; availability?: AvailabilityResult; bookableSlots: BookableSlot[] }>;
@@ -2267,6 +2443,9 @@ function ClubList({
   expandedClubSlugs: Set<string>;
   onExpandedClubSlugsChange: React.Dispatch<React.SetStateAction<Set<string>>>;
   onSelectClub: (club: Club) => void;
+  isSelectionMode: boolean;
+  selectedSlotIds: Set<string>;
+  onToggleSlot: (slotId: string) => void;
   userCoordinates: Coordinates | null;
 }) {
   const { t } = useTranslation();
@@ -2401,25 +2580,60 @@ function ClubList({
                 </div>
               </div>
               {isExpanded ? (
-                <div className="clubCompactSlots">
-                  {bookableSlots.map((slot) => {
+                <>
+                  {availability ? (
+                    <AvailabilityTimeline
+                      availability={availability}
+                      bookingUrl={club.bookingUrl(availability.date)}
+                      compact
+                      onFreeSlotClick={(court, slot) => captureBookingSystemOpened(club, "compact_availability_timeline", availability.date, {
+                        ...slot,
+                        courts: [court]
+                      })}
+                    />
+                  ) : null}
+                  <div className="clubCompactSlots">
+                    {bookableSlots.map((slot) => {
                     const slotDate = availability?.date ?? today;
                     const bookingUrl = slot.bookingUrl ?? club.bookingUrl(slotDate);
                     const courtNames = formatCourtNames(slot.courts);
+                    const slotId = shareSlotId(club, slotDate, slot);
+                    const isSelected = selectedSlotIds.has(slotId);
 
                     return (
-                      <div className="clubCompactSlot" key={`${club.slug}-${slot.start}-${slot.end}-${slot.courts.join("-")}`}>
+                      <div
+                        aria-pressed={isSelectionMode ? isSelected : undefined}
+                        className={`clubCompactSlot ${isSelectionMode ? "selectableSlot" : ""} ${isSelected ? "selectedSlot" : ""}`}
+                        key={`${club.slug}-${slot.start}-${slot.end}-${slot.courts.join("-")}`}
+                        onClick={isSelectionMode ? () => onToggleSlot(slotId) : undefined}
+                        onKeyDown={isSelectionMode ? (event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            onToggleSlot(slotId);
+                          }
+                        } : undefined}
+                        role={isSelectionMode ? "button" : undefined}
+                        tabIndex={isSelectionMode ? 0 : undefined}
+                      >
                         <div className="slotSummary">
                           <strong>
                             {slot.start} - {slot.end}
                           </strong>
                           <span>{courtNames.join(" + ")}</span>
                         </div>
-                        <div className="slotActions">
+                        {isSelectionMode ? (
+                          <span className="slotSelectionIndicator" aria-hidden="true">
+                            {isSelected ? <Check size={16} strokeWidth={3} /> : null}
+                          </span>
+                        ) : <div className="slotActions">
                           <button
                             className="slotAction slotAction-share"
                             type="button"
-                            onClick={() => shareSlot(club, slot, slotDate, bookingUrl, courtNames)}
+                            onClick={() => shareSlot(club, slot, slotDate, bookingUrl, courtNames, {
+                              title: t("share.title"),
+                              subtitle: t("share.subtitle", { count: 1 }),
+                              availabilityNote: t("share.availabilityNote")
+                            })}
                           >
                             {t("actions.share")}
                             <Share2 size={13} />
@@ -2434,11 +2648,12 @@ function ClubList({
                             {t("actions.book")}
                             <ExternalLink size={13} />
                           </a>
-                        </div>
+                        </div>}
                       </div>
                     );
-                  })}
-                </div>
+                    })}
+                  </div>
+                </>
               ) : null}
               </Card>
             );
@@ -2845,6 +3060,9 @@ function ClubDetail({
   availabilityUnavailable = false,
   unavailableReason,
   directBookingUrl,
+  isSelectionMode,
+  selectedSlotIds,
+  onToggleSlot,
   userCoordinates
 }: {
   club: Club;
@@ -2855,6 +3073,9 @@ function ClubDetail({
   availabilityUnavailable?: boolean;
   unavailableReason?: string;
   directBookingUrl?: string;
+  isSelectionMode: boolean;
+  selectedSlotIds: Set<string>;
+  onToggleSlot: (slotId: string) => void;
   userCoordinates: Coordinates | null;
 }) {
   const { t } = useTranslation();
@@ -2924,6 +3145,16 @@ function ClubDetail({
           </div>
           <ExternalLink size={18} />
         </div>
+        {availability ? (
+          <AvailabilityTimeline
+            availability={availability}
+            bookingUrl={club.bookingUrl(availability.date)}
+            onFreeSlotClick={(court, slot) => captureBookingSystemOpened(club, "club_detail_availability_timeline", availability.date, {
+              ...slot,
+              courts: [court]
+            })}
+          />
+        ) : null}
         {slotsLoading ? (
           <SlotListSkeleton />
         ) : slots.length > 0 ? (
@@ -2932,20 +3163,43 @@ function ClubDetail({
               const slotDate = availability?.date ?? today;
               const bookingUrl = slot.bookingUrl ?? club.bookingUrl(slotDate);
               const courtNames = formatCourtNames(slot.courts.slice(0, courtsNeeded));
+              const slotId = shareSlotId(club, slotDate, slot);
+              const isSelected = selectedSlotIds.has(slotId);
 
               return (
-                <div className="slot" key={`${slot.start}-${slot.end}-${slot.courts.join("-")}`}>
+                <div
+                  aria-pressed={isSelectionMode ? isSelected : undefined}
+                  className={`slot ${isSelectionMode ? "selectableSlot" : ""} ${isSelected ? "selectedSlot" : ""}`}
+                  key={`${slot.start}-${slot.end}-${slot.courts.join("-")}`}
+                  onClick={isSelectionMode ? () => onToggleSlot(slotId) : undefined}
+                  onKeyDown={isSelectionMode ? (event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onToggleSlot(slotId);
+                    }
+                  } : undefined}
+                  role={isSelectionMode ? "button" : undefined}
+                  tabIndex={isSelectionMode ? 0 : undefined}
+                >
                   <div className="slotSummary">
                     <strong>
                       {slot.start} - {slot.end}
                     </strong>
                     <span>{courtNames.join(" + ")}</span>
                   </div>
-                  <div className="slotActions">
+                  {isSelectionMode ? (
+                    <span className="slotSelectionIndicator" aria-hidden="true">
+                      {isSelected ? <Check size={16} strokeWidth={3} /> : null}
+                    </span>
+                  ) : <div className="slotActions">
                     <button
                       className="slotAction slotAction-share"
                       type="button"
-                      onClick={() => shareSlot(club, slot, slotDate, bookingUrl, courtNames)}
+                      onClick={() => shareSlot(club, slot, slotDate, bookingUrl, courtNames, {
+                        title: t("share.title"),
+                        subtitle: t("share.subtitle", { count: 1 }),
+                        availabilityNote: t("share.availabilityNote")
+                      })}
                     >
                       {t("actions.share")}
                       <Share2 size={13} />
@@ -2961,7 +3215,7 @@ function ClubDetail({
                       {t("actions.book")}
                       <ExternalLink size={13} />
                     </a>
-                  </div>
+                  </div>}
                 </div>
               );
             })}
@@ -3071,10 +3325,33 @@ function captureBookingSystemOpened(club: Club, source: string, date: string, sl
   });
 }
 
-async function shareSlot(club: Club, slot: BookableSlot, date: string, bookingUrl: string, courtNames: string[]) {
-  const text = `${club.name}\n${date}, ${slot.start}-${slot.end}\n${club.address}\n${googleMapsUrl(club.address)}\n${bookingUrl}`;
-  const shareData = { text };
+function shareSlotId(club: Club, date: string, slot: BookableSlot): string {
+  return [club.slug, date, slot.start, slot.end, ...slot.courts].join("|");
+}
 
+function toShareableSlot(club: Club, date: string, slot: BookableSlot, language: LanguageCode, courtsNeeded?: number): ShareableSlot {
+  return {
+    id: shareSlotId(club, date, slot),
+    clubName: club.name,
+    date: formatShareDate(date, language),
+    start: slot.start,
+    end: slot.end,
+    courtNames: formatCourtNames(courtsNeeded ? slot.courts.slice(0, courtsNeeded) : slot.courts),
+    bookingUrl: slot.bookingUrl ?? club.bookingUrl(date),
+    priceLabel: `${i18n.t("club.from")} ${formatCzkPerHour(lowestPrice(club.priceInfo))}`,
+    multisportLabel: club.acceptsMultisport ? i18n.t("club.multisport") : undefined,
+    courtTypeLabels: club.courtTypes.map((courtType) => i18n.t(`club.${courtType}`))
+  };
+}
+
+async function shareSlot(
+  club: Club,
+  slot: BookableSlot,
+  date: string,
+  bookingUrl: string,
+  courtNames: string[],
+  copy: { title: string; subtitle: string; availabilityNote: string }
+) {
   captureEvent("slot_shared", {
     club_slug: club.slug,
     court_count: courtNames.length,
@@ -3082,13 +3359,29 @@ async function shareSlot(club: Club, slot: BookableSlot, date: string, bookingUr
     slot_end: slot.end,
     slot_start: slot.start
   });
+  await shareSlotsAsImage([{
+    id: shareSlotId(club, date, slot),
+    clubName: club.name,
+    date: formatShareDate(date, i18n.language as LanguageCode),
+    start: slot.start,
+    end: slot.end,
+    courtNames,
+    bookingUrl,
+    priceLabel: `${i18n.t("club.from")} ${formatCzkPerHour(lowestPrice(club.priceInfo))}`,
+    multisportLabel: club.acceptsMultisport ? i18n.t("club.multisport") : undefined,
+    courtTypeLabels: club.courtTypes.map((courtType) => i18n.t(`club.${courtType}`))
+  }], copy).catch(() => undefined);
+}
 
-  if (navigator.share) {
-    await navigator.share(shareData).catch(() => undefined);
-    return;
-  }
-
-  await navigator.clipboard?.writeText(text).catch(() => undefined);
+function formatShareDate(date: string, language: LanguageCode): string {
+  const locale = localeByLanguage[language] ?? "en";
+  return new Intl.DateTimeFormat(locale, {
+    day: "numeric",
+    month: "long",
+    weekday: "long",
+    year: "numeric",
+    timeZone: "UTC"
+  }).format(new Date(`${date}T12:00:00Z`));
 }
 
 function googleMapsUrl(address: string): string {
@@ -3228,7 +3521,7 @@ function formatCourtTypeSummary(club: Club): string {
 }
 
 function formatCourtNames(courts: string[]): string[] {
-  return courts.map((court) => court.replace(/^Kurt\b/i, i18n.t("club.providerCourtPrefix")));
+  return courts.map((court) => localizeCourtName(court, i18n.t("club.providerCourtPrefix")));
 }
 
 function formatPriceInfoText(priceInfo: string): string {
@@ -3265,6 +3558,13 @@ function buildTrackedClubs(clubs: Club[]): TrackedClub[] {
     club,
     priceFrom: lowestPrice(club.priceInfo)
   }));
+}
+
+function storedSortPreference(storageKey: string): FindCourtSort {
+  const storedValue = localStorage.getItem(storageKey);
+  return FIND_COURT_SORT_VALUES.includes(storedValue as FindCourtSort)
+    ? storedValue as FindCourtSort
+    : "name";
 }
 
 function sortTrackedClubs(clubs: TrackedClub[], sort: FindCourtSort): TrackedClub[] {
@@ -3467,9 +3767,9 @@ function seoTitle(page: Page, selectedClub: Club | null, language: LanguageCode)
   if (page === "terms") return `${i18n.t("legal.termsTitle")} | HLEDEJKURTY`;
   if (page === "cookies") return `${i18n.t("legal.cookiesTitle")} | HLEDEJKURTY`;
 
-  if (language === "cz") return "Volné padelové kurty Praha | HLEDEJKURTY";
-  if (language === "ua") return "Вільні падел-корти у Празі | HLEDEJKURTY";
-  return "Find free padel courts in Prague | HLEDEJKURTY";
+  if (language === "cz") return "Volné padelové kurty Praha na jednom místě | HLEDEJKURTY";
+  if (language === "ua") return "Вільні падел-корти Праги в одному місці | HLEDEJKURTY";
+  return "Free padel courts in Prague in one place | HLEDEJKURTY";
 }
 
 function seoDescription(page: Page, selectedClub: Club | null, language: LanguageCode): string {
@@ -3500,10 +3800,10 @@ function seoDescription(page: Page, selectedClub: Club | null, language: Languag
   if (page === "cookies") return i18n.t("legal.cookiesIntro");
 
   if (language === "cz") {
-    return "Najděte volné padelové kurty v Praze. Porovnejte dostupnost, ceny, vnitřní i venkovní kurty, Multisport, adresy a rezervační odkazy.";
+    return "Najděte volné padelové kurty v Praze na jednom místě. Porovnejte dostupnost, ceny, typ kurtu a Multisport a rezervujte přímo u klubu.";
   }
   if (language === "ua") {
-    return "Знайдіть вільні падел-корти у Празі. Порівняйте доступність, ціни, криті й відкриті корти, Multisport, адреси та бронювання.";
+    return "Знайдіть вільні падел-корти Праги в одному місці. Порівнюйте доступність, ціни, типи кортів і Multisport та бронюйте у клубі.";
   }
   return DEFAULT_META_DESCRIPTION;
 }

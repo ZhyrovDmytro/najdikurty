@@ -36,6 +36,15 @@ export const ISPORTSYSTEM_CLUBS: Readonly<Record<string, ISportSystemClubConfig>
     courtNames: ["Kurt 1", "Kurt 2", "Kurt 3"],
     courtIndoor: false
   },
+  "padel-hall-radotin": {
+    slug: "padel-hall-radotin",
+    name: "Padel Hall Olympia Radotín",
+    baseUrl: "https://padelhall.isportsystem.cz",
+    bookingUrl: "https://padelhall.isportsystem.cz/",
+    sportId: "1",
+    courtNames: ["Kurt"],
+    courtIndoor: false
+  },
   "padel-cakovice": {
     slug: "padel-cakovice",
     name: "Padel Čakovice",

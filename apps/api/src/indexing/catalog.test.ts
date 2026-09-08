@@ -2,11 +2,11 @@ import { describe, expect, it } from "vitest";
 import { getIndexedClubRegistration, indexedClubSlugs, problematicClubs } from "./catalog.js";
 
 describe("indexed provider catalog", () => {
-  it("represents all 15 currently enabled clubs across provider-level adapters", () => {
+  it("represents all 16 currently enabled clubs across provider-level adapters", () => {
     const slugs = indexedClubSlugs();
     const registrations = slugs.map(getIndexedClubRegistration);
 
-    expect(slugs).toHaveLength(15);
+    expect(slugs).toHaveLength(16);
     expect(new Set(registrations.map(({ provider }) => provider.id))).toEqual(new Set([
       "skysportcity",
       "jdemenato",
@@ -33,12 +33,13 @@ describe("indexed provider catalog", () => {
     expect(() => getIndexedClubRegistration("plechovka-dubec")).not.toThrow();
     expect(() => getIndexedClubRegistration("tk-sparta-praha")).not.toThrow();
     expect(() => getIndexedClubRegistration("padel-radotin")).not.toThrow();
+    expect(() => getIndexedClubRegistration("padel-hall-radotin")).not.toThrow();
     expect(() => getIndexedClubRegistration("padel-cakovice")).not.toThrow();
 
-    for (const slug of ["head-tenis-centrum-vestec", "plechovka-dubec", "padel-radotin", "padel-cakovice"]) {
+    for (const slug of ["head-tenis-centrum-vestec", "plechovka-dubec", "padel-radotin", "padel-hall-radotin", "padel-cakovice"]) {
       expect(getIndexedClubRegistration(slug).providerName).toBe("iSportSystem public API");
     }
-    const externalIds = ["head-tenis-centrum-vestec", "plechovka-dubec", "padel-radotin", "padel-cakovice"]
+    const externalIds = ["head-tenis-centrum-vestec", "plechovka-dubec", "padel-radotin", "padel-hall-radotin", "padel-cakovice"]
       .map((slug) => getIndexedClubRegistration(slug).club.providerExternalId);
     expect(new Set(externalIds).size).toBe(externalIds.length);
   });

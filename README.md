@@ -12,6 +12,7 @@ The first integrations target:
 - Head Tenis Centrum, Vestec on iSportSystem: https://teniscentrum.isportsystem.cz/?op=tab-id-13
 - Plechovka Dubeč on iSportSystem: https://plechovka.isportsystem.cz/?op=tab-id-20
 - Padel Radotín on iSportSystem: https://padelradotin.isportsystem.cz/
+- Padel Hall Olympia Radotín on iSportSystem: https://padelhall.isportsystem.cz/
 - Padel Čakovice on iSportSystem: https://padelautomat.isportsystem.cz/
 - Padel Neride on Reservanto: https://padelneride.cz/rezervace/
 - Padel Džus on Bookaball: https://padeldzus.bookaball.com/cs/bookings/create
@@ -86,6 +87,7 @@ sk-slavia-praha-padel
 head-tenis-centrum-vestec
 plechovka-dubec
 padel-radotin
+padel-hall-radotin
 padel-cakovice
 padel-neride
 padel-dzus

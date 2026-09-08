@@ -15,6 +15,7 @@ const clubImageNames = [
   "padel-cakovice",
   "padel-club-spoje",
   "padel-dzus",
+  "padel-hall-radotin",
   "padel-neride",
   "padel-powers-smichov",
   "padel-prosek",
