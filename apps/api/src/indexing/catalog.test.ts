@@ -2,11 +2,11 @@ import { describe, expect, it } from "vitest";
 import { getIndexedClubRegistration, indexedClubSlugs, problematicClubs } from "./catalog.js";
 
 describe("indexed provider catalog", () => {
-  it("represents all 16 currently enabled clubs across provider-level adapters", () => {
+  it("represents all 18 currently enabled clubs across provider-level adapters", () => {
     const slugs = indexedClubSlugs();
     const registrations = slugs.map(getIndexedClubRegistration);
 
-    expect(slugs).toHaveLength(16);
+    expect(slugs).toHaveLength(18);
     expect(new Set(registrations.map(({ provider }) => provider.id))).toEqual(new Set([
       "skysportcity",
       "jdemenato",
@@ -35,12 +35,26 @@ describe("indexed provider catalog", () => {
     expect(() => getIndexedClubRegistration("padel-radotin")).not.toThrow();
     expect(() => getIndexedClubRegistration("padel-hall-radotin")).not.toThrow();
     expect(() => getIndexedClubRegistration("padel-cakovice")).not.toThrow();
+    expect(() => getIndexedClubRegistration("the-court")).not.toThrow();
+    expect(() => getIndexedClubRegistration("ltc-modrany-2005")).not.toThrow();
 
-    for (const slug of ["head-tenis-centrum-vestec", "plechovka-dubec", "padel-radotin", "padel-hall-radotin", "padel-cakovice"]) {
+    for (const slug of ["head-tenis-centrum-vestec", "plechovka-dubec", "padel-radotin", "padel-hall-radotin", "padel-cakovice", "the-court", "ltc-modrany-2005"]) {
       expect(getIndexedClubRegistration(slug).providerName).toBe("iSportSystem public API");
     }
-    const externalIds = ["head-tenis-centrum-vestec", "plechovka-dubec", "padel-radotin", "padel-hall-radotin", "padel-cakovice"]
+    const externalIds = ["head-tenis-centrum-vestec", "plechovka-dubec", "padel-radotin", "padel-hall-radotin", "padel-cakovice", "the-court", "ltc-modrany-2005"]
       .map((slug) => getIndexedClubRegistration(slug).club.providerExternalId);
     expect(new Set(externalIds).size).toBe(externalIds.length);
+    expect(getIndexedClubRegistration("the-court").club.providerConfig).toMatchObject({
+      sportIds: ["1", "12"],
+      courtNames: ["Super 1", "Super 2", "Super Single (1vs1)"]
+    });
+    expect(getIndexedClubRegistration("ltc-modrany-2005").club).toMatchObject({
+      bookingUrl: "https://tenismodrany.isportsystem.cz/?op=tab-id-8",
+      providerConfig: {
+        sportId: "8",
+        courtNames: ["Padel 1", "Padel 2", "Padel 3"],
+        courtIndoor: false
+      }
+    });
   });
 });

@@ -31,7 +31,7 @@ describe("manual refresh horizon", () => {
 describe("manual refresh status query", () => {
   it("accepts all currently indexed clubs in one refresh request", () => {
     const clubSlugs = indexedClubSlugs();
-    expect(clubSlugs).toHaveLength(16);
+    expect(clubSlugs).toHaveLength(18);
     expect(manualRefreshRequestSchema.safeParse({
       clubSlugs,
       date: "2026-08-22"

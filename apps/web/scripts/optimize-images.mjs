@@ -11,6 +11,7 @@ const optimizedClubsDir = path.join(clubsDir, "optimized");
 const clubImageNames = [
   "cisarska-louka-padel",
   "head-tenis-centrum-vestec",
+  "ltc-modrany-2005",
   "one-padel",
   "padel-cakovice",
   "padel-club-spoje",
@@ -24,6 +25,7 @@ const clubImageNames = [
   "sk-satalice",
   "sk-slavia-praha-padel",
   "tenis-a-padel-klub-pisecna",
+  "the-court",
   "tk-sparta-praha"
 ];
 

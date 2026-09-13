@@ -14,6 +14,8 @@ The first integrations target:
 - Padel Radotín on iSportSystem: https://padelradotin.isportsystem.cz/
 - Padel Hall Olympia Radotín on iSportSystem: https://padelhall.isportsystem.cz/
 - Padel Čakovice on iSportSystem: https://padelautomat.isportsystem.cz/
+- The Court on iSportSystem: https://thecourt.isportsystem.cz/
+- LTC Modřany on iSportSystem: https://tenismodrany.isportsystem.cz/?op=tab-id-8
 - Padel Neride on Reservanto: https://padelneride.cz/rezervace/
 - Padel Džus on Bookaball: https://padeldzus.bookaball.com/cs/bookings/create
 - Padel Powers Smíchov on Padelos: https://player.padelos.co/company/217?clubIds=216927&locale=cs
@@ -35,6 +37,8 @@ This is more reliable and cheaper than browser automation for this provider. Bro
 - `packages/scrapers`: provider contracts and scraper/parser implementations.
 - `apps/api`: API wrapper around scrapers.
 - `apps/web`: filterable availability UI.
+
+The web app also publishes a localized padel blog at `/blog/`, with Czech, English, and Ukrainian article routes included in the generated sitemap.
 
 ## Development
 
@@ -164,7 +168,7 @@ export BOOKABALL_EMAIL="your-email"
 export BOOKABALL_PASSWORD="your-password"
 ```
 
-The four iSportSystem clubs use the provider's authorized public JSON endpoint at `/api/get-times.php`. No API key, browser automation, or Apify configuration is required. Each request specifies a date and the club's padel `id_sport`; configured court allow-lists exclude non-playable substitute, child, closed, or maintenance lanes.
+The seven iSportSystem clubs use the provider's authorized public JSON endpoint at `/api/get-times.php`. No API key, browser automation, or Apify configuration is required. Each request specifies a date and the club's padel `id_sport`; configured court allow-lists exclude non-playable substitute, child, closed, or maintenance lanes. The Court combines its standard and 1vs1 categories from two sport IDs.
 
 The indexing schedule refreshes the eight-day horizon every 20 minutes from 08:00 through 22:00 Prague time. Requests are cached on our side, and the worker's default per-provider concurrency of one keeps iSportSystem calls sequential and comfortably below the provider's current burst limit.
 

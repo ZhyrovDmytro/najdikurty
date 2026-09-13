@@ -29,12 +29,14 @@ const clubs = [
   ["padel-powers-smichov", "Padel Powers Smíchov", "Křížová 6, Praha 5-Smíchov", 8, true],
   ["one-padel", "One Padel", "Ringhofferova 115, Praha 17-Zličín", 9, false],
   ["cisarska-louka-padel", "Císařská louka Padel", "Areál Císařská louka, Praha 5-Smíchov", 3, true],
-  ["sk-satalice", "SK Satalice", "Budovatelská 12, Praha-Satalice", 2, false]
-].map(([slug, name, address, courtCount, multisport]) => ({ slug, name, address, courtCount, multisport }));
+  ["sk-satalice", "SK Satalice", "Budovatelská 12, Praha-Satalice", 2, false],
+  ["the-court", "The Court", "Mezi Stromy 507, Jinočany", 3, false, true],
+  ["ltc-modrany-2005", "LTC Modřany", "Komořanská 2229/49, Praha 4-Modřany", 3, false]
+].map(([slug, name, address, courtCount, multisport, singles]) => ({ slug, name, address, courtCount, multisport, singles }));
 
 const copy = {
   cz: {
-    nav: ["Hledat dostupnost", "Kluby", "Jak to funguje", "Ochrana soukromí", "Podmínky", "Cookies"],
+    nav: ["Hledat dostupnost", "Kluby", "Články", "Jak to funguje", "Ochrana soukromí", "Podmínky", "Cookies"],
     pages: {
       home: ["Volné padelové kurty Praha na jednom místě | HLEDEJKURTY", "Najděte volné padelové kurty v Praze na jednom místě. Porovnejte dostupnost, ceny, typ kurtu a Multisport a rezervujte přímo u klubu.", "Najděte volné padelové kurty v Praze na jednom místě", "Porovnejte pravidelně aktualizovanou dostupnost podporovaných pražských padelových klubů v jediném přehledu a rezervaci dokončete v oficiálním systému vybraného klubu."],
       allClubs: ["Padelové kluby v Praze | HLEDEJKURTY", "Seznam padelových klubů v Praze s adresami, cenami, typy kurtů, podporou Multisport a odkazy na oficiální rezervace.", "Všechny padelové kluby", "Porovnejte sledované padelové kluby v Praze a okolí. Na detailu najdete adresu, počet kurtů, ceny, dostupnost a odkaz na oficiální rezervaci."],
@@ -52,7 +54,7 @@ const copy = {
     count: (n) => `${n} padelových kurtů`, clubTitle: (name) => `${name} padel Praha | HLEDEJKURTY`, clubDescription: (club) => `${club.name}: ${club.courtCount} padelových kurtů, ${club.address}. Zkontrolujte volné časy, zveřejněné ceny a rezervujte přes oficiální systém.`
   },
   en: {
-    nav: ["Search availability", "Clubs", "How it works", "Privacy", "Terms", "Cookies"],
+    nav: ["Search availability", "Clubs", "Blog", "How it works", "Privacy", "Terms", "Cookies"],
     pages: {
       home: ["Free padel courts in Prague in one place | HLEDEJKURTY", "Find free padel courts in Prague in one place. Compare availability, prices, court types, and Multisport, then book directly with the club.", "Find free padel courts in Prague in one place", "Compare regularly updated availability from supported Prague padel clubs in a single overview, then complete your reservation in the club's official booking system."],
       allClubs: ["Padel clubs in Prague | HLEDEJKURTY", "Browse padel clubs in Prague with addresses, court counts, indoor or outdoor facilities, published prices, Multisport information, and booking links.", "All padel clubs", "Compare tracked padel clubs around Prague and open a detailed page for court information, prices, availability, and official booking links."],
@@ -70,7 +72,7 @@ const copy = {
     count: (n) => `${n} padel courts`, clubTitle: (name) => `${name} padel court Prague | HLEDEJKURTY`, clubDescription: (club) => `${club.name}: ${club.courtCount} padel courts at ${club.address}. Check available times, published prices, and book through the official system.`
   },
   ua: {
-    nav: ["Пошук доступності", "Клуби", "Як це працює", "Конфіденційність", "Умови", "Cookies"],
+    nav: ["Пошук доступності", "Клуби", "Статті", "Як це працює", "Конфіденційність", "Умови", "Cookies"],
     pages: {
       home: ["Вільні падел-корти Праги в одному місці | HLEDEJKURTY", "Знайдіть вільні падел-корти Праги в одному місці. Порівнюйте доступність, ціни, типи кортів і Multisport та бронюйте у клубі.", "Знайдіть вільні падел-корти Праги в одному місці", "Порівнюйте регулярно оновлювану доступність підтримуваних падел-клубів Праги в одному огляді та завершуйте бронювання в офіційній системі обраного клубу."],
       allClubs: ["Падел-клуби у Празі | HLEDEJKURTY", "Список падел-клубів у Празі з адресами, цінами, типами кортів, Multisport і посиланнями на офіційне бронювання.", "Усі падел-клуби", "Порівнюйте падел-клуби у Празі та поруч. На сторінці клубу доступні адреса, кількість кортів, ціни, доступність і офіційне бронювання."],
@@ -89,8 +91,32 @@ const copy = {
   }
 };
 
+const newsContent = {
+  publishedAt: "2026-09-13",
+  slug: "the-court-opening",
+  image: `${SITE_ORIGIN}/clubs/optimized/the-court-1200.webp`,
+  cz: {
+    index: ["Články o padelu: tipy a kluby v Praze | HLEDEJKURTY", "Průvodci po padelových klubech, výběry nejlepších kurtů, tipy pro hráče, Multisport a novinky z padelové komunity v Praze.", "Články o padelu", "Průvodci, výběry klubů, tipy pro hráče i novinky z padelové komunity v Praze a okolí."],
+    title: "The Court přináší padel nové generace kousek za Prahu",
+    description: "Dva panoramatické kurty s chytrým sledováním zápasů, samostatný kurt 1vs1 a míčový automat zdarma. Poznejte nový The Court v Jinočanech.",
+    sections: [["Single kurt 1vs1", "Samostatný menší kurt je určený pro dynamickou hru jednoho proti jednomu i cílený trénink s míčovým automatem, který bude dostupný zdarma."], ["AI záznam zápasů", "Dva standardní panoramatické kurty využívají chytrý systém pro automatické skóre a videozáznam hry dostupný v telefonu. Záznam lze využít pro sdílení i zpětnou analýzu hry."], ["Komfort po celý rok", "Klub uvádí stálou teplotu 22 °C, vodu a ručníky na kurtu, bar, vybavené sprchy a dětský koutek. Sídlí v Jinočanech a má otevřeno každý den od 7:00 do půlnoci."], ["The Court nově v HLEDEJKURTY", "The Court jsme přidali do sledovaného systému HLEDEJKURTY. Na detailu klubu najdete dostupnost obou standardních kurtů i kurtu Super Single 1vs1. Celkem nyní sledujeme 18 padelových klubů."]]
+  },
+  en: {
+    index: ["Padel blog: guides and clubs in Prague | HLEDEJKURTY", "Padel club guides, indoor-court roundups, player tips, Multisport comparisons, and stories from Prague's padel community.", "Padel blog", "Guides, club roundups, player tips, and stories from the padel community in and around Prague."],
+    title: "The Court brings next-generation padel just outside Prague",
+    description: "Two panoramic courts with smart match tracking, a dedicated 1vs1 court, and a free ball machine. Meet the new The Court club in Jinočany.",
+    sections: [["1vs1 singles court", "The dedicated compact court is made for fast one-on-one games and focused practice with a ball machine that will be available free of charge."], ["AI match recording", "The two standard panoramic courts use a smart system for automatic scoring and match video delivered to your phone. Footage can be shared or used to review movement and positioning."], ["Year-round comfort", "The club advertises a steady 22 °C, courtside water and towels, a bar, equipped showers, and a children's corner. It is based in Jinočany and opens every day from 7:00 until midnight."], ["The Court is now tracked by HLEDEJKURTY", "We have added The Court to HLEDEJKURTY. Its club page shows availability for both standard courts and the Super Single 1vs1 court. The catalog now contains 18 tracked padel clubs."]]
+  },
+  ua: {
+    index: ["Статті про падел: поради та клуби Праги | HLEDEJKURTY", "Гайди по падел-клубах, добірки найкращих кортів, поради гравцям, Multisport та історії падел-спільноти Праги.", "Статті про падел", "Гайди, добірки клубів, поради гравцям та історії падел-спільноти Праги й околиць."],
+    title: "The Court відкриває падел нового покоління поруч із Прагою",
+    description: "Два панорамні корти з розумним відстеженням матчів, окремий корт 1vs1 і безкоштовна машина для м’ячів у новому The Court.",
+    sections: [["Одиночний корт 1vs1", "Окремий компактний корт створений для динамічної гри один на один і тренувань із машиною для м’ячів, яка буде доступна без додаткової оплати."], ["AI-запис матчів", "Два стандартні панорамні корти використовують розумну систему автоматичного рахунку й відеозапису на телефон. Відео можна поширювати або використовувати для аналізу руху й позиції."], ["Комфорт упродовж року", "Клуб повідомляє про постійну температуру 22 °C, воду й рушники біля корту, бар, обладнані душові та дитячий куточок. Він розташований у Їночанах і працює щодня з 7:00 до опівночі."], ["The Court тепер відстежується в HLEDEJKURTY", "Ми додали The Court до HLEDEJKURTY. На сторінці клубу показано доступність двох стандартних кортів і корту Super Single 1vs1. Загалом каталог містить 18 падел-клубів."]]
+  }
+};
+
 const basePages = [
-  ["home", "/"], ["allClubs", "/clubs/"], ["about", "/about/"], ["privacy", "/privacy-policy/"], ["terms", "/terms-of-use/"], ["cookies", "/cookie-policy/"],
+  ["home", "/"], ["allClubs", "/clubs/"], ["news", "/blog/"], ["newsArticle", `/blog/${newsContent.slug}/`], ["about", "/about/"], ["privacy", "/privacy-policy/"], ["terms", "/terms-of-use/"], ["cookies", "/cookie-policy/"],
   ...clubs.map((club) => ["club", `/clubs/${club.slug}/`, club])
 ].map(([key, basePath, club]) => ({ key, basePath, club }));
 const pages = languages.flatMap((language) => basePages.map((page) => localizePage(page, language)));
@@ -105,6 +131,14 @@ await writeFile(path.join(distDir, "sitemap.xml"), buildSitemap(pages));
 
 function localizePage(page, language) {
   const localized = copy[language.code];
+  const localizedNews = newsContent[language.code];
+  if (page.key === "news") {
+    const [title, description, h1, body] = localizedNews.index;
+    return { ...page, language, path: localPath(page.basePath, language), title, description, h1, body, news: localizedNews };
+  }
+  if (page.key === "newsArticle") {
+    return { ...page, language, path: localPath(page.basePath, language), title: `${localizedNews.title} | HLEDEJKURTY`, description: localizedNews.description, h1: localizedNews.title, body: localizedNews.description, article: localizedNews };
+  }
   if (!page.club) {
     const [title, description, h1, body] = localized.pages[page.key];
     return { ...page, language, path: localPath(page.basePath, language), title, description, h1, body };
@@ -114,10 +148,10 @@ function localizePage(page, language) {
 
 function renderPage(page) {
   const canonical = new URL(page.path, SITE_ORIGIN).toString();
-  const image = page.club ? `${SITE_ORIGIN}/clubs/optimized/${page.club.slug}-1200.webp` : `${SITE_ORIGIN}/logo.png`;
+  const image = page.club ? `${SITE_ORIGIN}/clubs/optimized/${page.club.slug}-1200.webp` : page.key === "newsArticle" ? newsContent.image : `${SITE_ORIGIN}/logo.png`;
   let html = template.replace(/<html lang="[^"]*">/, `<html lang="${page.language.html}">`);
   html = replaceTag(html, "title", page.title);
-  for (const [attribute, key, value] of [["name", "description", page.description], ["property", "og:title", page.title], ["property", "og:description", page.description], ["property", "og:url", canonical], ["property", "og:image", image], ["property", "og:image:alt", socialAlt(page)], ["property", "og:locale", page.language.og], ["name", "twitter:title", page.title], ["name", "twitter:description", page.description], ["name", "twitter:image", image], ["name", "twitter:image:alt", socialAlt(page)]]) html = replaceMeta(html, attribute, key, value);
+  for (const [attribute, key, value] of [["name", "description", page.description], ["property", "og:type", page.key === "newsArticle" ? "article" : "website"], ["property", "og:title", page.title], ["property", "og:description", page.description], ["property", "og:url", canonical], ["property", "og:image", image], ["property", "og:image:alt", socialAlt(page)], ["property", "og:locale", page.language.og], ["name", "twitter:title", page.title], ["name", "twitter:description", page.description], ["name", "twitter:image", image], ["name", "twitter:image:alt", socialAlt(page)]]) html = replaceMeta(html, attribute, key, value);
   html = html.replace(/\s*<meta property="og:locale:alternate"[^>]*>/g, "");
   html = html.replace(/\s*<link rel="alternate" hreflang="[^"]+" href="[^"]+"\s*\/>/g, "");
   html = html.replace(/<link rel="canonical" href="[^"]*"\s*\/>/, `<link rel="canonical" href="${escapeHtml(canonical)}" />`);
@@ -127,31 +161,38 @@ function renderPage(page) {
 
 function visibleContent(page) {
   const localized = copy[page.language.code];
-  const [search, clubsLabel, about, privacy, terms, cookies] = localized.nav;
+  const [search, clubsLabel, newsLabel, about, privacy, terms, cookies] = localized.nav;
   const clubLinks = clubs.map((club) => `<li><a href="${localPath(`/clubs/${club.slug}/`, page.language)}">${escapeHtml(club.name)}</a><span>${escapeHtml(localized.count(club.courtCount))} · ${escapeHtml(club.address)}</span></li>`).join("");
   let details = "";
   if (page.key === "home") details = `${sections(localized.sections.home)}<section><h2>${escapeHtml(clubsLabel)}</h2><p>${escapeHtml(localized.sections.clubs[0][1])}</p><ul class="seoPrerenderClubs">${clubLinks}</ul></section>`;
   else if (page.key === "allClubs") details = `${sections(localized.sections.clubs)}<section><h2>${escapeHtml(localized.labels[6])}</h2><ul class="seoPrerenderClubs">${clubLinks}</ul></section>`;
+  else if (page.key === "news") details = `<section><h2><a href="${localPath(`/blog/${newsContent.slug}/`, page.language)}">${escapeHtml(page.news.title)}</a></h2><p>${escapeHtml(page.news.description)}</p></section>${sections(page.news.sections)}`;
+  else if (page.key === "newsArticle") details = `${sections(page.article.sections)}<p><a class="seoPrerenderCta" href="${localPath("/clubs/the-court/", page.language)}">The Court</a> <a href="https://www.instagram.com/the_court_padel_/">Instagram</a> <a href="https://thecourt.cz/">${escapeHtml(page.article.title)}</a></p>`;
   else if (page.club) details = clubDetails(page.club, page.language);
   else details = `<section><h2>${escapeHtml(about)}</h2><p><a href="${localPath("/clubs/", page.language)}">${escapeHtml(localized.sections.clubs[0][1])}</a></p></section>`;
-  return `<main class="seoPrerender"><header class="seoPrerenderHeader"><a class="seoPrerenderBrand" href="${localPath("/", page.language)}">HLEDEJKURTY</a><nav class="seoPrerenderNav" aria-label="Primary navigation"><a href="${localPath("/", page.language)}">${escapeHtml(search)}</a><a href="${localPath("/clubs/", page.language)}">${escapeHtml(clubsLabel)}</a><a href="${localPath("/about/", page.language)}">${escapeHtml(about)}</a></nav></header><article><h1>${escapeHtml(page.h1)}</h1><p>${escapeHtml(page.body)}</p>${details}</article><footer class="seoPrerenderFooter"><a href="${localPath("/about/", page.language)}">${escapeHtml(about)}</a><a href="${localPath("/privacy-policy/", page.language)}">${escapeHtml(privacy)}</a><a href="${localPath("/terms-of-use/", page.language)}">${escapeHtml(terms)}</a><a href="${localPath("/cookie-policy/", page.language)}">${escapeHtml(cookies)}</a></footer></main>`;
+  return `<main class="seoPrerender"><header class="seoPrerenderHeader"><a class="seoPrerenderBrand" href="${localPath("/", page.language)}">HLEDEJKURTY</a><nav class="seoPrerenderNav" aria-label="Primary navigation"><a href="${localPath("/", page.language)}">${escapeHtml(search)}</a><a href="${localPath("/clubs/", page.language)}">${escapeHtml(clubsLabel)}</a><a href="${localPath("/blog/", page.language)}">${escapeHtml(newsLabel)}</a><a href="${localPath("/about/", page.language)}">${escapeHtml(about)}</a></nav></header><article><h1>${escapeHtml(page.h1)}</h1><p>${escapeHtml(page.body)}</p>${details}</article><footer class="seoPrerenderFooter"><a href="${localPath("/blog/", page.language)}">${escapeHtml(newsLabel)}</a><a href="${localPath("/about/", page.language)}">${escapeHtml(about)}</a><a href="${localPath("/privacy-policy/", page.language)}">${escapeHtml(privacy)}</a><a href="${localPath("/terms-of-use/", page.language)}">${escapeHtml(terms)}</a><a href="${localPath("/cookie-policy/", page.language)}">${escapeHtml(cookies)}</a></footer></main>`;
 }
 
 function clubDetails(club, language) {
   const localized = copy[language.code];
   const multisport = club.multisport ? localized.labels[4] : localized.labels[5];
-  return `<section><h2>${escapeHtml(club.name)}</h2><ul class="seoPrerenderFacts"><li><strong>${escapeHtml(localized.labels[0])}</strong><span>${escapeHtml(club.address)}</span></li><li><strong>${escapeHtml(localized.labels[1])}</strong><span>${escapeHtml(localized.count(club.courtCount))}</span></li><li><strong>${escapeHtml(localized.labels[2])}</strong><span>${escapeHtml(localized.labels[3])}</span></li><li><strong>Multisport</strong><span>${escapeHtml(multisport)}</span></li></ul></section>${sections(localized.sections.club)}<a class="seoPrerenderCta" href="${localPath("/", language)}">${escapeHtml(localized.labels[7])}</a>`;
+  const singles = club.singles ? `<li><strong>1vs1</strong><span>1 single court</span></li>` : "";
+  return `<section><h2>${escapeHtml(club.name)}</h2><ul class="seoPrerenderFacts"><li><strong>${escapeHtml(localized.labels[0])}</strong><span>${escapeHtml(club.address)}</span></li><li><strong>${escapeHtml(localized.labels[1])}</strong><span>${escapeHtml(localized.count(club.courtCount))}</span></li>${singles}<li><strong>${escapeHtml(localized.labels[2])}</strong><span>${escapeHtml(localized.labels[3])}</span></li><li><strong>Multisport</strong><span>${escapeHtml(multisport)}</span></li></ul></section>${sections(localized.sections.club)}<a class="seoPrerenderCta" href="${localPath("/", language)}">${escapeHtml(localized.labels[7])}</a>`;
 }
 
 function sections(values) { return values.map(([heading, body]) => `<section><h2>${escapeHtml(heading)}</h2><p>${escapeHtml(body)}</p></section>`).join(""); }
-function socialAlt(page) { return page.club ? `${page.club.name} padel Prague` : "HLEDEJKURTY padel Prague"; }
+function socialAlt(page) { return page.club ? `${page.club.name} padel Prague` : page.key === "newsArticle" ? page.h1 : "HLEDEJKURTY padel Prague"; }
 function alternateUrls(basePath) { return languages.map((language) => [language.hreflang, new URL(localPath(basePath, language), SITE_ORIGIN).toString()]); }
 function alternateTags(page) {
   const og = languages.filter((language) => language.code !== page.language.code).map((language) => `    <meta property="og:locale:alternate" content="${language.og}" />`).join("\n");
   const values = [...alternateUrls(page.basePath), ["x-default", new URL(page.basePath, SITE_ORIGIN).toString()]];
   return `${og}\n${values.map(([lang, href]) => `    <link rel="alternate" hreflang="${lang}" href="${href}" />`).join("\n")}`;
 }
-function structuredData(page, canonical, image) { return { "@context": "https://schema.org", "@graph": [{ "@type": "WebSite", "@id": `${SITE_ORIGIN}/#website`, name: "HLEDEJKURTY", url: `${SITE_ORIGIN}/`, inLanguage: ["cs", "en", "uk"] }, { "@type": "WebPage", "@id": `${canonical}#webpage`, name: page.title, description: page.description, url: canonical, image, inLanguage: page.language.html, isPartOf: { "@id": `${SITE_ORIGIN}/#website` } }, ...(page.club ? [{ "@type": "SportsActivityLocation", "@id": `${canonical}#club`, name: page.club.name, address: { "@type": "PostalAddress", streetAddress: page.club.address, addressLocality: "Praha", addressCountry: "CZ" }, image, url: canonical }] : [])] }; }
+function structuredData(page, canonical, image) {
+  const content = { "@type": page.key === "newsArticle" ? "Article" : "WebPage", "@id": `${canonical}#webpage`, name: page.title, description: page.description, url: canonical, image, inLanguage: page.language.html, isPartOf: { "@id": `${SITE_ORIGIN}/#website` } };
+  if (page.key === "newsArticle") Object.assign(content, { headline: page.h1, datePublished: newsContent.publishedAt, mainEntityOfPage: canonical });
+  return { "@context": "https://schema.org", "@graph": [{ "@type": "WebSite", "@id": `${SITE_ORIGIN}/#website`, name: "HLEDEJKURTY", url: `${SITE_ORIGIN}/`, inLanguage: ["cs", "en", "uk"] }, content, ...(page.club ? [{ "@type": "SportsActivityLocation", "@id": `${canonical}#club`, name: page.club.name, address: { "@type": "PostalAddress", streetAddress: page.club.address, addressLocality: "Praha", addressCountry: "CZ" }, image, url: canonical }] : [])] };
+}
 function buildSitemap(values) {
   const lastmod = new Date().toISOString().slice(0, 10);
   const urls = values.map((page) => { const alternates = [...alternateUrls(page.basePath), ["x-default", new URL(page.basePath, SITE_ORIGIN).toString()]]; return `  <url>\n    <loc>${new URL(page.path, SITE_ORIGIN)}</loc>\n${alternates.map(([lang, href]) => `    <xhtml:link rel="alternate" hreflang="${lang}" href="${href}" />`).join("\n")}\n    <lastmod>${lastmod}</lastmod>\n  </url>`; }).join("\n");

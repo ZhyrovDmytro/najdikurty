@@ -13,7 +13,7 @@ const errors = [];
 const titles = new Map();
 const appSource = await readFile(path.join(appDir, "src/main.tsx"), "utf8");
 const sourceClubSlugs = new Set([...appSource.matchAll(/slug:\s*"([^"]+)"/g)].map((match) => match[1]));
-const expectedLocationCount = (6 + sourceClubSlugs.size) * 3;
+const expectedLocationCount = (8 + sourceClubSlugs.size) * 3;
 
 check(locations.length === expectedLocationCount, `Expected ${expectedLocationCount} sitemap URLs, found ${locations.length}`);
 check(new Set(locations).size === locations.length, "Sitemap contains duplicate URLs");

@@ -6,7 +6,6 @@ import { z } from "zod";
 import {
   fetchBookaballAvailability,
   fetchCourtyOneAvailability,
-  fetchISportSystemApiAvailability,
   fetchJdemeNaToAvailability,
   fetchJdemeNaToPortalSearchAvailability,
   fetchPadelosAvailability,
@@ -19,7 +18,7 @@ import {
   isPlaytomicClubSlug
 } from "@mamekurt/scrapers";
 import { createDatabaseFromEnvironment, type DatabaseConnection } from "./db/client.js";
-import { isportSystemClubConfig } from "./indexing/isportsystem-clubs.js";
+import { fetchISportSystemClubAvailability, isportSystemClubConfig } from "./indexing/isportsystem-clubs.js";
 import { manualRefreshRequestSchema, manualRefreshStatusQuerySchema, queueManualRefreshes } from "./scheduling/manual-refresh.js";
 import { ScrapeJobRepository } from "./scheduling/job-repository.js";
 import { searchQuerySchema } from "./search/query.js";
@@ -396,14 +395,12 @@ async function fetchAvailabilityByClub(query: z.infer<typeof querySchema>, signa
 
   const isportConfig = isportSystemClubConfig(query.club);
   if (isportConfig) {
-    return fetchISportSystemApiAvailability({
-      baseUrl: isportConfig.baseUrl,
+    return fetchISportSystemClubAvailability({
       clubSlug: query.club,
-      courtNames: isportConfig.courtNames,
+      config: isportConfig,
       date: query.date,
       fetchImpl,
-      sport: query.sport,
-      sportId: isportConfig.sportId
+      sport: query.sport
     });
   }
 

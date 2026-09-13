@@ -1,7 +1,6 @@
 import {
   fetchBookaballAvailability,
   fetchCourtyOneAvailability,
-  fetchISportSystemApiAvailability,
   fetchJdemeNaToAvailability,
   fetchJdemeNaToPortalSearchAvailability,
   fetchPadelosAvailability,
@@ -18,7 +17,12 @@ import {
   type Club,
   type LegacyProviderFetchInput
 } from "@mamekurt/scrapers";
-import { isportSystemClubConfig, ISPORTSYSTEM_CLUBS, type ISportSystemClubConfig } from "./isportsystem-clubs.js";
+import {
+  fetchISportSystemClubAvailability,
+  isportSystemClubConfig,
+  ISPORTSYSTEM_CLUBS,
+  type ISportSystemClubConfig
+} from "./isportsystem-clubs.js";
 
 const PRAGUE_TIMEZONE = "Europe/Prague";
 
@@ -93,6 +97,8 @@ const REGISTRATIONS: Record<string, RegistrationFactory> = {
   "padel-radotin": () => isportSystemRegistration(requiredISportSystemClub("padel-radotin")),
   "padel-hall-radotin": () => isportSystemRegistration(requiredISportSystemClub("padel-hall-radotin")),
   "padel-cakovice": () => isportSystemRegistration(requiredISportSystemClub("padel-cakovice")),
+  "the-court": () => isportSystemRegistration(requiredISportSystemClub("the-court")),
+  "ltc-modrany-2005": () => isportSystemRegistration(requiredISportSystemClub("ltc-modrany-2005")),
   "padel-neride": () => legacyRegistration(
     club({
       slug: "padel-neride",
@@ -215,21 +221,28 @@ function isportSystemRegistration(config: ISportSystemClubConfig): IndexedClubRe
       slug: config.slug,
       name: config.name,
       providerId: "isportsystem",
-      providerExternalId: `${new URL(config.baseUrl).hostname}:sport-${config.sportId}`,
+      providerExternalId: `${new URL(config.baseUrl).hostname}:sport-${[
+        config.sportId,
+        ...(config.additionalSports ?? []).map(({ sportId }) => sportId)
+      ].join("+")}`,
       bookingUrl: config.bookingUrl,
       courtIndoor: config.courtIndoor,
       providerConfig: {
         apiBaseUrl: config.baseUrl,
         sportId: config.sportId,
-        courtNames: [...config.courtNames]
+        sportIds: [config.sportId, ...(config.additionalSports ?? []).map(({ sportId }) => sportId)],
+        courtNames: [
+          ...config.courtNames,
+          ...(config.additionalSports ?? []).flatMap(({ courtNames, courtNameOverrides }) =>
+            courtNames.map((name) => courtNameOverrides?.[name] ?? name)
+          )
+        ]
       }
     }),
     "iSportSystem public API",
-    (input) => fetchISportSystemApiAvailability({
+    (input) => fetchISportSystemClubAvailability({
       ...legacyOptions(input),
-      baseUrl: config.baseUrl,
-      sportId: config.sportId,
-      courtNames: config.courtNames
+      config
     })
   );
 }

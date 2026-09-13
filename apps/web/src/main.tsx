@@ -74,6 +74,15 @@ import {
 } from "./posthog";
 import { approximateCountdown, nextApproximateCheck } from "./refresh-schedule";
 import { shareSlotsAsImage, type ShareableSlot } from "./slot-share";
+import {
+  NewsArticlePage,
+  NewsIndexPage,
+  localizedNewsArticle,
+  newsArticle,
+  newsPath,
+  newsPostPath,
+  type NewsArticle
+} from "./news";
 import "./styles.css";
 
 const MAX_SEARCH_DAYS_AHEAD = 7;
@@ -91,7 +100,7 @@ const API_BASE_URL = (
   (import.meta.env.MODE === "production" && window.location.hostname.endsWith("github.io") ? GITHUB_PAGES_API_BASE_URL : "")
 ).replace(/\/$/, "");
 const USE_DATABASE_SEARCH = import.meta.env.VITE_USE_DATABASE_SEARCH === "true";
-type Page = "clubs" | "allClubs" | "about" | "privacy" | "terms" | "cookies";
+type Page = "clubs" | "allClubs" | "news" | "about" | "privacy" | "terms" | "cookies";
 const initialRoute = routeFromLocation(window.location.pathname, initialParams);
 const initialPage: Page = initialRoute.page;
 const shouldLoadInitialClubResults = initialPage === "clubs" && !initialRoute.clubSlug;
@@ -143,6 +152,7 @@ interface SeoMeta {
   imageUrl: string;
   jsonLd: Record<string, unknown>;
   locale: string;
+  openGraphType: "article" | "website";
   title: string;
 }
 
@@ -159,6 +169,7 @@ interface Club {
   courtCount: number;
   courtTypes: CourtType[];
   courtTypeLabel: string;
+  hasSinglesCourt?: boolean;
   acceptsMultisport?: boolean;
   availabilityEnabled?: boolean;
   openingHours?: Record<number, TimeRange>;
@@ -345,6 +356,39 @@ const CLUBS: Club[] = [
     bookingUrl: () => "https://padelautomat.isportsystem.cz/"
   },
   {
+    slug: "the-court",
+    name: "The Court",
+    sport: "padel",
+    imageUrl: assetPath("clubs/the-court.png"),
+    address: "Mezi Stromy 507, 252 25 Jinočany",
+    coordinates: { latitude: 50.0318884, longitude: 14.2779745 },
+    phone: "+420 795 500 005",
+    priceInfo: "1 h: Po-Pá standard 800-1200 Kč, 1vs1 600-800 Kč; víkend standard 1200 Kč, 1vs1 800 Kč.",
+    courtCount: 3,
+    courtTypes: ["indoor"],
+    courtTypeLabel: "2 indoor courts + 1 single court",
+    hasSinglesCourt: true,
+    availabilityEnabled: true,
+    openingHours: dailyOpeningHours({ start: "07:00", end: "24:00" }),
+    bookingUrl: () => "https://thecourt.isportsystem.cz/"
+  },
+  {
+    slug: "ltc-modrany-2005",
+    name: "LTC Modřany",
+    sport: "padel",
+    imageUrl: assetPath("clubs/ltc-modrany-2005.png"),
+    address: "Komořanská 2229/49, 143 00 Praha 4-Modřany",
+    coordinates: { latitude: 49.997343, longitude: 14.398424 },
+    phone: "+420 774 313 113",
+    priceInfo: "1 h: Po-Pá 7-14 560 Kč, 15-22 640 Kč; víkend 7-22 560 Kč.",
+    courtCount: 3,
+    courtTypes: ["outdoor"],
+    courtTypeLabel: "3 outdoor courts",
+    availabilityEnabled: true,
+    openingHours: dailyOpeningHours({ start: "07:00", end: "22:00" }),
+    bookingUrl: () => "https://tenismodrany.isportsystem.cz/?op=tab-id-8"
+  },
+  {
     slug: "padel-neride",
     name: "Padel Neride",
     sport: "padel",
@@ -461,6 +505,7 @@ const ABOUT_FAQ_KEYS = ["availability", "updates", "booking", "trackedClubs", "a
 const CLUB_IMAGE_DIMENSIONS: Record<string, { height: number; width: number }> = {
   "cisarska-louka-padel": { height: 768, width: 1024 },
   "head-tenis-centrum-vestec": { height: 1536, width: 2048 },
+  "ltc-modrany-2005": { height: 1200, width: 1600 },
   "one-padel": { height: 497, width: 402 },
   "padel-hall-radotin": { height: 820, width: 1920 },
   "plechovka-dubec": { height: 726, width: 2167 },
@@ -474,6 +519,7 @@ const CLUB_IMAGE_DIMENSIONS: Record<string, { height: number; width: number }> =
   "sk-satalice": { height: 675, width: 900 },
   "sk-slavia-praha-padel": { height: 200, width: 341 },
   "tenis-a-padel-klub-pisecna": { height: 1186, width: 2192 },
+  "the-court": { height: 1429, width: 2560 },
   "tk-sparta-praha": { height: 940, width: 1920 }
 };
 type AvailabilityByClub = Record<string, AvailabilityResult>;
@@ -593,6 +639,7 @@ function App() {
   const [now, setNow] = useState(() => new Date());
   const [availabilityByClub, setAvailabilityByClub] = useState<AvailabilityByClub>({});
   const [selectedClubSlug, setSelectedClubSlug] = useState<string | null>(initialPage === "clubs" ? initialRoute.clubSlug : null);
+  const [selectedArticleSlug, setSelectedArticleSlug] = useState<string | null>(initialPage === "news" ? initialRoute.articleSlug : null);
   const [allClubsSort, setAllClubsSort] = useState<FindCourtSort>(() => storedSortPreference(ALL_CLUBS_SORT_STORAGE_KEY));
   const [findCourtSort, setFindCourtSort] = useState<FindCourtSort>(() => storedSortPreference(FIND_COURT_SORT_STORAGE_KEY));
   const [theme, setTheme] = useState<"light" | "dark">(initialTheme);
@@ -842,7 +889,7 @@ function App() {
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
-  }, [page, selectedClubSlug]);
+  }, [page, selectedArticleSlug, selectedClubSlug]);
 
   useEffect(() => {
     manualRefreshSequenceRef.current += 1;
@@ -864,6 +911,7 @@ function App() {
       setPage(nextPage);
       setDate(selectableDate(params.get("date"), pragueDateInputValue(new Date())));
       setSelectedClubSlug(nextPage === "clubs" ? nextRoute.clubSlug : null);
+      setSelectedArticleSlug(nextPage === "news" ? nextRoute.articleSlug : null);
       setHasSearchedAvailability(nextPage === "clubs" && Boolean(nextRoute.clubSlug));
       if (nextPage === "clubs" && !nextRoute.clubSlug) {
         clearAvailabilityResults();
@@ -893,6 +941,7 @@ function App() {
   }, [currentPragueDate, date, page, selectedClubSlug]);
 
   const selectedClub = page === "clubs" ? (CLUBS.find((club) => club.slug === selectedClubSlug) ?? null) : null;
+  const selectedArticle = page === "news" ? newsArticle(selectedArticleSlug) : null;
   const selectedAvailability = selectedClub ? availabilityByClub[selectedClub.slug] : null;
   const selectedClubFailure = selectedClub ? failedClubs.find(({ club }) => club.slug === selectedClub.slug) : null;
   const isSelectedClubSlotsLoading =
@@ -903,8 +952,8 @@ function App() {
     !selectedClubFailure;
 
   useEffect(() => {
-    applySeoMeta(buildSeoMeta({ date, language, page, selectedClub }));
-  }, [date, language, page, selectedClub]);
+    applySeoMeta(buildSeoMeta({ date, language, page, selectedArticle, selectedClub }));
+  }, [date, language, page, selectedArticle, selectedClub]);
 
   const durationOptions = useMemo(() => {
     const firstAvailability = Object.values(availabilityByClub)[0];
@@ -1144,13 +1193,14 @@ function App() {
     capturePageView({
       analytics_enabled: isAnalyticsEnabled(),
       club_slug: selectedClubSlug,
+      article_slug: selectedArticleSlug,
       date: page === "clubs" ? date : undefined,
       language,
       page,
       path: window.location.pathname,
       search: window.location.search
     });
-  }, [analyticsConsent, date, language, page, selectedClubSlug]);
+  }, [analyticsConsent, date, language, page, selectedArticleSlug, selectedClubSlug]);
 
   const refreshAvailabilityButton = (
       <Button
@@ -1277,22 +1327,20 @@ function App() {
 
   return (
     <main className="appShell">
-      <nav className="topbar" aria-label={t("nav.pageNavigation")}>
+      <nav className={page !== "clubs" || selectedClub ? "topbar topbar-withBreadcrumbs" : "topbar"} aria-label={t("nav.pageNavigation")}>
           <a className="brandMark" href={clubsHref(language)} onClick={(event) => handleInternalNavigation(event, () => navigateToClubs("push"))}>
           <LogoImage />
           {t("brand.name")}
         </a>
-        {page !== "clubs" || selectedClub ? (
-          <Breadcrumbs page={page} selectedClub={selectedClub} onHome={() => navigateToClubs("push")} />
-        ) : (
-          <span className="topbarSpacer" aria-hidden="true" />
-        )}
         <div className={isMobileMenuOpen ? "topbarNav topbarNavOpen" : "topbarNav"} aria-label={t("nav.primaryNavigation")}>
           <a className={page === "clubs" ? "topbarNavLink active" : "topbarNavLink"} href={clubsHref(language)} onClick={(event) => handleInternalNavigation(event, () => navigateToClubs("push"))}>
             {t("nav.findCourt")}
           </a>
           <a className={page === "allClubs" ? "topbarNavLink active" : "topbarNavLink"} href={allClubsHref(language)} onClick={(event) => handleInternalNavigation(event, () => navigateToAllClubs("push"))}>
             {t("nav.allClubs")}
+          </a>
+          <a className={page === "news" ? "topbarNavLink active" : "topbarNavLink"} href={newsPath(language)} onClick={(event) => handleInternalNavigation(event, () => navigateToNews(null, "push"))}>
+            {t("nav.news")}
           </a>
           <a className={page === "about" ? "topbarNavLink active" : "topbarNavLink"} href={aboutHref(language)} onClick={(event) => handleInternalNavigation(event, () => navigateToAbout("push"))}>
             {t("nav.about")}
@@ -1310,7 +1358,7 @@ function App() {
                 captureEvent("language_changed", { language: nextLanguage, previous_language: language });
                 localStorage.setItem(LANGUAGE_STORAGE_KEY, nextLanguage);
                 const currentUrlDate = new URLSearchParams(window.location.search).get("date");
-                const nextUrl = localizedPageUrl(page, selectedClubSlug, nextLanguage, currentUrlDate);
+                const nextUrl = localizedPageUrl(page, selectedClubSlug, selectedArticleSlug, nextLanguage, currentUrlDate);
                 window.location.assign(nextUrl);
               }}
             >
@@ -1345,9 +1393,25 @@ function App() {
           />
         </div>
       </nav>
+      {page !== "clubs" || selectedClub ? (
+        <nav className="breadcrumbBar" aria-label={t("nav.pageNavigation")}>
+          <Breadcrumbs
+            article={selectedArticle}
+            language={language}
+            page={page}
+            selectedClub={selectedClub}
+            onHome={() => navigateToClubs("push")}
+            onNews={() => navigateToNews(null, "push")}
+          />
+        </nav>
+      ) : null}
 
       {page === "about" ? (
         <AboutPage onBrowseClubs={() => navigateToClubs("push")} />
+      ) : page === "news" && selectedArticle ? (
+        <NewsArticlePage article={selectedArticle} language={language} onOpenClub={() => updateSelectedClub("the-court")} />
+      ) : page === "news" ? (
+        <NewsIndexPage language={language} onOpenPost={(slug) => navigateToNews(slug, "push")} />
       ) : page === "privacy" ? (
         <PrivacyPage />
       ) : page === "terms" ? (
@@ -1599,6 +1663,7 @@ function App() {
         currentPage={page}
         onNavigateToClubs={() => navigateToClubs("push")}
         onNavigateToAllClubs={() => navigateToAllClubs("push")}
+        onNavigateToNews={() => navigateToNews(null, "push")}
         onNavigateToAbout={() => navigateToAbout("push")}
         onNavigateToLegalPage={(nextPage) => navigateToLegalPage(nextPage, "push")}
         onOpenCookieSettings={() => setIsCookieSettingsOpen(true)}
@@ -1710,6 +1775,7 @@ function App() {
       });
     }
     setPage("clubs");
+    setSelectedArticleSlug(null);
     setSelectedClubSlug(nextClubSlug);
     setHasSearchedAvailability(Boolean(nextClubSlug));
     setFailedClubs([]);
@@ -1719,6 +1785,7 @@ function App() {
 
   function navigateToClubs(mode: "push" | "replace") {
     setPage("clubs");
+    setSelectedArticleSlug(null);
     setSelectedClubSlug(null);
     setHasSearchedAvailability(false);
     clearAvailabilityResults();
@@ -1728,6 +1795,7 @@ function App() {
 
   function navigateToAllClubs(mode: "push" | "replace") {
     setPage("allClubs");
+    setSelectedArticleSlug(null);
     setSelectedClubSlug(null);
     setHasSearchedAvailability(false);
     writeUrl({ date, clubSlug: null, mode, page: "allClubs" });
@@ -1736,6 +1804,7 @@ function App() {
 
   function navigateToAbout(mode: "push" | "replace") {
     setPage("about");
+    setSelectedArticleSlug(null);
     setSelectedClubSlug(null);
     setHasSearchedAvailability(false);
     writeUrl({ date, clubSlug: null, mode, page: "about" });
@@ -1744,9 +1813,19 @@ function App() {
 
   function navigateToLegalPage(nextPage: "privacy" | "terms" | "cookies", mode: "push" | "replace") {
     setPage(nextPage);
+    setSelectedArticleSlug(null);
     setSelectedClubSlug(null);
     setHasSearchedAvailability(false);
     writeUrl({ date, clubSlug: null, mode, page: nextPage });
+    window.scrollTo({ top: 0 });
+  }
+
+  function navigateToNews(articleSlug: string | null, mode: "push" | "replace") {
+    setPage("news");
+    setSelectedClubSlug(null);
+    setSelectedArticleSlug(articleSlug);
+    setHasSearchedAvailability(false);
+    writeUrl({ articleSlug, date, clubSlug: null, mode, page: "news" });
     window.scrollTo({ top: 0 });
   }
 }
@@ -1757,19 +1836,45 @@ function handleInternalNavigation(event: React.MouseEvent<HTMLAnchorElement>, na
   navigate();
 }
 
-function Breadcrumbs({ page, selectedClub, onHome }: { page: Page; selectedClub: Club | null; onHome: () => void }) {
+function Breadcrumbs({
+  article,
+  language,
+  page,
+  selectedClub,
+  onHome,
+  onNews
+}: {
+  article: NewsArticle | null;
+  language: LanguageCode;
+  page: Page;
+  selectedClub: Club | null;
+  onHome: () => void;
+  onNews: () => void;
+}) {
   const { t } = useTranslation();
 
   return (
     <ol className="breadcrumbs">
-      <li>
-        <button type="button" onClick={onHome}>
-          {t("nav.clubs")}
-        </button>
-      </li>
+      {page !== "news" ? (
+        <li>
+          <button type="button" onClick={onHome}>
+            {t("nav.clubs")}
+          </button>
+        </li>
+      ) : null}
       {selectedClub ? (
         <li aria-current="page">
           <span>{selectedClub.name}</span>
+        </li>
+      ) : null}
+      {page === "news" ? (
+        <li aria-current={article ? undefined : "page"}>
+          {article ? <button type="button" onClick={onNews}>{t("nav.news")}</button> : <span>{t("nav.news")}</span>}
+        </li>
+      ) : null}
+      {article ? (
+        <li aria-current="page">
+          <span>{localizedNewsArticle(article, language).title}</span>
         </li>
       ) : null}
       {page === "about" ? (
@@ -1805,6 +1910,7 @@ function SiteFooter({
   currentPage,
   onNavigateToClubs,
   onNavigateToAllClubs,
+  onNavigateToNews,
   onNavigateToAbout,
   onNavigateToLegalPage,
   onOpenCookieSettings
@@ -1812,6 +1918,7 @@ function SiteFooter({
   currentPage: Page;
   onNavigateToClubs: () => void;
   onNavigateToAllClubs: () => void;
+  onNavigateToNews: () => void;
   onNavigateToAbout: () => void;
   onNavigateToLegalPage: (page: "privacy" | "terms" | "cookies") => void;
   onOpenCookieSettings: () => void;
@@ -1836,6 +1943,9 @@ function SiteFooter({
           </a>
           <a href={allClubsHref()} aria-current={currentPage === "allClubs" ? "page" : undefined} onClick={(event) => handleInternalNavigation(event, onNavigateToAllClubs)}>
             {t("nav.allClubs")}
+          </a>
+          <a href={newsPath(languageFromPathname(window.location.pathname))} aria-current={currentPage === "news" ? "page" : undefined} onClick={(event) => handleInternalNavigation(event, onNavigateToNews)}>
+            {t("nav.news")}
           </a>
           <a href={aboutHref()} aria-current={currentPage === "about" ? "page" : undefined} onClick={(event) => handleInternalNavigation(event, onNavigateToAbout)}>
             {t("nav.about")}
@@ -2006,7 +2116,7 @@ function HomeDiscovery({
                   <span>
                     {club.courtCount} {t("club.court", { count: club.courtCount })}
                   </span>
-                  <CourtTypeBadges courtTypes={club.courtTypes} />
+                  <CourtTypeBadges courtTypes={club.courtTypes} hasSinglesCourt={club.hasSinglesCourt} />
                 </span>
                 <span className="homeClubMetaLine">
                   <WalletCards size={15} />
@@ -2150,7 +2260,7 @@ function AllClubsPage({
                   {club.acceptsMultisport ? (
                     <span className="multisportBadge">{t("club.multisport")}</span>
                   ) : null}
-                  <CourtTypeBadges courtTypes={club.courtTypes} />
+                  <CourtTypeBadges courtTypes={club.courtTypes} hasSinglesCourt={club.hasSinglesCourt} />
                   <span className="trackedClubPrice">
                     {t("club.from")} <strong>{formatCzkPerHour(priceFrom)}</strong>
                   </span>
@@ -2566,7 +2676,7 @@ function ClubList({
                         {t("club.from")} <strong>{formatCzkPerHour(lowestPrice(club.priceInfo))}</strong>
                       </span>
                       {club.acceptsMultisport ? <span className="multisportBadge">{t("club.multisport")}</span> : null}
-                      <CourtTypeBadges courtTypes={club.courtTypes} />
+                      <CourtTypeBadges courtTypes={club.courtTypes} hasSinglesCourt={club.hasSinglesCourt} />
                     </div>
                     <div className="clubCompactScheduleMeta">
                       <span className="clubMeta">
@@ -2717,7 +2827,7 @@ function ClubList({
                   {availability?.dayRange.start}-{availability?.dayRange.end}
                 </span>
                 <FreshnessBadge availability={availability} />
-                <CourtTypeBadges courtTypes={club.courtTypes} />
+                <CourtTypeBadges courtTypes={club.courtTypes} hasSinglesCourt={club.hasSinglesCourt} />
               </div>
             </div>
             <a
@@ -3016,7 +3126,13 @@ function DateCalendarPicker({
   );
 }
 
-function CourtTypeBadges({ courtTypes }: { courtTypes: CourtType[] }) {
+function CourtTypeBadges({
+  courtTypes,
+  hasSinglesCourt
+}: {
+  courtTypes: CourtType[];
+  hasSinglesCourt?: boolean;
+}) {
   const { t } = useTranslation();
 
   return (
@@ -3026,6 +3142,7 @@ function CourtTypeBadges({ courtTypes }: { courtTypes: CourtType[] }) {
           {courtType === "indoor" ? t("club.indoor") : t("club.outdoor")}
         </span>
       ))}
+      {hasSinglesCourt ? <span className="singlesCourtBadge">1vs1</span> : null}
     </div>
   );
 }
@@ -3105,6 +3222,12 @@ function ClubDetail({
                 <CloudSun size={16} />
                 <span>{formatCourtTypeSummary(club)}</span>
               </span>
+              {club.hasSinglesCourt ? (
+                <span className="detailInfoRow">
+                  <UsersRound size={16} />
+                  <span className="singlesCourtBadge">1vs1</span>
+                </span>
+              ) : null}
               {club.acceptsMultisport ? (
                 <span className="detailInfoRow">
                   <WalletCards size={16} />
@@ -3514,7 +3637,8 @@ function formatCourtTypeSummary(club: Club): string {
   const outdoorCount = club.courtTypes.includes("outdoor") ? club.courtTypeLabel.match(/(\d+) outdoor/)?.[1] : undefined;
   const parts = [
     indoorCount ? `${indoorCount} ${i18n.t("club.indoor").toLocaleLowerCase()} ${i18n.t("club.court", { count: Number(indoorCount) })}` : null,
-    outdoorCount ? `${outdoorCount} ${i18n.t("club.outdoor").toLocaleLowerCase()} ${i18n.t("club.court", { count: Number(outdoorCount) })}` : null
+    outdoorCount ? `${outdoorCount} ${i18n.t("club.outdoor").toLocaleLowerCase()} ${i18n.t("club.court", { count: Number(outdoorCount) })}` : null,
+    club.hasSinglesCourt ? i18n.t("club.singleCourtSummary") : null
   ].filter(Boolean);
 
   return parts.join(" + ");
@@ -3696,29 +3820,36 @@ function buildSeoMeta({
   date,
   language,
   page,
+  selectedArticle,
   selectedClub
 }: {
   date: string;
   language: LanguageCode;
   page: Page;
+  selectedArticle: NewsArticle | null;
   selectedClub: Club | null;
 }): SeoMeta {
   const locale = localeByLanguage[language];
-  const canonicalUrl = canonicalUrlFor(page, selectedClub, language);
+  const canonicalUrl = canonicalUrlFor(page, selectedClub, language, selectedArticle);
   const alternateUrls = Object.fromEntries(
-    LANGUAGE_OPTIONS.map(({ code }) => [code, canonicalUrlFor(page, selectedClub, code)])
+    LANGUAGE_OPTIONS.map(({ code }) => [code, canonicalUrlFor(page, selectedClub, code, selectedArticle)])
   ) as Record<LanguageCode, string>;
-  const imageUrl = selectedClub ? absoluteSiteUrl(selectedClub.imageUrl) : SOCIAL_IMAGE_URL;
-  const title = seoTitle(page, selectedClub, language);
-  const description = seoDescription(page, selectedClub, language);
+  const imageUrl = selectedClub
+    ? absoluteSiteUrl(selectedClub.imageUrl)
+    : selectedArticle
+      ? absoluteSiteUrl(selectedArticle.imageUrl)
+      : SOCIAL_IMAGE_URL;
+  const title = seoTitle(page, selectedClub, language, selectedArticle);
+  const description = seoDescription(page, selectedClub, language, selectedArticle);
 
   return {
     alternateUrls,
     canonicalUrl,
     description,
     imageUrl,
-    jsonLd: buildStructuredData({ canonicalUrl, date, description, imageUrl, language, page, selectedClub, title }),
+    jsonLd: buildStructuredData({ canonicalUrl, date, description, imageUrl, language, page, selectedArticle, selectedClub, title }),
     locale,
+    openGraphType: selectedArticle ? "article" : "website",
     title
   };
 }
@@ -3731,7 +3862,7 @@ function applySeoMeta(meta: SeoMeta) {
   setMetaTag("name", "description", meta.description);
   setMetaTag("name", "robots", "index,follow");
   setMetaTag("property", "og:site_name", "HLEDEJKURTY");
-  setMetaTag("property", "og:type", "website");
+  setMetaTag("property", "og:type", meta.openGraphType);
   setMetaTag("property", "og:title", meta.title);
   setMetaTag("property", "og:description", meta.description);
   setMetaTag("property", "og:url", meta.canonicalUrl);
@@ -3744,7 +3875,7 @@ function applySeoMeta(meta: SeoMeta) {
   setStructuredData(meta.jsonLd);
 }
 
-function seoTitle(page: Page, selectedClub: Club | null, language: LanguageCode): string {
+function seoTitle(page: Page, selectedClub: Club | null, language: LanguageCode, selectedArticle: NewsArticle | null): string {
   if (selectedClub) {
     if (language === "cz") return `${selectedClub.name} padel Praha | HLEDEJKURTY`;
     if (language === "ua") return `${selectedClub.name} падел у Празі | HLEDEJKURTY`;
@@ -3755,6 +3886,13 @@ function seoTitle(page: Page, selectedClub: Club | null, language: LanguageCode)
     if (language === "cz") return "Padelové kluby v Praze | HLEDEJKURTY";
     if (language === "ua") return "Падел-клуби у Празі | HLEDEJKURTY";
     return "Padel clubs in Prague | HLEDEJKURTY";
+  }
+
+  if (page === "news") {
+    if (selectedArticle) return `${localizedNewsArticle(selectedArticle, language).title} | HLEDEJKURTY`;
+    if (language === "cz") return "Články o padelu: tipy a kluby v Praze | HLEDEJKURTY";
+    if (language === "ua") return "Статті про падел: поради та клуби Праги | HLEDEJKURTY";
+    return "Padel blog: guides and clubs in Prague | HLEDEJKURTY";
   }
 
   if (page === "about") {
@@ -3772,7 +3910,7 @@ function seoTitle(page: Page, selectedClub: Club | null, language: LanguageCode)
   return "Free padel courts in Prague in one place | HLEDEJKURTY";
 }
 
-function seoDescription(page: Page, selectedClub: Club | null, language: LanguageCode): string {
+function seoDescription(page: Page, selectedClub: Club | null, language: LanguageCode, selectedArticle: NewsArticle | null): string {
   if (selectedClub) {
     const price = formatCzkPerHour(lowestPrice(selectedClub.priceInfo));
     if (language === "cz") {
@@ -3792,6 +3930,13 @@ function seoDescription(page: Page, selectedClub: Club | null, language: Languag
       return "Список падел-клубів у Празі з адресами, цінами, типами кортів, Multisport і посиланнями на офіційне бронювання.";
     }
     return "Browse Prague padel clubs with addresses, prices, court types, Multisport support, and official booking links.";
+  }
+
+  if (page === "news") {
+    if (selectedArticle) return localizedNewsArticle(selectedArticle, language).excerpt;
+    if (language === "cz") return "Průvodci po padelových klubech, výběry nejlepších kurtů, tipy pro hráče, Multisport a novinky z padelové komunity v Praze.";
+    if (language === "ua") return "Гайди по падел-клубах, добірки найкращих кортів, поради гравцям, Multisport та історії падел-спільноти Праги.";
+    return "Padel club guides, indoor-court roundups, player tips, Multisport comparisons, and stories from Prague's padel community.";
   }
 
   if (page === "about") return i18n.t("about.body");
@@ -3815,6 +3960,7 @@ function buildStructuredData({
   imageUrl,
   language,
   page,
+  selectedArticle,
   selectedClub,
   title
 }: {
@@ -3824,6 +3970,7 @@ function buildStructuredData({
   imageUrl: string;
   language: LanguageCode;
   page: Page;
+  selectedArticle: NewsArticle | null;
   selectedClub: Club | null;
   title: string;
 }): Record<string, unknown> {
@@ -3862,6 +4009,20 @@ function buildStructuredData({
   if (selectedClub) {
     graph.push(buildClubStructuredData(selectedClub, date, canonicalUrl));
     graph.push(buildBreadcrumbStructuredData([{ name: "Padel courts", url: SITE_ORIGIN }, { name: selectedClub.name, url: canonicalUrl }]));
+  } else if (selectedArticle) {
+    const article = localizedNewsArticle(selectedArticle, language);
+    graph[2] = {
+      ...graph[2],
+      "@type": "Article",
+      datePublished: selectedArticle.publishedAt,
+      headline: article.title,
+      mainEntityOfPage: canonicalUrl
+    };
+    graph.push(buildBreadcrumbStructuredData([
+      { name: "Padel courts", url: SITE_ORIGIN },
+      { name: i18n.t("nav.news", { lng: language }), url: new URL(newsPath(language), SITE_ORIGIN).toString() },
+      { name: article.title, url: canonicalUrl }
+    ]));
   } else if (page === "about") {
     graph.push(buildFaqStructuredData(canonicalUrl, language));
     graph.push(buildBreadcrumbStructuredData([{ name: "Padel courts", url: SITE_ORIGIN }, { name: title.replace(" | HLEDEJKURTY", ""), url: canonicalUrl }]));
@@ -3951,8 +4112,8 @@ function buildBreadcrumbStructuredData(items: Array<{ name: string; url: string 
   };
 }
 
-function canonicalUrlFor(page: Page, club: Club | null, language: LanguageCode): string {
-  return new URL(pathForRoute(page, club?.slug ?? null, language), SITE_ORIGIN).toString();
+function canonicalUrlFor(page: Page, club: Club | null, language: LanguageCode, article: NewsArticle | null = null): string {
+  return new URL(pathForRoute(page, club?.slug ?? null, language, article?.slug ?? null), SITE_ORIGIN).toString();
 }
 
 function absoluteSiteUrl(path: string): string {
@@ -4037,23 +4198,25 @@ function legalHref(page: "privacy" | "terms" | "cookies", language: LanguageCode
   return pathForRoute(page, null, language);
 }
 
-function routeFromLocation(pathname: string, params: URLSearchParams): { page: Page; clubSlug: string | null; language: LanguageCode } {
+function routeFromLocation(pathname: string, params: URLSearchParams): { page: Page; clubSlug: string | null; articleSlug: string | null; language: LanguageCode } {
   const language = languageFromPathname(pathname);
   const segments = pathname.split("/").filter(Boolean).map(decodeURIComponent);
   if (segments[0] === "en" || segments[0] === "ua") segments.shift();
-  if (segments[0] === "clubs" && segments[1]) return { page: "clubs", clubSlug: segments[1], language };
-  if (segments[0] === "clubs") return { page: "allClubs", clubSlug: null, language };
-  if (segments[0] === "about") return { page: "about", clubSlug: null, language };
-  if (segments[0] === "privacy-policy") return { page: "privacy", clubSlug: null, language };
-  if (segments[0] === "terms-of-use") return { page: "terms", clubSlug: null, language };
-  if (segments[0] === "cookie-policy") return { page: "cookies", clubSlug: null, language };
+  if (segments[0] === "clubs" && segments[1]) return { page: "clubs", clubSlug: segments[1], articleSlug: null, language };
+  if (segments[0] === "clubs") return { page: "allClubs", clubSlug: null, articleSlug: null, language };
+  if (segments[0] === "blog" || segments[0] === "news") return { page: "news", clubSlug: null, articleSlug: segments[1] ?? null, language };
+  if (segments[0] === "about") return { page: "about", clubSlug: null, articleSlug: null, language };
+  if (segments[0] === "privacy-policy") return { page: "privacy", clubSlug: null, articleSlug: null, language };
+  if (segments[0] === "terms-of-use") return { page: "terms", clubSlug: null, articleSlug: null, language };
+  if (segments[0] === "cookie-policy") return { page: "cookies", clubSlug: null, articleSlug: null, language };
 
   const page = pageFromParam(params.get("page"));
-  return { page, clubSlug: page === "clubs" ? params.get("club") : null, language };
+  return { page, clubSlug: page === "clubs" ? params.get("club") : null, articleSlug: null, language };
 }
 
 function pageFromParam(page: string | null): Page {
   if (page === "about") return "about";
+  if (page === "news") return "news";
   if (page === "all-clubs" || page === "courts") return "allClubs";
   if (page === "privacy" || page === "privacy-policy") return "privacy";
   if (page === "terms" || page === "terms-of-use") return "terms";
@@ -4061,10 +4224,11 @@ function pageFromParam(page: string | null): Page {
   return "clubs";
 }
 
-function pathForRoute(page: Page, clubSlug: string | null, language: LanguageCode = languageFromPathname(window.location.pathname)): string {
+function pathForRoute(page: Page, clubSlug: string | null, language: LanguageCode = languageFromPathname(window.location.pathname), articleSlug: string | null = null): string {
   const prefix = language === "en" ? "/en" : language === "ua" ? "/ua" : "";
   if (clubSlug) return `${prefix}/clubs/${encodeURIComponent(clubSlug)}/`;
   if (page === "allClubs") return `${prefix}/clubs/`;
+  if (page === "news") return articleSlug ? `${prefix}/blog/${encodeURIComponent(articleSlug)}/` : `${prefix}/blog/`;
   if (page === "about") return `${prefix}/about/`;
   if (page === "privacy") return `${prefix}/privacy-policy/`;
   if (page === "terms") return `${prefix}/terms-of-use/`;
@@ -4072,11 +4236,11 @@ function pathForRoute(page: Page, clubSlug: string | null, language: LanguageCod
   return `${prefix}/`;
 }
 
-function localizedPageUrl(page: Page, clubSlug: string | null, language: LanguageCode, date: string | null): string {
+function localizedPageUrl(page: Page, clubSlug: string | null, articleSlug: string | null, language: LanguageCode, date: string | null): string {
   const params = new URLSearchParams();
   if (page === "clubs" && date) params.set("date", date);
   const query = params.size > 0 ? `?${params.toString()}` : "";
-  return `${pathForRoute(page, clubSlug, language)}${query}`;
+  return `${pathForRoute(page, clubSlug, language, articleSlug)}${query}`;
 }
 
 function selectableDate(date: string | null | undefined, currentDate: string): string {
@@ -4168,11 +4332,13 @@ function weekdayForDate(date: string): number {
 }
 
 function writeUrl({
+  articleSlug = null,
   date,
   clubSlug,
   mode,
   page = "clubs"
 }: {
+  articleSlug?: string | null;
   date: string;
   clubSlug: string | null;
   mode: "push" | "replace";
@@ -4186,7 +4352,7 @@ function writeUrl({
   window.history[mode === "push" ? "pushState" : "replaceState"](
     null,
     "",
-    `${pathForRoute(page, clubSlug)}${query}`
+    `${pathForRoute(page, clubSlug, languageFromPathname(window.location.pathname), articleSlug)}${query}`
   );
 }
 
