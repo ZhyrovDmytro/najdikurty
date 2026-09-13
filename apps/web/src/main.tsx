@@ -75,6 +75,7 @@ import {
 import { approximateCountdown, nextApproximateCheck } from "./refresh-schedule";
 import { shareSlotsAsImage, type ShareableSlot } from "./slot-share";
 import {
+  LatestNewsCards,
   NewsArticlePage,
   NewsIndexPage,
   localizedNewsArticle,
@@ -1428,7 +1429,7 @@ function App() {
         />
       ) : (
         <>
-          {!selectedClub ? (
+          {!selectedClub && !hasSearchedAvailability ? (
             <section className="searchIntro" aria-labelledby="search-title">
               <h1 id="search-title">{t("home.title")}</h1>
               <p>{t("home.intro")}</p>
@@ -1652,7 +1653,9 @@ function App() {
           ) : (
             <HomeDiscovery
               clubs={trackedClubs}
+              language={language}
               onBrowseClubs={() => navigateToAllClubs("push")}
+              onOpenPost={(slug) => navigateToNews(slug, "push")}
               onSelectClub={(club) => updateSelectedClub(club.slug)}
               userCoordinates={userCoordinates}
             />
@@ -2012,12 +2015,16 @@ function CookieConsentBanner({
 
 function HomeDiscovery({
   clubs,
+  language,
   onBrowseClubs,
+  onOpenPost,
   onSelectClub,
   userCoordinates
 }: {
   clubs: TrackedClub[];
+  language: LanguageCode;
   onBrowseClubs: () => void;
+  onOpenPost: (slug: string) => void;
   onSelectClub: (club: Club) => void;
   userCoordinates: Coordinates | null;
 }) {
@@ -2085,6 +2092,8 @@ function HomeDiscovery({
           <p>{t("home.featureBookingBody")}</p>
         </Card>
       </div>
+
+      <LatestNewsCards language={language} onOpenPost={onOpenPost} />
 
       <section className="homeFeaturedClubs" aria-labelledby="home-featured-clubs-title">
         <div>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { NEWS_ARTICLES, NewsArticlePage, localizedNewsArticle, newsPath, newsPostPath } from "./news";
+import { LatestNewsCards, NEWS_ARTICLES, NewsArticlePage, localizedNewsArticle, newsPath, newsPostPath } from "./news";
 
 describe("localized news", () => {
   it("provides complete Czech, English, and Ukrainian versions of every post", () => {
@@ -28,5 +28,13 @@ describe("localized news", () => {
       <NewsArticlePage article={NEWS_ARTICLES[0]} language="en" onOpenClub={() => undefined} />
     );
     expect(markup).toContain('href="https://www.instagram.com/the_court_padel_/"');
+  });
+
+  it("renders the latest article as a tagged home-page card", () => {
+    const markup = renderToStaticMarkup(<LatestNewsCards language="en" onOpenPost={() => undefined} />);
+
+    expect(markup).toContain("Latest from the blog");
+    expect(markup).toContain("New padel club");
+    expect(markup).toContain('href="/en/blog/the-court-opening/"');
   });
 });

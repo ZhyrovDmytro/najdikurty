@@ -23,22 +23,28 @@ export type NewsArticle = {
   translations: Record<LanguageCode, LocalizedArticle>;
 };
 
-const newsCopy: Record<LanguageCode, { title: string; intro: string; readArticle: string; published: string }> = {
+const newsCopy: Record<LanguageCode, { title: string; intro: string; latestTitle: string; latestIntro: string; readArticle: string; published: string }> = {
   cz: {
     title: "Články o padelu",
     intro: "Průvodci, výběry klubů, tipy pro hráče i novinky z padelové komunity v Praze a okolí.",
+    latestTitle: "Nejnovější z blogu",
+    latestIntro: "Novinky z padelových klubů v Praze a okolí.",
     readArticle: "Přečíst článek",
     published: "Publikováno"
   },
   en: {
     title: "Padel blog",
     intro: "Guides, club roundups, player tips, and stories from the padel community in and around Prague.",
+    latestTitle: "Latest from the blog",
+    latestIntro: "News from padel clubs in Prague and nearby.",
     readArticle: "Read article",
     published: "Published"
   },
   ua: {
     title: "Статті про падел",
     intro: "Гайди, добірки клубів, поради гравцям та історії падел-спільноти Праги й околиць.",
+    latestTitle: "Нове в блозі",
+    latestIntro: "Новини падел-клубів Праги та околиць.",
     readArticle: "Читати статтю",
     published: "Опубліковано"
   }
@@ -51,7 +57,7 @@ export const NEWS_ARTICLES: NewsArticle[] = [
     imageUrl: "clubs/optimized/the-court-1200.webp",
     translations: {
       cz: {
-        category: "Nový klub",
+        category: "Nový padelový klub",
         title: "The Court přináší padel nové generace kousek za Prahu",
         excerpt: "Dva panoramatické kurty s chytrým sledováním zápasů, samostatný kurt 1vs1 a míčový automat zdarma. Poznejte nový klub The Court v Jinočanech.",
         intro: "V Jinočanech západně od Prahy otevírá The Court — nový krytý padelový klub, který spojuje komfortní zázemí s technologiemi pro hráče všech úrovní. Pod jednou střechou nabízí dva plnohodnotné panoramatické kurty a jeden speciální single kurt.",
@@ -96,7 +102,7 @@ export const NEWS_ARTICLES: NewsArticle[] = [
         clubLinkLabel: "Zobrazit klub a volné termíny"
       },
       en: {
-        category: "New club",
+        category: "New padel club",
         title: "The Court brings next-generation padel just outside Prague",
         excerpt: "Two panoramic courts with smart match tracking, a dedicated 1vs1 court, and a free ball machine. Meet the new The Court club in Jinočany.",
         intro: "The Court is opening in Jinočany, west of Prague: a new indoor padel club combining comfortable facilities with technology for players of every level. It offers two full-size panoramic courts and one special singles court under one roof.",
@@ -141,7 +147,7 @@ export const NEWS_ARTICLES: NewsArticle[] = [
         clubLinkLabel: "View the club and available times"
       },
       ua: {
-        category: "Новий клуб",
+        category: "Новий падел-клуб",
         title: "The Court відкриває падел нового покоління поруч із Прагою",
         excerpt: "Два панорамні корти з розумним відстеженням матчів, окремий корт 1vs1 і безкоштовна машина для м’ячів. Знайомтеся з новим клубом The Court у Їночанах.",
         intro: "У Їночанах на захід від Праги відкривається The Court — новий критий падел-клуб, що поєднує комфортну інфраструктуру з технологіями для гравців будь-якого рівня. Під одним дахом розташовані два повнорозмірні панорамні корти та один спеціальний одиночний корт.",
@@ -235,6 +241,51 @@ export function NewsIndexPage({ language, onOpenPost }: { language: LanguageCode
                 <a className="newsReadMore" href={newsPostPath(article.slug, language)} onClick={(event) => { event.preventDefault(); onOpenPost(article.slug); }}>
                   {copy.readArticle}<ArrowRight size={17} />
                 </a>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+export function LatestNewsCards({ language, onOpenPost }: { language: LanguageCode; onOpenPost: (slug: string) => void }) {
+  const copy = newsCopy[language];
+  const latestArticles = [...NEWS_ARTICLES]
+    .sort((first, second) => second.publishedAt.localeCompare(first.publishedAt))
+    .slice(0, 3);
+
+  return (
+    <section className="latestNews" aria-labelledby="latest-news-title">
+      <header className="latestNewsHeader">
+        <div>
+          <h2 id="latest-news-title">{copy.latestTitle}</h2>
+          <p>{copy.latestIntro}</p>
+        </div>
+      </header>
+      <div className="latestNewsGrid">
+        {latestArticles.map((article) => {
+          const post = localizedNewsArticle(article, language);
+          const href = newsPostPath(article.slug, language);
+          const openPost = (event: React.MouseEvent<HTMLAnchorElement>) => {
+            event.preventDefault();
+            onOpenPost(article.slug);
+          };
+
+          return (
+            <article className="latestNewsCard" key={article.slug}>
+              <a className="latestNewsImage" href={href} onClick={openPost}>
+                <img src={articleImageUrl(article)} alt="The Court padel club" />
+              </a>
+              <div className="latestNewsCardBody">
+                <div className="newsMeta">
+                  <span>{post.category}</span>
+                  <time dateTime={article.publishedAt}>{formattedDate(article.publishedAt, language)}</time>
+                </div>
+                <h3><a href={href} onClick={openPost}>{post.title}</a></h3>
+                <p>{post.excerpt}</p>
+                <a className="newsReadMore" href={href} onClick={openPost}>{copy.readArticle}<ArrowRight size={17} /></a>
               </div>
             </article>
           );

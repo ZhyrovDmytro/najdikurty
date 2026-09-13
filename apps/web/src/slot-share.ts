@@ -28,11 +28,11 @@ const SLOT_GAP = 12;
 export async function shareSlotsAsImage(slots: ShareableSlot[], copy: ShareImageCopy): Promise<"shared" | "downloaded"> {
   const blob = await renderSlotsImage(slots, copy);
   const file = new File([blob], "hledejkurty-availability.png", { type: "image/png" });
-  const text = buildShareText(slots);
+  const shareData = buildImageShareData(file);
 
-  if (navigator.share && navigator.canShare?.({ files: [file] })) {
+  if (navigator.share && navigator.canShare?.(shareData)) {
     try {
-      await navigator.share({ files: [file], text, title: copy.title });
+      await navigator.share(shareData);
       return "shared";
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") throw error;
@@ -45,12 +45,8 @@ export async function shareSlotsAsImage(slots: ShareableSlot[], copy: ShareImage
   return "downloaded";
 }
 
-export function buildShareText(slots: ShareableSlot[]): string {
-  const groups = groupSlots(slots);
-  return groups.map(({ clubName, date, slots: clubSlots }) => {
-    const times = clubSlots.map((slot) => `${slot.start}-${slot.end}`).join(", ");
-    return `${clubName} — ${date}: ${times}\n${clubSlots[0]?.bookingUrl ?? ""}`.trimEnd();
-  }).join("\n");
+export function buildImageShareData(file: File): ShareData {
+  return { files: [file] };
 }
 
 async function renderSlotsImage(slots: ShareableSlot[], copy: ShareImageCopy): Promise<Blob> {
