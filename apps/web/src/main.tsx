@@ -104,7 +104,6 @@ const USE_DATABASE_SEARCH = import.meta.env.VITE_USE_DATABASE_SEARCH === "true";
 type Page = "clubs" | "allClubs" | "news" | "about" | "privacy" | "terms" | "cookies";
 const initialRoute = routeFromLocation(window.location.pathname, initialParams);
 const initialPage: Page = initialRoute.page;
-const shouldLoadInitialClubResults = initialPage === "clubs" && !initialRoute.clubSlug;
 type CourtType = "indoor" | "outdoor";
 type CourtTypeFilter = CourtType | "all";
 type FindCourtSort = "name" | "priceAsc" | "priceDesc" | "multisport" | "indoor" | "outdoor";
@@ -654,16 +653,16 @@ function App() {
   const [manualRefreshTone, setManualRefreshTone] = useState<ManualRefreshTone>("info");
   const [isManualRefreshRequesting, setIsManualRefreshRequesting] = useState(false);
   const [isManualRefreshWaiting, setIsManualRefreshWaiting] = useState(false);
-  const [isLoading, setIsLoading] = useState(shouldLoadInitialClubResults);
+  const [isLoading, setIsLoading] = useState(false);
   const [loadProgress, setLoadProgress] = useState<LoadProgress>({
     completed: 0,
-    total: shouldLoadInitialClubResults ? FETCHABLE_CLUBS.length : 0
+    total: 0
   });
   const [checkedClubSlugs, setCheckedClubSlugs] = useState<Set<string>>(() => new Set());
-  const [availabilityCheckClubs, setAvailabilityCheckClubs] = useState<Club[]>(
-    shouldLoadInitialClubResults ? FETCHABLE_CLUBS : []
+  const [availabilityCheckClubs, setAvailabilityCheckClubs] = useState<Club[]>([]);
+  const [hasSearchedAvailability, setHasSearchedAvailability] = useState(
+    initialPage === "clubs" && Boolean(initialRoute.clubSlug)
   );
-  const [hasSearchedAvailability, setHasSearchedAvailability] = useState(initialPage === "clubs");
   const [userCoordinates, setUserCoordinates] = useState<Coordinates | null>(null);
   const [locationStatus, setLocationStatus] = useState<LocationStatus>("idle");
   const [analyticsConsent, setAnalyticsConsentState] = useState<AnalyticsConsent | null>(() => readAnalyticsConsent());
@@ -673,7 +672,6 @@ function App() {
   const [isSharingSlots, setIsSharingSlots] = useState(false);
   const loadSequenceRef = useRef(0);
   const manualRefreshSequenceRef = useRef(0);
-  const initialClubResultsRequestedRef = useRef(false);
   const currentPragueDate = pragueDateInputValue(now);
   const maximumSelectableDate = addDaysToDateInput(currentPragueDate, MAX_SEARCH_DAYS_AHEAD);
   const trackedClubs = useMemo(() => sortTrackedClubs(buildTrackedClubs(CLUBS), allClubsSort), [allClubsSort]);
@@ -847,12 +845,6 @@ function App() {
       captureEvent("location_permission_result", { result });
     }
   }
-
-  useEffect(() => {
-    if (!shouldLoadInitialClubResults || initialClubResultsRequestedRef.current) return;
-    initialClubResultsRequestedRef.current = true;
-    void loadAvailability();
-  }, []);
 
   useEffect(() => {
     if (page !== "clubs") return;
