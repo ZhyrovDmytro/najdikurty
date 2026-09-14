@@ -171,5 +171,8 @@ describe("fetchJdemeNaToAvailability", () => {
 
     expect(result.courts).toHaveLength(2);
     expect(requests).toHaveLength(2);
+    expect(requests[0]).toBe(
+      "https://jdemenato.cz/reservation/portalsearch/172791371_Praha_2026-08-12_8_22_f"
+    );
   });
 });

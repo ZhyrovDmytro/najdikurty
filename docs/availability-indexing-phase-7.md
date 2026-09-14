@@ -6,7 +6,11 @@ Phase 7 adds a database-backed scheduler and worker without changing the existin
 
 - Timezone: `Europe/Prague`
 - Active window: 08:00–22:00 inclusive
-- Today through 7 days ahead: every 20 minutes from 08:00 through 22:00
+- Today: every 20 minutes from 08:00 through 22:00
+- Tomorrow: every 60 minutes
+- 2–3 days ahead: every 180 minutes
+- 4–7 days ahead: three times daily
+- Provider-specific overrides can use a lower probe cadence while a provider is blocked.
 - A target is paused after its target date's final run; a manual request can still reactivate it.
 - Default target horizon: today through 7 days ahead (8 calendar dates) for every enabled catalog club.
 - Targets outside the configured horizon are paused and are not claimed by the worker.
@@ -22,7 +26,8 @@ The scheduler uses local Prague wall-clock times, so UTC execution times move co
 - Global concurrency defaults to 4.
 - Per-provider concurrency defaults to 1 and supports JSON overrides.
 - Each provider call has a 45-second timeout by default.
-- Failures retry at most 3 times using exponential backoff capped at 15 minutes with ±20% jitter.
+- Retryable failures retry at most 3 times using exponential backoff capped at 15 minutes with ±20% jitter.
+- Permanent provider errors (including authentication, configuration, and parse failures) skip immediate retries and wait for the next scheduled probe.
 - Exhausted retries remain recorded as failed, then become eligible at the next normal scheduled interval.
 - Every provider attempt is also persisted in `scrape_runs` by the indexing service.
 
@@ -79,6 +84,8 @@ npm run start:jobs:once -w @mamekurt/api
 ```
 
 The initial Render deployment runs every ten minutes during the daytime window. Render evaluates cron expressions in UTC, so use `*/10 6-20 * * *` during Prague summer time (CEST) and `*/10 7-21 * * *` during standard time (CET). This covers the final 22:00 Prague refresh; invocations after that final target find no regular work. The command seeds missing targets, accelerates targets that still carry an older, slower schedule, drains all work that is currently due, and exits. Manual targets queued outside this window wait for the next daytime invocation.
+
+Each invocation first checks target coverage with one query. Catalog and target upserts run only when a club/date target is missing (normally once when the horizon rolls to a new day), avoiding hundreds of redundant database round trips on every ten-minute poll.
 
 Both processes require `DATABASE_URL` and the provider credentials already documented in `apps/api/.env.example`. The scheduler and worker are separate from the API web process so a slow provider cannot consume web request capacity.
 

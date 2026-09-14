@@ -32,6 +32,8 @@ describe("indexed provider catalog", () => {
     expect(getIndexedClubRegistration("head-tenis-centrum-vestec").refreshCadenceMinutes).toBeUndefined();
     expect(() => getIndexedClubRegistration("plechovka-dubec")).not.toThrow();
     expect(() => getIndexedClubRegistration("tk-sparta-praha")).not.toThrow();
+    expect(getIndexedClubRegistration("tk-sparta-praha").providerName).toBe("JdemeNaTo public portal");
+    expect(getIndexedClubRegistration("tk-sparta-praha").refreshCadenceMinutes).toBeUndefined();
     expect(() => getIndexedClubRegistration("padel-radotin")).not.toThrow();
     expect(() => getIndexedClubRegistration("padel-hall-radotin")).not.toThrow();
     expect(() => getIndexedClubRegistration("padel-cakovice")).not.toThrow();

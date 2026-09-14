@@ -9,6 +9,7 @@ import { jobConfig } from "../scheduling/config.js";
 import { retryDelayMs, ScrapeJobRepository, type ClaimedScrapeTarget } from "../scheduling/job-repository.js";
 import { nextScheduledRefresh } from "../scheduling/policy.js";
 import { ProviderConcurrencyLimiter } from "../scheduling/provider-limiter.js";
+import { isRetryableScrapeError } from "../scheduling/retry-policy.js";
 import { seedScrapeTargets } from "../scheduling/seeder.js";
 
 loadEnvironment({ path: [".env.local", ".env"] });
@@ -90,7 +91,8 @@ async function processTarget(target: ClaimedScrapeTarget): Promise<void> {
     console.log(JSON.stringify({ event: "worker.scrape_success", workerId, targetId: target.id, club: target.clubSlug, date: target.targetDate, durationMs: Date.now() - startedAt }));
   } catch (error) {
     const now = new Date();
-    const exhausted = target.attemptCount >= settings.maxAttempts;
+    const retryable = isRetryableScrapeError(error);
+    const exhausted = !retryable || target.attemptCount >= settings.maxAttempts;
     let nextRefreshAt: Date | null = exhausted
       ? nextScheduledRefresh(now, target.targetDate, {
           timezone: settings.timezone,
@@ -108,7 +110,7 @@ async function processTarget(target: ClaimedScrapeTarget): Promise<void> {
       exhausted ? 0 : target.attemptCount,
       now
     );
-    console.error(JSON.stringify({ event: "worker.scrape_failure", workerId, targetId: target.id, club: target.clubSlug, date: target.targetDate, attempt: target.attemptCount, exhausted, nextRefreshAt: nextRefreshAt?.toISOString() ?? null, error: error instanceof Error ? error.message : String(error) }));
+    console.error(JSON.stringify({ event: "worker.scrape_failure", workerId, targetId: target.id, club: target.clubSlug, date: target.targetDate, attempt: target.attemptCount, retryable, exhausted, nextRefreshAt: nextRefreshAt?.toISOString() ?? null, error: error instanceof Error ? error.message : String(error) }));
   }
 }
 

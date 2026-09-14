@@ -133,21 +133,13 @@ export PADEL_SLAVIA_PASSWORD="your-password"
 export PADEL_SLAVIA_AVAILABILITY_TIMEOUT_MS="45000"
 ```
 
-TK Sparta is fetched through the public JdemeNaTo portal search result first. The logged-in calendar/browser fallback is kept as a backup:
+TK Sparta is fetched entirely through the public JdemeNaTo portal search. The URL carries the padel sport ID, Prague, requested date, and 08:00–22:00 window; the scraper selects padel, submits the search, opens the TK Sparta Praha card, and parses the inline calendar. No JdemeNaTo account is required:
 
 ```bash
-export TK_SPARTA_EMAIL="your-email"
-export TK_SPARTA_PASSWORD="your-password"
 export JDEMENATO_PORTAL_TIMEOUT_MS="10000"
-```
-
-If the hosting provider blocks the plain HTTP login request, enable the TK Sparta browser-backed fallback:
-
-```bash
 export JDEMENATO_BROWSER="1"
 export JDEMENATO_BROWSER_PROFILE_DIR="/tmp/mamekurt-jdemenato"
 export JDEMENATO_BROWSER_HEADLESS="true"
-export JDEMENATO_HTTP_TIMEOUT_MS="5000"
 export PLAYWRIGHT_BROWSERS_PATH="0"
 export TK_SPARTA_AVAILABILITY_TIMEOUT_MS="25000"
 ```
@@ -158,7 +150,7 @@ On Render, install Chromium during build before starting the API:
 PLAYWRIGHT_BROWSERS_PATH=0 npm ci && PLAYWRIGHT_BROWSERS_PATH=0 npx playwright-core install chromium && npm run build -w @mamekurt/scrapers && npm run build -w @mamekurt/api
 ```
 
-If you want to route only the browser login through an approved proxy, set `JDEMENATO_BROWSER_PROXY_SERVER` and optionally
+If you want to route the public browser request through an approved proxy, set `JDEMENATO_BROWSER_PROXY_SERVER` and optionally
 `JDEMENATO_BROWSER_PROXY_USERNAME` / `JDEMENATO_BROWSER_PROXY_PASSWORD`.
 
 Padel Džus uses Bookaball. Availability can be read from the booking API, and credentials can be provided for an authenticated session:
@@ -170,7 +162,7 @@ export BOOKABALL_PASSWORD="your-password"
 
 The seven iSportSystem clubs use the provider's authorized public JSON endpoint at `/api/get-times.php`. No API key, browser automation, or Apify configuration is required. Each request specifies a date and the club's padel `id_sport`; configured court allow-lists exclude non-playable substitute, child, closed, or maintenance lanes. The Court combines its standard and 1vs1 categories from two sport IDs.
 
-The indexing schedule refreshes the eight-day horizon every 20 minutes from 08:00 through 22:00 Prague time. Requests are cached on our side, and the worker's default per-provider concurrency of one keeps iSportSystem calls sequential and comfortably below the provider's current burst limit.
+The indexing schedule refreshes today every 20 minutes, tomorrow hourly, days 2–3 every three hours, and days 4–7 three times daily from 08:00 through 22:00 Prague time. Permanent provider failures are not immediately retried. Requests are cached on our side, and the worker's default per-provider concurrency of one keeps iSportSystem calls sequential and comfortably below the provider's current burst limit.
 
 ## API example
 

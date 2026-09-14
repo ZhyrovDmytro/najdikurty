@@ -10,9 +10,12 @@ export async function seedScrapeTargets(
   now = new Date()
 ): Promise<number> {
   const dates = targetDates(now, settings.horizonDays, settings.timezone);
+  const clubSlugs = indexedClubSlugs();
+  if (await repository.hasCompleteTargetSet(clubSlugs, dates)) return 0;
+
   await repository.pauseTargetsOutsideRange(dates[0], dates[dates.length - 1], now);
   let seeded = 0;
-  for (const slug of indexedClubSlugs()) {
+  for (const slug of clubSlugs) {
     const registration = getIndexedClubRegistration(slug);
     const club = await repository.ensureCatalogClub(registration);
     for (const date of dates) {

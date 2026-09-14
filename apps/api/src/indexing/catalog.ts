@@ -1,7 +1,6 @@
 import {
   fetchBookaballAvailability,
   fetchCourtyOneAvailability,
-  fetchJdemeNaToAvailability,
   fetchJdemeNaToPortalSearchAvailability,
   fetchPadelosAvailability,
   fetchPadelSlaviaAvailability,
@@ -48,10 +47,10 @@ const REGISTRATIONS: Record<string, RegistrationFactory> = {
       name: "TK Sparta Praha",
       providerId: "jdemenato",
       providerExternalId: "TK Sparta Praha",
-      bookingUrl: "https://jdemenato.cz/reservation/tk-sparta-praha/reservationcalendaroverview",
+      bookingUrl: "https://jdemenato.cz/reservation/portal",
       courtIndoor: false
     }),
-    "JdemeNaTo",
+    "JdemeNaTo public portal",
     fetchTkSpartaAvailability
   ),
   "padel-prosek": () => legacyRegistration(
@@ -290,23 +289,14 @@ function legacyOptions(input: LegacyProviderFetchInput) {
 }
 
 async function fetchTkSpartaAvailability(input: LegacyProviderFetchInput): Promise<AvailabilityResult> {
-  try {
-    return await fetchJdemeNaToPortalSearchAvailability({
-      ...legacyOptions(input),
-      organizationName: "TK Sparta Praha",
-      timeoutMs: 20_000
-    });
-  } catch (portalError) {
-    const credentials = tkSpartaCredentials();
-    if (!credentials) {
-      throw portalError;
-    }
-
-    return fetchJdemeNaToAvailability({
-      ...legacyOptions(input),
-      credentials
-    });
-  }
+  return fetchJdemeNaToPortalSearchAvailability({
+    ...legacyOptions(input),
+    browser: jdemenatoPublicBrowser(input.signal),
+    fromHour: 8,
+    organizationName: "TK Sparta Praha",
+    timeoutMs: optionalNumber(process.env.JDEMENATO_PORTAL_TIMEOUT_MS) ?? 10_000,
+    toHour: 22
+  });
 }
 
 function abortableFetch(signal?: AbortSignal): typeof fetch {
@@ -319,16 +309,34 @@ function padelSlaviaCredentials() {
   return email && password ? { email, password } : undefined;
 }
 
-function tkSpartaCredentials() {
-  const email = process.env.TK_SPARTA_EMAIL?.trim();
-  const password = process.env.TK_SPARTA_PASSWORD?.trim();
-  return email && password ? { email, password } : undefined;
-}
-
 function bookaballCredentials() {
   const email = process.env.BOOKABALL_EMAIL?.trim();
   const password = process.env.BOOKABALL_PASSWORD?.trim();
   return email && password ? { email, password } : undefined;
+}
+
+function jdemenatoPublicBrowser(signal?: AbortSignal) {
+  if (process.env.JDEMENATO_BROWSER === "0") return false;
+  return {
+    enabled: true,
+    userDataDir: process.env.JDEMENATO_BROWSER_PROFILE_DIR,
+    channel: process.env.JDEMENATO_BROWSER_CHANNEL,
+    executablePath: process.env.JDEMENATO_BROWSER_EXECUTABLE_PATH,
+    headless: process.env.JDEMENATO_BROWSER_HEADLESS !== "false",
+    signal,
+    timeoutMs: optionalNumber(process.env.JDEMENATO_BROWSER_TIMEOUT_MS) ?? 60_000,
+    proxy: jdemenatoBrowserProxy()
+  };
+}
+
+function jdemenatoBrowserProxy() {
+  const server = process.env.JDEMENATO_BROWSER_PROXY_SERVER?.trim();
+  if (!server) return undefined;
+  return {
+    server,
+    username: process.env.JDEMENATO_BROWSER_PROXY_USERNAME,
+    password: process.env.JDEMENATO_BROWSER_PROXY_PASSWORD
+  };
 }
 
 function padelSlaviaBrowser(signal?: AbortSignal) {

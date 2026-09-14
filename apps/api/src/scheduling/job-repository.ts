@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gt, inArray, lt, lte, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gt, inArray, lt, lte, or, sql } from "drizzle-orm";
 import type { IndexedClubRegistration } from "../indexing/catalog.js";
 import type { Database } from "../db/client.js";
 import { bookingProviders, clubs, scrapeTargets, type ScrapeTargetRow } from "../db/schema.js";
@@ -64,6 +64,16 @@ export class ScrapeJobRepository {
           gt(scrapeTargets.nextRefreshAt, nextRefreshAt)
         )
       });
+  }
+
+  async hasCompleteTargetSet(clubSlugs: string[], targetDates: string[]): Promise<boolean> {
+    if (clubSlugs.length === 0 || targetDates.length === 0) return false;
+    const [result] = await this.db
+      .select({ value: count() })
+      .from(scrapeTargets)
+      .innerJoin(clubs, eq(scrapeTargets.clubId, clubs.id))
+      .where(and(inArray(clubs.slug, clubSlugs), inArray(scrapeTargets.targetDate, targetDates)));
+    return Number(result?.value ?? 0) === clubSlugs.length * targetDates.length;
   }
 
   async pauseTargetsOutsideRange(firstDate: string, lastDate: string, now = new Date()): Promise<number> {

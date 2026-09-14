@@ -6,7 +6,6 @@ import { z } from "zod";
 import {
   fetchBookaballAvailability,
   fetchCourtyOneAvailability,
-  fetchJdemeNaToAvailability,
   fetchJdemeNaToPortalSearchAvailability,
   fetchPadelosAvailability,
   fetchPadelSlaviaAvailability,
@@ -472,31 +471,17 @@ async function fetchAvailabilityByClub(query: z.infer<typeof querySchema>, signa
 }
 
 async function fetchTkSpartaAvailability(query: z.infer<typeof querySchema>, signal: AbortSignal, fetchImpl: typeof fetch) {
-  try {
-    return await fetchJdemeNaToPortalSearchAvailability({
-      browser: jdemenatoBrowserOptions(query.live, signal),
-      clubSlug: query.club,
-      date: query.date,
-      fetchImpl,
-      logger: jdemenatoBrowserLogger(),
-      organizationName: "TK Sparta Praha",
-      sport: query.sport,
-      timeoutMs: optionalNumber(process.env.JDEMENATO_PORTAL_TIMEOUT_MS) ?? 10_000
-    });
-  } catch (error) {
-    logError("jdemenato.portal.failure", error, {
-      club: query.club,
-      date: query.date
-    });
-  }
-
-  return fetchJdemeNaToAvailability({
-    browser: jdemenatoBrowserOptions(query.live, signal),
+  return fetchJdemeNaToPortalSearchAvailability({
+    browser: jdemenatoBrowserOptions(signal),
     clubSlug: query.club,
-    credentials: tkSpartaCredentials(),
     date: query.date,
     fetchImpl,
-    sport: query.sport
+    fromHour: 8,
+    logger: jdemenatoBrowserLogger(),
+    organizationName: "TK Sparta Praha",
+    sport: query.sport,
+    timeoutMs: optionalNumber(process.env.JDEMENATO_PORTAL_TIMEOUT_MS) ?? 10_000,
+    toHour: 22
   });
 }
 
@@ -531,24 +516,9 @@ function padelSlaviaBrowserOptions(live?: string, signal?: AbortSignal) {
   };
 }
 
-function tkSpartaCredentials() {
-  const email = process.env.TK_SPARTA_EMAIL;
-  const password = process.env.TK_SPARTA_PASSWORD;
-
-  if (!email || !password) {
-    return undefined;
-  }
-
-  return { email: email.trim(), password: password.trim() };
-}
-
-function jdemenatoBrowserOptions(live?: string, signal?: AbortSignal) {
+function jdemenatoBrowserOptions(signal?: AbortSignal) {
   if (process.env.JDEMENATO_BROWSER === "0") {
     return false;
-  }
-
-  if (process.env.JDEMENATO_BROWSER !== "1" && live !== "1") {
-    return undefined;
   }
 
   return {

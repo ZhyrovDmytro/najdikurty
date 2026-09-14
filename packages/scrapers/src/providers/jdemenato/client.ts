@@ -5,7 +5,7 @@ import type { AvailabilityResult } from "../../types.js";
 const DEFAULT_BROWSER_PROFILE_DIR = ".mamekurt/browser-profiles/jdemenato";
 const DEFAULT_BROWSER_TIMEOUT_MS = 90_000;
 const DEFAULT_HTTP_FALLBACK_TIMEOUT_MS = 5_000;
-const DEFAULT_PORTAL_FROM_HOUR = 2;
+const DEFAULT_PORTAL_FROM_HOUR = 8;
 const DEFAULT_PORTAL_TO_HOUR = 22;
 
 export interface JdemeNaToFetchOptions {
