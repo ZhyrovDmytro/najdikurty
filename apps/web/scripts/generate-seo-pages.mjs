@@ -3,6 +3,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const SITE_ORIGIN = "https://hledejkurty.cz";
+// Keep sitemap dates tied to real content changes. Using the build date here makes
+// every URL look newly updated after every deploy and wastes crawler attention.
+const SEO_CONTENT_LAST_MODIFIED = "2026-09-21";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distDir = path.resolve(__dirname, "../dist");
 const template = await readFile(path.join(distDir, "index.html"), "utf8");
@@ -14,24 +17,24 @@ const languages = [
 ];
 
 const clubs = [
-  ["tk-sparta-praha", "TK Sparta Prague", "Za Císařským mlýnem 1115/2, Praha 7-Bubeneč", 2, true],
-  ["padel-prosek", "Padel Prosek", "Lovosická 559, Praha 9-Střížkov", 4, true],
-  ["padel-club-spoje", "Padel Club Spoje", "Na Balkáně 990/21A, Praha 3", 2, false],
-  ["tenis-a-padel-klub-pisecna", "Tenis & Padel klub Písečná", "K Sadu 590/1, Praha 8-Troja", 4, false],
+  ["tk-sparta-praha", "TK Sparta Prague", "Za Císařským mlýnem 1115/2, 170 00 Praha 7-Bubeneč", 2, true],
+  ["padel-prosek", "Padel Prosek", "Lovosická 559, 190 00 Praha 9-Střížkov", 4, true],
+  ["padel-club-spoje", "Padel Club Spoje", "Na Balkáně 990/21A, 130 00 Praha", 2, false],
+  ["tenis-a-padel-klub-pisecna", "Tenis & Padel klub Písečná", "K Sadu 590/1, Praha 8 - Troja, 182 00 Praha", 4, false],
   ["sk-slavia-praha-padel", "SK Slavia Praha Padel", "Vladivostocká 1460/10, Praha 10", 4, false],
-  ["head-tenis-centrum-vestec", "Head Tenis Centrum, Vestec", "Sportovní 456, Vestec-Jesenice u Prahy", 4, true],
-  ["plechovka-dubec", "Plechovka Dubeč", "Kalašova, č.e. 196, Praha-Dubeč", 3, true],
-  ["padel-radotin", "Padel Radotín", "Šárovo kolo 932/1, Praha 16", 3, true],
-  ["padel-hall-radotin", "Padel Hall Olympia Radotín", "Ke Zděři 1741/21, Praha 16-Radotín", 1, false],
-  ["padel-cakovice", "Padel Čakovice", "Jizerská 328/4, Praha-Čakovice", 2, false],
-  ["padel-neride", "Padel Neride", "V Chotejně 700, Praha 15", 3, true],
-  ["padel-dzus", "Padel Džus", "U Továren 999/31, Praha 15-Hostivař", 4, true],
-  ["padel-powers-smichov", "Padel Powers Smíchov", "Křížová 6, Praha 5-Smíchov", 8, true],
-  ["one-padel", "One Padel", "Ringhofferova 115, Praha 17-Zličín", 9, false],
+  ["head-tenis-centrum-vestec", "Head Tenis Centrum, Vestec", "Sportovní 456, 252 42 Vestec-Jesenice u Prahy", 4, true],
+  ["plechovka-dubec", "Plechovka Dubeč", "Kalašova, č.e. 196, 107 00 Praha-Dubeč", 3, true],
+  ["padel-radotin", "Padel Radotín", "Šárovo kolo 932/1, 153 00 Praha 16", 3, true],
+  ["padel-hall-radotin", "Padel Hall Olympia Radotín", "Ke Zděři 1741/21, 153 00 Praha 16-Radotín", 1, false],
+  ["padel-cakovice", "Padel Čakovice", "Jizerská 328/4, 196 00 Praha-Čakovice", 2, false],
+  ["padel-neride", "Padel Neride", "V Chotejně 700, 102 00 Praha 15", 3, true],
+  ["padel-dzus", "Padel Džus", "U Továren 999/31, 102 00 Praha 15-Hostivař", 4, true],
+  ["padel-powers-smichov", "Padel Powers Smíchov", "Křížová 6, 150 00 Praha 5-Smíchov", 8, true],
+  ["one-padel", "One Padel", "Ringhofferova 115, 155 21 Praha 17-Zličín", 9, false],
   ["cisarska-louka-padel", "Císařská louka Padel", "Areál Císařská louka, Praha 5-Smíchov", 3, true],
-  ["sk-satalice", "SK Satalice", "Budovatelská 12, Praha-Satalice", 2, false],
-  ["the-court", "The Court", "Mezi Stromy 507, Jinočany", 3, false, true],
-  ["ltc-modrany-2005", "LTC Modřany", "Komořanská 2229/49, Praha 4-Modřany", 3, false]
+  ["sk-satalice", "SK Satalice", "Budovatelská 12, 190 15 Praha-Satalice", 2, false],
+  ["the-court", "The Court", "Mezi Stromy 507, 252 25 Jinočany", 3, false, true],
+  ["ltc-modrany-2005", "LTC Modřany", "Komořanská 2229/49, 143 00 Praha 4-Modřany", 3, false]
 ].map(([slug, name, address, courtCount, multisport, singles]) => ({ slug, name, address, courtCount, multisport, singles }));
 
 const copy = {
@@ -50,7 +53,7 @@ const copy = {
       clubs: [["Porovnejte pražské padelové kluby", "Na stránce každého klubu najdete adresu, počet kurtů, zveřejněné ceny, podporu Multisport a odkaz do oficiálního rezervačního systému. Seznam zahrnuje Prahu i vybrané lokality v jejím okolí."], ["Zkontrolujte nedávnou dostupnost", "Výsledky používají dostupnost uloženou z podporovaných klubových systémů pro dnešek a následujících sedm dní. Data se během dne obnovují, konečným zdrojem však zůstává systém klubu."]],
       club: [["Dostupnost a oficiální rezervace", "HLEDEJKURTY ukládá dostupnost pro dnešek a následujících sedm dní a podporované zdroje během dne pravidelně obnovuje. Termíny se mohou mezi kontrolami změnit, proto v oficiálním systému klubu potvrďte kurt, konečnou cenu a podmínky rezervace."], ["Porovnejte padelové kluby v Praze", "Prohlédněte si všechny sledované kluby a porovnejte adresy, počet kurtů, ceny, vybavení, podporu Multisport a poslední dostupnost před výběrem místa pro hru. Rezervaci vždy dokončete u konkrétního provozovatele."], ["Aktuální informace před hrou", "Dostupnost a zveřejněné ceny mají informativní charakter. Před cestou zkontrolujte oficiální systém, provozní dobu a pravidla klubu, protože rezervace ostatních hráčů mohou dostupný termín rychle změnit."]]
     },
-    labels: ["Adresa", "Kurty", "Cena", "Aktuální zveřejněné ceny najdete v přehledu klubu", "Klub uvádí podporu Multisport.", "Přijímané platební metody ověřte přímo u klubu.", "Všechny sledované kluby", "Hledat dostupnost kurtů"],
+    labels: ["Adresa", "Kurty", "Cena", "Aktuální zveřejněné ceny najdete v přehledu klubu", "Klub uvádí podporu Multisport.", "Přijímané platební metody ověřte přímo u klubu.", "Všechny sledované kluby", "Hledat dostupnost kurtů", "Informace o klubu"],
     count: (n) => `${n} padelových kurtů`, clubTitle: (name) => `${name} padel Praha | HLEDEJKURTY`, clubDescription: (club) => `${club.name}: ${club.courtCount} padelových kurtů, ${club.address}. Zkontrolujte volné časy, zveřejněné ceny a rezervujte přes oficiální systém.`
   },
   en: {
@@ -68,7 +71,7 @@ const copy = {
       clubs: [["Compare Prague padel venues", "Use each club page to review its address, number of courts, published pricing, Multisport support, and a direct route to the official booking system. The list covers venues across Prague and selected nearby locations."], ["Check recent court availability", "Search results use availability saved from supported club systems for today and the next seven days. Data is refreshed during the day, but the club's reservation system is always the final source before booking."]],
       club: [["Availability and official booking", "HLEDEJKURTY stores availability for today and the next seven days and refreshes supported sources throughout the day. Times can change between checks, so open the venue's official reservation system to confirm the court, final price, and booking conditions."], ["Compare padel clubs in Prague", "Browse every tracked venue to compare addresses, court counts, prices, facilities, Multisport support, and recent availability before choosing where to play. Complete every reservation directly with the selected venue."], ["Current information before playing", "Availability and published prices are informational. Before travelling, check the official booking system, opening hours, and club rules because reservations made by other players can change an available time quickly."]]
     },
-    labels: ["Address", "Courts", "Price", "Check current published prices in the club overview", "The club publishes Multisport support.", "Confirm accepted payment methods with the club.", "All tracked clubs", "Search court availability"],
+    labels: ["Address", "Courts", "Price", "Check current published prices in the club overview", "The club publishes Multisport support.", "Confirm accepted payment methods with the club.", "All tracked clubs", "Search court availability", "Club information"],
     count: (n) => `${n} padel courts`, clubTitle: (name) => `${name} padel court Prague | HLEDEJKURTY`, clubDescription: (club) => `${club.name}: ${club.courtCount} padel courts at ${club.address}. Check available times, published prices, and book through the official system.`
   },
   ua: {
@@ -86,7 +89,7 @@ const copy = {
       clubs: [["Порівнюйте празькі падел-клуби", "На сторінці кожного клубу можна переглянути адресу, кількість кортів, опубліковані ціни, підтримку Multisport і перейти до офіційної системи бронювання. Список охоплює Прагу та вибрані місця поблизу."], ["Перевіряйте нещодавню доступність", "Результати використовують доступність із підтримуваних клубних систем для сьогоднішнього дня та наступних семи днів. Дані оновлюються протягом дня, але остаточним джерелом залишається система клубу."]],
       club: [["Доступність та офіційне бронювання", "HLEDEJKURTY зберігає доступність для сьогоднішнього дня та наступних семи днів і регулярно оновлює підтримувані джерела. Час може змінитися між перевірками, тому підтвердьте корт, кінцеву ціну й умови в офіційній системі клубу."], ["Порівняйте падел-клуби у Празі", "Перегляньте всі відстежувані клуби та порівняйте адреси, кількість кортів, ціни, обладнання, підтримку Multisport й останню доступність перед вибором місця для гри. Завершуйте бронювання безпосередньо в обраному закладі."], ["Актуальна інформація перед грою", "Доступність та опубліковані ціни мають інформаційний характер. Перед поїздкою перевірте офіційну систему, години роботи й правила клубу, адже бронювання інших гравців може швидко змінити вільний час."]]
     },
-    labels: ["Адреса", "Корти", "Ціна", "Актуальні опубліковані ціни перевіряйте в огляді клубу", "Клуб повідомляє про підтримку Multisport.", "Уточніть способи оплати безпосередньо в клубі.", "Усі відстежувані клуби", "Шукати доступність кортів"],
+    labels: ["Адреса", "Корти", "Ціна", "Актуальні опубліковані ціни перевіряйте в огляді клубу", "Клуб повідомляє про підтримку Multisport.", "Уточніть способи оплати безпосередньо в клубі.", "Усі відстежувані клуби", "Шукати доступність кортів", "Інформація про клуб"],
     count: (n) => `${n} падел-кортів`, clubTitle: (name) => `${name} падел у Празі | HLEDEJKURTY`, clubDescription: (club) => `${club.name}: ${club.courtCount} падел-кортів, ${club.address}. Перевірте вільний час, опубліковані ціни та бронюйте в офіційній системі.`
   }
 };
@@ -118,7 +121,7 @@ const newsContent = {
 const basePages = [
   ["home", "/"], ["allClubs", "/clubs/"], ["news", "/blog/"], ["newsArticle", `/blog/${newsContent.slug}/`], ["about", "/about/"], ["privacy", "/privacy-policy/"], ["terms", "/terms-of-use/"], ["cookies", "/cookie-policy/"],
   ...clubs.map((club) => ["club", `/clubs/${club.slug}/`, club])
-].map(([key, basePath, club]) => ({ key, basePath, club }));
+].map(([key, basePath, club]) => ({ key, basePath, club, lastModified: SEO_CONTENT_LAST_MODIFIED }));
 const pages = languages.flatMap((language) => basePages.map((page) => localizePage(page, language)));
 
 for (const page of pages) {
@@ -126,7 +129,7 @@ for (const page of pages) {
   await mkdir(path.dirname(output), { recursive: true });
   await writeFile(output, renderPage(page));
 }
-await writeFile(path.join(distDir, "404.html"), renderPage(pages.find((page) => page.path === "/")));
+await writeFile(path.join(distDir, "404.html"), renderNotFoundPage(pages.find((page) => page.path === "/")));
 await writeFile(path.join(distDir, "sitemap.xml"), buildSitemap(pages));
 
 function localizePage(page, language) {
@@ -159,6 +162,13 @@ function renderPage(page) {
   return html.replace('<div id="root"></div>', `<div id="root">${visibleContent(page)}</div>`);
 }
 
+function renderNotFoundPage(homePage) {
+  return renderPage(homePage).replace(
+    /<meta name="robots" content="[^"]*"\s*\/>/,
+    '<meta name="robots" content="noindex,follow" />'
+  );
+}
+
 function visibleContent(page) {
   const localized = copy[page.language.code];
   const [search, clubsLabel, newsLabel, about, privacy, terms, cookies] = localized.nav;
@@ -177,7 +187,7 @@ function clubDetails(club, language) {
   const localized = copy[language.code];
   const multisport = club.multisport ? localized.labels[4] : localized.labels[5];
   const singles = club.singles ? `<li><strong>1vs1</strong><span>1 single court</span></li>` : "";
-  return `<section><h2>${escapeHtml(club.name)}</h2><ul class="seoPrerenderFacts"><li><strong>${escapeHtml(localized.labels[0])}</strong><span>${escapeHtml(club.address)}</span></li><li><strong>${escapeHtml(localized.labels[1])}</strong><span>${escapeHtml(localized.count(club.courtCount))}</span></li>${singles}<li><strong>${escapeHtml(localized.labels[2])}</strong><span>${escapeHtml(localized.labels[3])}</span></li><li><strong>Multisport</strong><span>${escapeHtml(multisport)}</span></li></ul></section>${sections(localized.sections.club)}<a class="seoPrerenderCta" href="${localPath("/", language)}">${escapeHtml(localized.labels[7])}</a>`;
+  return `<section><h2>${escapeHtml(localized.labels[8])}</h2><ul class="seoPrerenderFacts"><li><strong>${escapeHtml(localized.labels[0])}</strong><span>${escapeHtml(club.address)}</span></li><li><strong>${escapeHtml(localized.labels[1])}</strong><span>${escapeHtml(localized.count(club.courtCount))}</span></li>${singles}<li><strong>${escapeHtml(localized.labels[2])}</strong><span>${escapeHtml(localized.labels[3])}</span></li><li><strong>Multisport</strong><span>${escapeHtml(multisport)}</span></li></ul></section>${sections(localized.sections.club)}<a class="seoPrerenderCta" href="${localPath("/", language)}">${escapeHtml(localized.labels[7])}</a>`;
 }
 
 function sections(values) { return values.map(([heading, body]) => `<section><h2>${escapeHtml(heading)}</h2><p>${escapeHtml(body)}</p></section>`).join(""); }
@@ -190,12 +200,21 @@ function alternateTags(page) {
 }
 function structuredData(page, canonical, image) {
   const content = { "@type": page.key === "newsArticle" ? "Article" : "WebPage", "@id": `${canonical}#webpage`, name: page.title, description: page.description, url: canonical, image, inLanguage: page.language.html, isPartOf: { "@id": `${SITE_ORIGIN}/#website` } };
-  if (page.key === "newsArticle") Object.assign(content, { headline: page.h1, datePublished: newsContent.publishedAt, mainEntityOfPage: canonical });
-  return { "@context": "https://schema.org", "@graph": [{ "@type": "WebSite", "@id": `${SITE_ORIGIN}/#website`, name: "HLEDEJKURTY", url: `${SITE_ORIGIN}/`, inLanguage: ["cs", "en", "uk"] }, content, ...(page.club ? [{ "@type": "SportsActivityLocation", "@id": `${canonical}#club`, name: page.club.name, address: { "@type": "PostalAddress", streetAddress: page.club.address, addressLocality: "Praha", addressCountry: "CZ" }, image, url: canonical }] : [])] };
+  if (page.key === "newsArticle") Object.assign(content, { headline: page.h1, datePublished: newsContent.publishedAt, dateModified: page.lastModified, mainEntityOfPage: canonical, author: { "@type": "Person", name: "Dmytro Zhyrov" }, publisher: { "@type": "Organization", name: "HLEDEJKURTY", logo: { "@type": "ImageObject", url: `${SITE_ORIGIN}/logo.png` } } });
+  const breadcrumb = breadcrumbStructuredData(page, canonical);
+  return { "@context": "https://schema.org", "@graph": [{ "@type": "WebSite", "@id": `${SITE_ORIGIN}/#website`, name: "HLEDEJKURTY", url: `${SITE_ORIGIN}/`, inLanguage: ["cs", "en", "uk"] }, content, ...(page.club ? [{ "@type": "SportsActivityLocation", "@id": `${canonical}#club`, name: page.club.name, address: { "@type": "PostalAddress", streetAddress: page.club.address, addressLocality: "Praha", addressCountry: "CZ" }, image, url: canonical }] : []), ...(breadcrumb ? [breadcrumb] : [])] };
+}
+function breadcrumbStructuredData(page, canonical) {
+  if (page.key === "home") return null;
+  const home = new URL(localPath("/", page.language), SITE_ORIGIN).toString();
+  const items = [{ name: "HLEDEJKURTY", url: home }];
+  if (page.club) items.push({ name: copy[page.language.code].nav[1], url: new URL(localPath("/clubs/", page.language), SITE_ORIGIN).toString() });
+  if (page.key === "newsArticle") items.push({ name: copy[page.language.code].nav[2], url: new URL(localPath("/blog/", page.language), SITE_ORIGIN).toString() });
+  items.push({ name: page.h1, url: canonical });
+  return { "@type": "BreadcrumbList", itemListElement: items.map((item, index) => ({ "@type": "ListItem", position: index + 1, name: item.name, item: item.url })) };
 }
 function buildSitemap(values) {
-  const lastmod = new Date().toISOString().slice(0, 10);
-  const urls = values.map((page) => { const alternates = [...alternateUrls(page.basePath), ["x-default", new URL(page.basePath, SITE_ORIGIN).toString()]]; return `  <url>\n    <loc>${new URL(page.path, SITE_ORIGIN)}</loc>\n${alternates.map(([lang, href]) => `    <xhtml:link rel="alternate" hreflang="${lang}" href="${href}" />`).join("\n")}\n    <lastmod>${lastmod}</lastmod>\n  </url>`; }).join("\n");
+  const urls = values.map((page) => { const alternates = [...alternateUrls(page.basePath), ["x-default", new URL(page.basePath, SITE_ORIGIN).toString()]]; return `  <url>\n    <loc>${new URL(page.path, SITE_ORIGIN)}</loc>\n${alternates.map(([lang, href]) => `    <xhtml:link rel="alternate" hreflang="${lang}" href="${href}" />`).join("\n")}\n    <lastmod>${page.lastModified}</lastmod>\n  </url>`; }).join("\n");
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${urls}\n</urlset>\n`;
 }
 function localPath(basePath, language) { return language.prefix ? (basePath === "/" ? `${language.prefix}/` : `${language.prefix}${basePath}`) : basePath; }

@@ -19,6 +19,7 @@ type LocalizedArticle = {
 export type NewsArticle = {
   slug: string;
   publishedAt: string;
+  modifiedAt: string;
   imageUrl: string;
   translations: Record<LanguageCode, LocalizedArticle>;
 };
@@ -54,6 +55,7 @@ export const NEWS_ARTICLES: NewsArticle[] = [
   {
     slug: THE_COURT_OPENING_SLUG,
     publishedAt: "2026-09-13",
+    modifiedAt: "2026-09-21",
     imageUrl: "clubs/optimized/the-court-1200.webp",
     translations: {
       cz: {

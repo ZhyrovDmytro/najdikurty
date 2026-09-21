@@ -8,19 +8,32 @@ const appDir = path.resolve(__dirname, "..");
 const distDir = path.join(appDir, "dist");
 const sitemap = await readFile(path.join(distDir, "sitemap.xml"), "utf8");
 const robots = await readFile(path.join(distDir, "robots.txt"), "utf8");
+const notFound = await readFile(path.join(distDir, "404.html"), "utf8");
 const locations = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
+const sitemapDates = [...sitemap.matchAll(/<lastmod>([^<]+)<\/lastmod>/g)].map((match) => match[1]);
 const errors = [];
 const titles = new Map();
 const appSource = await readFile(path.join(appDir, "src/main.tsx"), "utf8");
 const sourceClubSlugs = new Set([...appSource.matchAll(/slug:\s*"([^"]+)"/g)].map((match) => match[1]));
+const sourceClubs = new Map([...appSource.matchAll(/slug:\s*"([^"]+)"[\s\S]*?name:\s*"([^"]+)"[\s\S]*?address:\s*"([^"]+)"[\s\S]*?courtCount:\s*(\d+)/g)].map((match) => [match[1], { name: match[2], address: match[3], courtCount: Number(match[4]) }]));
 const expectedLocationCount = (8 + sourceClubSlugs.size) * 3;
 
 check(locations.length === expectedLocationCount, `Expected ${expectedLocationCount} sitemap URLs, found ${locations.length}`);
 check(new Set(locations).size === locations.length, "Sitemap contains duplicate URLs");
+check(sourceClubs.size === sourceClubSlugs.size, "Could not read every club's SEO facts from the app catalog");
+check(sitemapDates.length === locations.length, "Every sitemap URL must have one lastmod value");
+check(sitemapDates.every((value) => /^\d{4}-\d{2}-\d{2}$/.test(value)), "Sitemap lastmod values must use YYYY-MM-DD");
+check(!sitemapDates.some((value) => value > new Date().toISOString().slice(0, 10)), "Sitemap contains a future lastmod value");
 check(robots.includes("User-agent: *"), "robots.txt is missing the general user-agent rule");
 check(robots.includes("Allow: /"), "robots.txt does not allow the public site");
 check(robots.includes(`Sitemap: ${SITE_ORIGIN}/sitemap.xml`), "robots.txt has the wrong sitemap URL");
 check(!/^\s*Disallow:/m.test(robots), "robots.txt unexpectedly blocks crawling");
+check(/<meta name="robots" content="noindex,follow"\s*\/>/.test(notFound), "404 fallback must be noindex,follow");
+check(
+  appSource.includes('setMetaTag("name", "robots", isIndexablePath(window.location.pathname) ? "index,follow" : "noindex,follow")'),
+  "The client must preserve noindex on unknown and malformed paths"
+);
+check(!appSource.includes('segments[0] === "news"'), "The removed /news/ alias must not render indexable content on the 404 shell");
 
 for (const location of locations) {
   const url = new URL(location);
@@ -55,6 +68,7 @@ for (const location of locations) {
   const initialWordCount = initialContent.replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
   const languagePrefix = url.pathname.match(/^\/(en|ua)(?:\/|$)/)?.[1] ?? "cs";
   const expectedLanguage = languagePrefix === "en" ? "en" : languagePrefix === "ua" ? "uk" : "cs";
+  const expectedLanguageHome = new URL(languagePrefix === "cs" ? "/" : `/${languagePrefix}/`, SITE_ORIGIN).toString();
   const basePath = url.pathname.replace(/^\/(?:en|ua)(?=\/)/, "") || "/";
   const localizedUrl = (prefix) => new URL(prefix ? `${prefix}${basePath}` : basePath, SITE_ORIGIN).toString();
   const isAuditedContentPage = /^(?:\/(?:en|ua))?\/$/.test(url.pathname) || /^(?:\/(?:en|ua))?\/clubs\/$/.test(url.pathname) || /^(?:\/(?:en|ua))?\/clubs\/[^/]+\/$/.test(url.pathname);
@@ -99,6 +113,29 @@ for (const location of locations) {
     const data = JSON.parse(structuredData);
     check(data["@context"] === "https://schema.org", `${location} has an invalid structured-data context`);
     check(Array.isArray(data["@graph"]), `${location} structured data has no graph`);
+    const graph = Array.isArray(data["@graph"]) ? data["@graph"] : [];
+    const article = graph.find((item) => item["@type"] === "Article");
+    const breadcrumb = graph.find((item) => item["@type"] === "BreadcrumbList");
+    const clubSchema = graph.find((item) => item["@type"] === "SportsActivityLocation");
+    const clubSlug = url.pathname.match(/^\/(?:en\/|ua\/)?clubs\/([^/]+)\/$/)?.[1];
+    if (clubSlug) {
+      const sourceClub = sourceClubs.get(decodeURIComponent(clubSlug));
+      check(Boolean(sourceClub), `${location} has no matching app catalog entry`);
+      check(clubSchema?.name === sourceClub?.name, `${location} club name disagrees with the app catalog`);
+      check(clubSchema?.address?.streetAddress === sourceClub?.address, `${location} club address disagrees with the app catalog`);
+    }
+    if (url.pathname.includes("/blog/") && !url.pathname.endsWith("/blog/")) {
+      check(Boolean(article?.author?.name), `${location} article has no author`);
+      check(Boolean(article?.publisher?.name), `${location} article has no publisher`);
+      check(Boolean(article?.publisher?.logo?.url), `${location} article publisher has no logo`);
+      check(Boolean(article?.dateModified), `${location} article has no modification date`);
+    }
+    if (url.pathname !== "/" && url.pathname !== "/en/" && url.pathname !== "/ua/") {
+      const items = breadcrumb?.itemListElement ?? [];
+      check(items.length >= 2, `${location} has no useful breadcrumb structured data`);
+      check(items[0]?.item === expectedLanguageHome, `${location} breadcrumb starts at the wrong language home`);
+      check(items.at(-1)?.item === location, `${location} breadcrumb does not end at its canonical URL`);
+    }
   } catch {
     errors.push(`${location} has invalid JSON-LD`);
   }

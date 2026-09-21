@@ -3861,7 +3861,7 @@ function applySeoMeta(meta: SeoMeta) {
   setCanonicalUrl(meta.canonicalUrl);
   setAlternateUrls(meta.alternateUrls);
   setMetaTag("name", "description", meta.description);
-  setMetaTag("name", "robots", "index,follow");
+  setMetaTag("name", "robots", isIndexablePath(window.location.pathname) ? "index,follow" : "noindex,follow");
   setMetaTag("property", "og:site_name", "HLEDEJKURTY");
   setMetaTag("property", "og:type", meta.openGraphType);
   setMetaTag("property", "og:title", meta.title);
@@ -3902,9 +3902,9 @@ function seoTitle(page: Page, selectedClub: Club | null, language: LanguageCode,
     return "About the Prague padel court finder | HLEDEJKURTY";
   }
 
-  if (page === "privacy") return `${i18n.t("legal.privacyTitle")} | HLEDEJKURTY`;
-  if (page === "terms") return `${i18n.t("legal.termsTitle")} | HLEDEJKURTY`;
-  if (page === "cookies") return `${i18n.t("legal.cookiesTitle")} | HLEDEJKURTY`;
+  if (page === "privacy") return `${i18n.t("legal.privacyTitle", { lng: language })} | HLEDEJKURTY`;
+  if (page === "terms") return `${i18n.t("legal.termsTitle", { lng: language })} | HLEDEJKURTY`;
+  if (page === "cookies") return `${i18n.t("legal.cookiesTitle", { lng: language })} | HLEDEJKURTY`;
 
   if (language === "cz") return "Volné padelové kurty Praha na jednom místě | HLEDEJKURTY";
   if (language === "ua") return "Вільні падел-корти Праги в одному місці | HLEDEJKURTY";
@@ -3940,10 +3940,10 @@ function seoDescription(page: Page, selectedClub: Club | null, language: Languag
     return "Padel club guides, indoor-court roundups, player tips, Multisport comparisons, and stories from Prague's padel community.";
   }
 
-  if (page === "about") return i18n.t("about.body");
-  if (page === "privacy") return i18n.t("legal.privacyIntro");
-  if (page === "terms") return i18n.t("legal.termsIntro");
-  if (page === "cookies") return i18n.t("legal.cookiesIntro");
+  if (page === "about") return i18n.t("about.body", { lng: language });
+  if (page === "privacy") return i18n.t("legal.privacyIntro", { lng: language });
+  if (page === "terms") return i18n.t("legal.termsIntro", { lng: language });
+  if (page === "cookies") return i18n.t("legal.cookiesIntro", { lng: language });
 
   if (language === "cz") {
     return "Najděte volné padelové kurty v Praze na jednom místě. Porovnejte dostupnost, ceny, typ kurtu a Multisport a rezervujte přímo u klubu.";
@@ -4009,28 +4009,39 @@ function buildStructuredData({
 
   if (selectedClub) {
     graph.push(buildClubStructuredData(selectedClub, date, canonicalUrl));
-    graph.push(buildBreadcrumbStructuredData([{ name: "Padel courts", url: SITE_ORIGIN }, { name: selectedClub.name, url: canonicalUrl }]));
+    graph.push(buildBreadcrumbStructuredData([
+      { name: "HLEDEJKURTY", url: canonicalUrlFor("clubs", null, language) },
+      { name: i18n.t("nav.allClubs", { lng: language }), url: canonicalUrlFor("allClubs", null, language) },
+      { name: selectedClub.name, url: canonicalUrl }
+    ]));
   } else if (selectedArticle) {
     const article = localizedNewsArticle(selectedArticle, language);
     graph[2] = {
       ...graph[2],
       "@type": "Article",
+      author: { "@type": "Person", name: "Dmytro Zhyrov" },
+      dateModified: selectedArticle.modifiedAt,
       datePublished: selectedArticle.publishedAt,
       headline: article.title,
-      mainEntityOfPage: canonicalUrl
+      mainEntityOfPage: canonicalUrl,
+      publisher: {
+        "@type": "Organization",
+        logo: { "@type": "ImageObject", url: SOCIAL_IMAGE_URL },
+        name: "HLEDEJKURTY"
+      }
     };
     graph.push(buildBreadcrumbStructuredData([
-      { name: "Padel courts", url: SITE_ORIGIN },
+      { name: "HLEDEJKURTY", url: canonicalUrlFor("clubs", null, language) },
       { name: i18n.t("nav.news", { lng: language }), url: new URL(newsPath(language), SITE_ORIGIN).toString() },
       { name: article.title, url: canonicalUrl }
     ]));
   } else if (page === "about") {
     graph.push(buildFaqStructuredData(canonicalUrl, language));
-    graph.push(buildBreadcrumbStructuredData([{ name: "Padel courts", url: SITE_ORIGIN }, { name: title.replace(" | HLEDEJKURTY", ""), url: canonicalUrl }]));
+    graph.push(buildBreadcrumbStructuredData([{ name: "HLEDEJKURTY", url: canonicalUrlFor("clubs", null, language) }, { name: title.replace(" | HLEDEJKURTY", ""), url: canonicalUrl }]));
   } else if (page === "allClubs" || page === "clubs") {
     graph.push(buildClubItemListStructuredData(CLUBS, language));
   } else {
-    graph.push(buildBreadcrumbStructuredData([{ name: "Padel courts", url: SITE_ORIGIN }, { name: title.replace(" | HLEDEJKURTY", ""), url: canonicalUrl }]));
+    graph.push(buildBreadcrumbStructuredData([{ name: "HLEDEJKURTY", url: canonicalUrlFor("clubs", null, language) }, { name: title.replace(" | HLEDEJKURTY", ""), url: canonicalUrl }]));
   }
 
   return {
@@ -4057,7 +4068,7 @@ function buildFaqStructuredData(canonicalUrl: string, language: LanguageCode): R
 
 function buildClubItemListStructuredData(clubs: Club[], language: LanguageCode): Record<string, unknown> {
   return {
-    "@id": `${SITE_ORIGIN}/clubs/#itemlist`,
+    "@id": `${canonicalUrlFor("allClubs", null, language)}#itemlist`,
     "@type": "ItemList",
     itemListElement: clubs.map((club, index) => ({
       "@type": "ListItem",
@@ -4199,13 +4210,34 @@ function legalHref(page: "privacy" | "terms" | "cookies", language: LanguageCode
   return pathForRoute(page, null, language);
 }
 
+function isIndexablePath(pathname: string): boolean {
+  if (pathname !== "/" && !pathname.endsWith("/")) return false;
+
+  let segments: string[];
+  try {
+    segments = pathname.split("/").filter(Boolean).map(decodeURIComponent);
+  } catch {
+    return false;
+  }
+
+  if (segments[0] === "en" || segments[0] === "ua") segments.shift();
+  if (segments.length === 0) return true;
+  if (segments.length === 1) {
+    return ["clubs", "blog", "about", "privacy-policy", "terms-of-use", "cookie-policy"].includes(segments[0]);
+  }
+  if (segments.length !== 2) return false;
+  if (segments[0] === "clubs") return CLUBS.some((club) => club.slug === segments[1]);
+  if (segments[0] === "blog") return Boolean(newsArticle(segments[1]));
+  return false;
+}
+
 function routeFromLocation(pathname: string, params: URLSearchParams): { page: Page; clubSlug: string | null; articleSlug: string | null; language: LanguageCode } {
   const language = languageFromPathname(pathname);
   const segments = pathname.split("/").filter(Boolean).map(decodeURIComponent);
   if (segments[0] === "en" || segments[0] === "ua") segments.shift();
   if (segments[0] === "clubs" && segments[1]) return { page: "clubs", clubSlug: segments[1], articleSlug: null, language };
   if (segments[0] === "clubs") return { page: "allClubs", clubSlug: null, articleSlug: null, language };
-  if (segments[0] === "blog" || segments[0] === "news") return { page: "news", clubSlug: null, articleSlug: segments[1] ?? null, language };
+  if (segments[0] === "blog") return { page: "news", clubSlug: null, articleSlug: segments[1] ?? null, language };
   if (segments[0] === "about") return { page: "about", clubSlug: null, articleSlug: null, language };
   if (segments[0] === "privacy-policy") return { page: "privacy", clubSlug: null, articleSlug: null, language };
   if (segments[0] === "terms-of-use") return { page: "terms", clubSlug: null, articleSlug: null, language };
