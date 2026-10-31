@@ -1,6 +1,7 @@
+import { czechCourtCount, formatOpeningHours } from "../src/club-presentation.ts";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { ClubEditorial, DataMethodology, EditorialArticleCards, EditorialLinks, EditorialPage, editorialImage, EDITORIAL_DATE, EDITORIAL_PAGES } from "../src/editorial.tsx";
+import { ClubEditorial, ClubPriceEvidence, DataMethodology, EditorialArticleCards, EditorialLinks, EditorialPage, editorialImage, EDITORIAL_DATE, EDITORIAL_PAGES, editorialClubs } from "../src/editorial.tsx";
 import { NEWS_ARTICLES, NewsArticlePage, NewsIndexPage, localizedNewsArticle } from "../src/news.tsx";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -39,7 +40,7 @@ const copy = {
       club: [["Dostupnost a oficiální rezervace", "HLEDEJKURTY ukládá dostupnost pro dnešek a následujících sedm dní a podporované zdroje během dne pravidelně obnovuje. Termíny se mohou mezi kontrolami změnit, proto v oficiálním systému klubu potvrďte kurt, konečnou cenu a podmínky rezervace."], ["Porovnejte padelové kluby v Praze", "Prohlédněte si všechny sledované kluby a porovnejte adresy, počet kurtů, ceny, vybavení, podporu Multisport a poslední dostupnost před výběrem místa pro hru. Rezervaci vždy dokončete u konkrétního provozovatele."], ["Aktuální informace před hrou", "Dostupnost a zveřejněné ceny mají informativní charakter. Před cestou zkontrolujte oficiální systém, provozní dobu a pravidla klubu, protože rezervace ostatních hráčů mohou dostupný termín rychle změnit."]]
     },
     labels: ["Adresa", "Kurty", "Cena", "Aktuální zveřejněné ceny najdete v přehledu klubu", "Klub uvádí podporu Multisport.", "Přijímané platební metody ověřte přímo u klubu.", "Všechny sledované kluby", "Hledat dostupnost kurtů", "Informace o klubu"],
-    count: (n) => `${n} padelových kurtů`, clubTitle: (name) => `${name}: ceník a volné kurty | HLEDEJKURTY`, clubDescription: (club) => `${club.name}: ${club.courtCount} padelových kurtů, ${club.address}. Zkontrolujte volné časy, zveřejněné ceny a rezervujte přes oficiální systém.`
+    count: czechCourtCount, clubTitle: (club) => `${club.name} – ${club.locality}: ceník a rezervace | HLEDEJKURTY`, clubDescription: (club) => `${club.name}: ${czechCourtCount(club.courtCount)}, ${club.address}. Zkontrolujte volné časy, zveřejněné ceny a rezervujte přes oficiální systém.`
   },
   en: {
     nav: ["Search availability", "Clubs", "Blog", "How it works", "Privacy", "Terms", "Cookies"],
@@ -57,7 +58,7 @@ const copy = {
       club: [["Availability and official booking", "HLEDEJKURTY stores availability for today and the next seven days and refreshes supported sources throughout the day. Times can change between checks, so open the venue's official reservation system to confirm the court, final price, and booking conditions."], ["Compare padel clubs in Prague", "Browse every tracked venue to compare addresses, court counts, prices, facilities, Multisport support, and recent availability before choosing where to play. Complete every reservation directly with the selected venue."], ["Current information before playing", "Availability and published prices are informational. Before travelling, check the official booking system, opening hours, and club rules because reservations made by other players can change an available time quickly."]]
     },
     labels: ["Address", "Courts", "Price", "Check current published prices in the club overview", "The club publishes Multisport support.", "Confirm accepted payment methods with the club.", "All tracked clubs", "Search court availability", "Club information"],
-    count: (n) => `${n} padel courts`, clubTitle: (name) => `${name} padel court Prague | HLEDEJKURTY`, clubDescription: (club) => `${club.name}: ${club.courtCount} padel courts at ${club.address}. Check available times, published prices, and book through the official system.`
+    count: (n) => `${n} padel courts`, clubTitle: (club) => `${club.name} – ${club.locality}: padel | HLEDEJKURTY`, clubDescription: (club) => `${club.name}: ${club.courtCount} padel courts at ${club.address}. Check available times, published prices, and book through the official system.`
   },
   ua: {
     nav: ["Пошук доступності", "Клуби", "Статті", "Як це працює", "Конфіденційність", "Умови", "Cookies"],
@@ -75,7 +76,7 @@ const copy = {
       club: [["Доступність та офіційне бронювання", "HLEDEJKURTY зберігає доступність для сьогоднішнього дня та наступних семи днів і регулярно оновлює підтримувані джерела. Час може змінитися між перевірками, тому підтвердьте корт, кінцеву ціну й умови в офіційній системі клубу."], ["Порівняйте падел-клуби у Празі", "Перегляньте всі відстежувані клуби та порівняйте адреси, кількість кортів, ціни, обладнання, підтримку Multisport й останню доступність перед вибором місця для гри. Завершуйте бронювання безпосередньо в обраному закладі."], ["Актуальна інформація перед грою", "Доступність та опубліковані ціни мають інформаційний характер. Перед поїздкою перевірте офіційну систему, години роботи й правила клубу, адже бронювання інших гравців може швидко змінити вільний час."]]
     },
     labels: ["Адреса", "Корти", "Ціна", "Актуальні опубліковані ціни перевіряйте в огляді клубу", "Клуб повідомляє про підтримку Multisport.", "Уточніть способи оплати безпосередньо в клубі.", "Усі відстежувані клуби", "Шукати доступність кортів", "Інформація про клуб"],
-    count: (n) => `${n} падел-кортів`, clubTitle: (name) => `${name} падел у Празі | HLEDEJKURTY`, clubDescription: (club) => `${club.name}: ${club.courtCount} падел-кортів, ${club.address}. Перевірте вільний час, опубліковані ціни та бронюйте в офіційній системі.`
+    count: (n) => `${n} падел-кортів`, clubTitle: (club) => `${club.name} – ${club.locality}: падел | HLEDEJKURTY`, clubDescription: (club) => `${club.name}: ${club.courtCount} падел-кортів, ${club.address}. Перевірте вільний час, опубліковані ціни та бронюйте в офіційній системі.`
   }
 };
 
@@ -118,12 +119,12 @@ function localizePage(page, language) {
     const [title, description, h1, body] = localized.pages[page.key];
     return { ...page, language, path: localPath(page.basePath, language), title, description, h1, body };
   }
-  return { ...page, language, path: localPath(page.basePath, language), title: localized.clubTitle(page.club.name), description: localized.clubDescription(page.club), h1: language.code === "cz" ? `${page.club.name} – padelové kurty, ceník a rezervace` : page.club.name, body: `${page.club.name}: ${localized.count(page.club.courtCount)} — ${page.club.address}. ${page.club.priceInfo}` };
+  return { ...page, language, path: localPath(page.basePath, language), title: localized.clubTitle(page.club), description: localized.clubDescription(page.club), h1: language.code === "cz" ? `${page.club.name} – padelové kurty, ceník a rezervace` : page.club.name, body: `${page.club.name}: ${localized.count(page.club.courtCount)} — ${page.club.address}. ${page.club.priceInfo}` };
 }
 
 function renderPage(page) {
   const canonical = new URL(page.path, SITE_ORIGIN).toString();
-  const image = page.editorial ? new URL(editorialImage(page.editorial).src, SITE_ORIGIN).toString() : page.club ? `${SITE_ORIGIN}/clubs/optimized/${page.club.slug}-1200.webp` : page.key === "newsArticle" ? `${SITE_ORIGIN}/${page.selectedArticle.imageUrl}` : `${SITE_ORIGIN}/social-card.png`;
+  const image = page.editorial ? (editorialImage(page.editorial).src.endsWith(".svg") ? `${SITE_ORIGIN}/social-card.png` : new URL(editorialImage(page.editorial).src, SITE_ORIGIN).toString()) : page.club ? `${SITE_ORIGIN}/clubs/optimized/${page.club.slug}-1200.webp` : page.key === "newsArticle" ? `${SITE_ORIGIN}/${page.selectedArticle.imageUrl}` : `${SITE_ORIGIN}/social-card.png`;
   let html = template.replace(/<html lang="[^"]*">/, `<html lang="${page.language.html}">`);
   html = replaceTag(html, "title", page.title);
   for (const [attribute, key, value] of [["name", "description", page.description], ["property", "og:type", page.key === "newsArticle" || page.editorial?.kind === "article" ? "article" : "website"], ["property", "og:title", page.title], ["property", "og:description", page.description], ["property", "og:url", canonical], ["property", "og:image", image], ["property", "og:image:alt", socialAlt(page)], ["property", "og:locale", page.language.og], ["name", "twitter:title", page.title], ["name", "twitter:description", page.description], ["name", "twitter:image", image], ["name", "twitter:image:alt", socialAlt(page)]]) html = replaceMeta(html, attribute, key, value);
@@ -144,30 +145,32 @@ function renderNotFoundPage(homePage) {
 function visibleContent(page) {
   const localized = copy[page.language.code];
   const [search, clubsLabel, newsLabel, about, privacy, terms, cookies] = localized.nav;
-  const clubLinks = clubs.map((club) => `<li><a href="${localPath(`/clubs/${club.slug}/`, page.language)}">${escapeHtml(club.name)}</a><span>${escapeHtml(localized.count(club.courtCount))} · ${escapeHtml(club.address)}</span></li>`).join("");
+  const clubLinks = (page.key === "home" ? clubs.filter(club => ["padel-powers-smichov", "padel-dzus", "the-court"].includes(club.slug)) : clubs).map((club) => `<li><a href="${localPath(`/clubs/${club.slug}/`, page.language)}">${escapeHtml(club.name)}</a><span>${escapeHtml(localized.count(club.courtCount))} · ${escapeHtml(club.address)}</span></li>`).join("");
   let details = "";
-  if (page.key === "home") details = `${sections(localized.sections.home)}${renderToStaticMarkup(React.createElement(EditorialLinks, { language: page.language.code })) + `<div class="latestNewsGrid">${renderToStaticMarkup(React.createElement(EditorialArticleCards, { limit: 2, language: page.language.code }))}</div>`}<section><h2>${escapeHtml(clubsLabel)}</h2><p>${escapeHtml(localized.sections.clubs[0][1])}</p><ul class="seoPrerenderClubs">${clubLinks}</ul></section>`;
+  if (page.key === "home") details = `${sections(localized.sections.home)}${renderToStaticMarkup(React.createElement(EditorialLinks, { language: page.language.code })) + `<div class="latestNewsGrid">${renderToStaticMarkup(React.createElement(EditorialArticleCards, { limit: 2, language: page.language.code }))}</div>`}<section><h2>${escapeHtml(clubsLabel)}</h2><p>${escapeHtml(localized.sections.home[2][1])}</p><ul class="seoPrerenderClubs">${clubLinks}</ul></section>`;
   else if (page.key === "allClubs") details = `${sections(localized.sections.clubs)}<section><h2>${escapeHtml(localized.labels[6])}</h2><ul class="seoPrerenderClubs">${clubLinks}</ul></section>`;
   else if (page.key === "news") details = renderToStaticMarkup(React.createElement(NewsIndexPage, { language: page.language.code, onOpenPost: () => {} }));
   else if (page.editorial) details = renderToStaticMarkup(React.createElement(EditorialPage, { page: page.editorial }));
   else if (page.key === "newsArticle") details = renderToStaticMarkup(React.createElement(NewsArticlePage, { article: page.selectedArticle, language: page.language.code, onOpenClub: () => {} }));
-  else if (page.key === "about" && page.language.code === "cz") details = renderToStaticMarkup(React.createElement(DataMethodology));
+  else if (page.key === "about") details = renderToStaticMarkup(React.createElement(DataMethodology, { language: page.language.code }));
   else if (page.club) details = clubDetails(page.club, page.language);
   else details = `<section><h2>${escapeHtml(about)}</h2><p><a href="${localPath("/clubs/", page.language)}">${escapeHtml(localized.sections.clubs[0][1])}</a></p></section>`;
-  return `<main class="seoPrerender"><header class="seoPrerenderHeader"><a class="seoPrerenderBrand" href="${localPath("/", page.language)}">HLEDEJKURTY</a><nav class="seoPrerenderNav" aria-label="Primary navigation"><a href="${localPath("/", page.language)}">${escapeHtml(search)}</a><a href="${localPath("/clubs/", page.language)}">${escapeHtml(clubsLabel)}</a><a href="${localPath("/blog/", page.language)}">${escapeHtml(newsLabel)}</a><a href="${localPath("/about/", page.language)}">${escapeHtml(about)}</a></nav></header>${page.key === "newsArticle" || page.key === "news" || page.editorial ? details : `<article><h1>${escapeHtml(page.h1)}</h1><p>${escapeHtml(page.body)}</p>${details}</article>`}<footer class="seoPrerenderFooter"><a href="${localPath("/blog/", page.language)}">${escapeHtml(newsLabel)}</a><a href="${localPath("/about/", page.language)}">${escapeHtml(about)}</a><a href="${localPath("/privacy-policy/", page.language)}">${escapeHtml(privacy)}</a><a href="${localPath("/terms-of-use/", page.language)}">${escapeHtml(terms)}</a><a href="${localPath("/cookie-policy/", page.language)}">${escapeHtml(cookies)}</a></footer></main>`;
+  return `<main class="seoPrerender"><header class="seoPrerenderHeader"><a class="seoPrerenderBrand" href="${localPath("/", page.language)}">HLEDEJKURTY</a><nav class="seoPrerenderNav" aria-label="Primary navigation"><a href="${localPath("/", page.language)}">${escapeHtml(search)}</a><a href="${localPath("/clubs/", page.language)}">${escapeHtml(clubsLabel)}</a><a href="${localPath("/blog/", page.language)}">${escapeHtml(newsLabel)}</a><a href="${localPath("/about/", page.language)}">${escapeHtml(about)}</a></nav></header>${visibleBreadcrumbs(page)}${page.key === "newsArticle" || page.key === "news" || page.editorial ? details : `<article><h1>${escapeHtml(page.h1)}</h1><p>${escapeHtml(page.body)}</p>${details}</article>`}<footer class="seoPrerenderFooter">${renderToStaticMarkup(React.createElement(EditorialLinks, { language: page.language.code }))}<a href="${localPath("/blog/", page.language)}">${escapeHtml(newsLabel)}</a><a href="${localPath("/about/", page.language)}">${escapeHtml(about)}</a><a href="${localPath("/privacy-policy/", page.language)}">${escapeHtml(privacy)}</a><a href="${localPath("/terms-of-use/", page.language)}">${escapeHtml(terms)}</a><a href="${localPath("/cookie-policy/", page.language)}">${escapeHtml(cookies)}</a></footer></main>`;
 }
 
 function clubDetails(club, language) {
   const localized = copy[language.code];
   const multisport = club.acceptsMultisport ? localized.labels[4] : localized.labels[5];
-  const singles = club.hasSinglesCourt ? `<li><strong>1vs1</strong><span>1 single court</span></li>` : "";
+  const singles = club.hasSinglesCourt ? `<li><strong>1vs1</strong><span>${language.code === "cz" ? "1 tréninkový kurt 1vs1" : language.code === "ua" ? "1 тренувальний корт 1vs1" : "1 training court 1vs1"}</span></li>` : "";
   return `<section><h2>${escapeHtml(localized.labels[8])}</h2><ul class="seoPrerenderFacts"><li><strong>${escapeHtml(localized.labels[0])}</strong><span>${escapeHtml(club.address)}</span></li><li><strong>${escapeHtml(localized.labels[1])}</strong><span>${escapeHtml(localized.count(club.courtCount))}</span></li>${singles}<li><strong>${escapeHtml(localized.labels[2])}</strong><span>${escapeHtml(club.priceInfo)}</span></li><li><strong>Multisport</strong><span>${escapeHtml(multisport)}</span></li></ul></section>${pageClubExtras(club, language)}${sections(language.code === "cz" ? [localized.sections.club[0]] : localized.sections.club)}<a class="seoPrerenderCta" href="${localPath("/", language)}">${escapeHtml(localized.labels[7])}</a>`;
 }
 
 function pageClubExtras(club, language) {
-  const hours = Object.entries(club.openingHours ?? {}).map(([day, range]) => `${["Ne", "Po", "Út", "St", "Čt", "Pá", "So"][day]} ${range.start}–${range.end}`).join("; ");
-  const facts = `<p><a href="https://www.google.com/maps/search/?api=1&amp;query=${encodeURIComponent(club.address)}">${escapeHtml(club.address)}</a></p><p><a href="${escapeHtml(club.bookingPage)}">${escapeHtml(copy[language.code].nav[0])} – ${escapeHtml(club.name)}</a></p><p>${escapeHtml(club.courtTypeLabel)}. ${escapeHtml(hours)}</p><p>${escapeHtml(club.phone)}</p>`;
-  return facts + (language.code === "cz" ? renderToStaticMarkup(React.createElement(ClubEditorial, { slug: club.slug })) : "");
+  const labels = language.code === "cz" ? ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"] : language.code === "en" ? ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] : ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"];
+  const hours = formatOpeningHours(club.openingHours, labels, language.code === "cz" ? "Denně" : language.code === "en" ? "Daily" : "Щодня", "—");
+  const courtType = club.courtTypes.map(type => language.code === "cz" ? type === "indoor" ? "kryté" : "venkovní" : language.code === "ua" ? type === "indoor" ? "криті" : "відкриті" : type).join(" / ");
+  const facts = `<p><a href="https://www.google.com/maps/search/?api=1&amp;query=${encodeURIComponent(club.address)}">${escapeHtml(club.address)}</a></p><p><a href="${escapeHtml(club.bookingPage)}">${escapeHtml(copy[language.code].nav[0])} – ${escapeHtml(club.name)}</a></p><p>${escapeHtml(courtType)}. ${escapeHtml(hours)}</p><p>${escapeHtml(club.phone)}</p>`;
+  return facts + (language.code === "cz" ? renderToStaticMarkup(React.createElement(ClubEditorial, { slug: club.slug })) : renderToStaticMarkup(React.createElement(ClubPriceEvidence, { slug: club.slug, language: language.code })));
 }
 function sections(values) { return values.map(([heading, body]) => `<section><h2>${escapeHtml(heading)}</h2><p>${escapeHtml(body)}</p></section>`).join(""); }
 function socialAlt(page) { return page.club ? `${page.club.name} – padelové kurty` : page.key === "newsArticle" || page.editorial ? page.h1 : "HLEDEJKURTY – padelové kurty v Praze"; }
@@ -179,9 +182,9 @@ function alternateTags(page) {
 }
 function structuredData(page, canonical, image) {
   const content = { "@type": (page.key === "newsArticle" || page.editorial?.kind === "article") ? "BlogPosting" : "WebPage", "@id": `${canonical}#webpage`, name: page.title, description: page.description, url: canonical, image, inLanguage: page.language.html, isPartOf: { "@id": `${SITE_ORIGIN}/#website` } };
-  if (page.key === "newsArticle" || page.editorial?.kind === "article") Object.assign(content, { headline: page.h1, datePublished: page.selectedArticle?.publishedAt ?? EDITORIAL_DATE, dateModified: page.lastModified, mainEntityOfPage: canonical, author: { "@type": "Organization", name: "Redakce HLEDEJKURTY" }, publisher: { "@type": "Organization", name: "HLEDEJKURTY", logo: { "@type": "ImageObject", url: `${SITE_ORIGIN}/logo.png` } } });
+  if (page.key === "newsArticle" || page.editorial?.kind === "article") Object.assign(content, { headline: page.h1, datePublished: page.selectedArticle?.publishedAt ?? EDITORIAL_DATE, dateModified: page.lastModified, mainEntityOfPage: canonical, author: { "@type": "Organization", name: "Redakce HLEDEJKURTY", url: `${SITE_ORIGIN}/about/` }, publisher: { "@type": "Organization", name: "HLEDEJKURTY", logo: { "@type": "ImageObject", url: `${SITE_ORIGIN}/logo.png` } } });
   const breadcrumb = breadcrumbStructuredData(page, canonical);
-  return { "@context": "https://schema.org", "@graph": [{ "@type": "Organization", "@id": `${SITE_ORIGIN}/#organization`, name: "HLEDEJKURTY", alternateName: "HLEDEJKURTY – padel Praha", url: `${SITE_ORIGIN}/`, logo: `${SITE_ORIGIN}/logo-256.webp` }, { "@type": "WebSite", "@id": `${SITE_ORIGIN}/#website`, name: "HLEDEJKURTY", url: `${SITE_ORIGIN}/`, inLanguage: ["cs", "en", "uk"] }, content, ...(page.club ? [{ "@type": "SportsActivityLocation", "@id": `${canonical}#club`, name: page.club.name, address: { "@type": "PostalAddress", streetAddress: page.club.address, addressCountry: "CZ" }, image, url: canonical }] : []), ...(breadcrumb ? [breadcrumb] : [])] };
+  return { "@context": "https://schema.org", "@graph": [{ "@type": "Organization", "@id": `${SITE_ORIGIN}/#organization`, name: "HLEDEJKURTY", alternateName: "HLEDEJKURTY – padel Praha", url: `${SITE_ORIGIN}/`, email: "dmytrozhyrov@gmail.com", logo: `${SITE_ORIGIN}/logo-256.webp` }, { "@type": "WebSite", "@id": `${SITE_ORIGIN}/#website`, name: "HLEDEJKURTY", url: `${SITE_ORIGIN}/`, inLanguage: ["cs", "en", "uk"] }, content, ...(page.club ? [{ "@type": "SportsActivityLocation", "@id": `${canonical}#club`, name: page.club.name, address: { "@type": "PostalAddress", streetAddress: page.club.address, addressCountry: "CZ" }, image, url: canonical }] : []), ...(breadcrumb ? [breadcrumb] : []), ...(page.editorial && page.editorial.kind !== "article" ? [{ "@type": "ItemList", itemListElement: editorialClubs(page.editorial).map((club, index) => ({ "@type": "ListItem", position: index + 1, name: club.name, url: new URL(localPath(`/clubs/${club.slug}/`, page.language), SITE_ORIGIN).toString() })) }] : [])] };
 }
 function breadcrumbStructuredData(page, canonical) {
   if (page.key === "home") return null;
@@ -192,6 +195,11 @@ function breadcrumbStructuredData(page, canonical) {
   if (page.editorial && page.editorial.kind !== "article" && page.basePath !== "/padel-praha/") items.push({ name: "Padel Praha", url: new URL(localPath("/padel-praha/", page.language), SITE_ORIGIN).toString() });
   items.push({ name: page.h1, url: canonical });
   return { "@type": "BreadcrumbList", itemListElement: items.map((item, index) => ({ "@type": "ListItem", position: index + 1, name: item.name, item: item.url })) };
+}
+function visibleBreadcrumbs(page) {
+  if (!page.club) return "";
+  const items = breadcrumbStructuredData(page, new URL(page.path, SITE_ORIGIN).toString()).itemListElement;
+  return `<nav aria-label="${page.language.code === "cz" ? "Drobečková navigace" : "Breadcrumbs"}"><ol class="breadcrumbs">${items.map((item, index) => `<li>${index === items.length - 1 ? `<span aria-current="page">${escapeHtml(item.name)}</span>` : `<a href="${new URL(item.item).pathname}">${escapeHtml(item.name)}</a>`}</li>`).join("")}</ol></nav>`;
 }
 function buildSitemap(values) {
   const urls = values.map((page) => { const alternates = [...alternateUrls(page.basePath), ["x-default", new URL(page.basePath, SITE_ORIGIN).toString()]]; return `  <url>\n    <loc>${new URL(page.path, SITE_ORIGIN)}</loc>\n${alternates.map(([lang, href]) => `    <xhtml:link rel="alternate" hreflang="${lang}" href="${href}" />`).join("\n")}\n    <lastmod>${page.lastModified}</lastmod>\n  </url>`; }).join("\n");

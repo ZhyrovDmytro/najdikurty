@@ -149,6 +149,19 @@ for (const location of locations) {
       check(locations.includes(new URL(href, SITE_ORIGIN).toString()), `${location} links to an unbuilt page: ${href}`);
     }
   }
+  if (["/", "/clubs/", "/blog/", "/about/"].includes(basePath)) {
+    for (const guide of editorialPages.filter(page => page.kind !== "article")) {
+      const prefix = languagePrefix === "cs" ? "" : `/${languagePrefix}`;
+      check(initialContent.includes(`href="${prefix}${guide.path}"`), `${location} hides guide ${guide.path}`);
+    }
+  }
+  if (basePath === "/blog/") {
+    for (const post of editorialPages.filter(page => page.kind === "article")) {
+      check(html.includes(post.path), `${location} omits article ${post.path}`);
+    }
+    check(html.includes("the-court-opening/"), `${location} omits the original news article`);
+  }
+  if (basePath === "/padel-praha/") check(!initialContent.includes("<table>"), `${location} duplicates the price table`);
   const editorial = editorialPages.find(page => page.path === basePath);
   if (editorial) {
     for (const className of ["newsArticleHeader", "newsArticleHeroImage", "newsArticleContent"]) {
@@ -161,6 +174,9 @@ for (const location of locations) {
   if (basePath.startsWith("/clubs/") && basePath !== "/clubs/") {
     const club = sourceClubs.get(basePath.split("/")[2]);
     check(html.includes(club.priceInfo.replaceAll("&", "&amp;").replaceAll('"', "&quot;")), `${location} is missing the shared catalog price`);
+    check(title.includes(club.locality), `${location} club title omits its location`);
+    check(initialContent.includes('class="breadcrumbs"'), `${location} has no visible breadcrumbs`);
+    if (languagePrefix === "cs") check(!/\b(?:indoor courts?|outdoor courts?|single court)\b/.test(initialContent), `${location} leaks English court labels`);
     check(!html.includes("Aktuální zveřejněné ceny najdete v přehledu klubu"), `${location} still uses a placeholder price`);
   }
   const image = metaContent(html, "property", "og:image");

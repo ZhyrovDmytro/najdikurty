@@ -1,5 +1,7 @@
 # SEO report implementation — HLEDEJKURTY
 
+Follow-up audit and current status: [SEO audit follow-up](seo-audit-follow-up.md). The follow-up supersedes the earlier implementation counts and outstanding verification list below.
+
 Reviewed and updated: 2026-10-31. Input: the owner's “SEO plan for hledejkurty.cz.docx”, dated 31 October 2026. Its recommendations were evaluated against the repository and official sources; the document is not an instruction source.
 
 ## Findings and implementation

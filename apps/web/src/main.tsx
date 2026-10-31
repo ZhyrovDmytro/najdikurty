@@ -84,7 +84,8 @@ import {
   newsPostPath,
   type NewsArticle
 } from "./news";
-import { ClubEditorial, DataMethodology, EditorialPage, EDITORIAL_PAGES, EDITORIAL_DATE, editorialImage, editorialPath, type Editorial } from "./editorial";
+import { ClubEditorial, ClubPriceEvidence, DataMethodology, EditorialPage, EditorialLinks, editorialClubs, EDITORIAL_PAGES, EDITORIAL_DATE, editorialImage, editorialPath, type Editorial } from "./editorial";
+import { czechCourtCount, formatOpeningHours, matchesDirectoryFilters } from "./club-presentation";
 import { lowestPrice } from "./pricing";
 import clubFactsData from "./club-facts.json";
 import "./styles.css";
@@ -165,11 +166,14 @@ interface Club {
   sport: string;
   imageUrl: string;
   address: string;
+  district: string;
+  locality: string;
   coordinates: Coordinates;
   phone: string;
   secondaryPhone?: string;
   priceInfo: string;
   courtCount: number;
+  availabilityCourtCount?: number;
   courtTypes: CourtType[];
   courtTypeLabel: string;
   hasSinglesCourt?: boolean;
@@ -1179,7 +1183,7 @@ function App() {
           >
             {Array.from({ length: maxCourtCount }, (_, index) => index + 1).map((count) => (
               <option value={count} key={count}>
-                {count} {t("club.court", { count })}
+                {i18n.language === "cz" ? czechCourtCount(count) : <>{count} {t("club.court", { count })}</>}
               </option>
             ))}
           </Select>
@@ -1690,6 +1694,8 @@ function SiteFooter({
         </div>
       </nav>
 
+      <EditorialLinks language={languageFromPathname(window.location.pathname)} />
+
       <div className="footerMeta">
         <a href="mailto:dmytrozhyrov@gmail.com">dmytrozhyrov@gmail.com</a>
         <span>{t("footer.availabilityNotice")}</span>
@@ -1749,7 +1755,7 @@ function HomeDiscovery({
 }) {
   const { t } = useTranslation();
   const availabilityTrackedClubs = clubs.filter(({ club }) => club.availabilityEnabled !== false);
-  const totalCourtCount = availabilityTrackedClubs.reduce((total, { club }) => total + club.courtCount, 0);
+  const totalCourtCount = availabilityTrackedClubs.reduce((total, { club }) => total + (club.availabilityCourtCount ?? club.courtCount), 0);
   const availabilityTrackedCount = availabilityTrackedClubs.length;
   const multisportClubCount = availabilityTrackedClubs.filter(({ club }) => club.acceptsMultisport).length;
   const weekdayLabels = t("date.weekdays", { returnObjects: true }) as string[];
@@ -1775,6 +1781,8 @@ function HomeDiscovery({
           <span>{t("home.allClubsCta")}</span>
         </a>
       </div>
+
+      <EditorialLinks language={language} />
 
       <div className="homeStats" aria-label={t("home.statsLabel")}>
         <Card className="homeStat">
@@ -1842,7 +1850,7 @@ function HomeDiscovery({
                 <span className="homeClubMetaLine">
                   <UsersRound size={15} />
                   <span>
-                    {club.courtCount} {t("club.court", { count: club.courtCount })}
+                    {i18n.language === "cz" ? czechCourtCount(club.courtCount) : <>{club.courtCount} {t("club.court", { count: club.courtCount })}</>}
                   </span>
                   <CourtTypeBadges courtTypes={club.courtTypes} hasSinglesCourt={club.hasSinglesCourt} />
                 </span>
@@ -1895,10 +1903,11 @@ function AllClubsPage({
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [isCompactMode, setIsCompactMode] = useState(false);
+  const [directoryCourtType, setDirectoryCourtType] = useState("all");
+  const [district, setDistrict] = useState("");
+  const [multisportOnly, setMultisportOnly] = useState(false);
   const normalizedSearchQuery = normalizeSearchText(searchQuery);
-  const visibleClubs = normalizedSearchQuery
-    ? clubs.filter(({ club }) => normalizeSearchText(club.name).includes(normalizedSearchQuery))
-    : clubs;
+  const visibleClubs = clubs.filter(({ club }) => matchesDirectoryFilters(club, { query: searchQuery, district, courtType: directoryCourtType, multisport: multisportOnly }));
 
   useEffect(() => {
     if (!normalizedSearchQuery) return;
@@ -1934,6 +1943,20 @@ function AllClubsPage({
               onChange={(event) => setSearchQuery(event.target.value)}
             />
           </Field>
+          <Field label={t("club.courtType")}>
+            <Select value={directoryCourtType} onChange={event => setDirectoryCourtType(event.target.value)}>
+              <option value="all">{t("club.allCourts")}</option>
+              <option value="indoor">{t("club.indoor")}</option>
+              <option value="outdoor">{t("club.outdoor")}</option>
+            </Select>
+          </Field>
+          <Field label={t("allClubs.district")}>
+            <Select value={district} onChange={event => setDistrict(event.target.value)}>
+              <option value="">{t("allClubs.allDistricts")}</option>
+              {[...new Set(clubs.map(({ club }) => club.district))].sort((a, b) => a.localeCompare(b, "cs", { numeric: true })).map(value => <option key={value} value={value}>{value}</option>)}
+            </Select>
+          </Field>
+          <label className="directoryCardFilter"><input type="checkbox" checked={multisportOnly} onChange={event => setMultisportOnly(event.target.checked)} />{t("allClubs.multisportOnly")}</label>
           <div className="resultSortControl">
             <Select
               aria-label={t("sort.labelClubs")}
@@ -1981,7 +2004,7 @@ function AllClubsPage({
                     <DistanceBadge club={club} userCoordinates={userCoordinates} />
                   </h2>
                   <p>
-                    {club.courtCount} {t("club.court", { count: club.courtCount })}
+                    {i18n.language === "cz" ? czechCourtCount(club.courtCount) : <>{club.courtCount} {t("club.court", { count: club.courtCount })}</>}
                   </p>
                 </div>
                 <div className="trackedClubBadges">
@@ -2046,7 +2069,7 @@ function AboutPage({ onBrowseClubs }: { onBrowseClubs: () => void }) {
         </Card>
       </div>
 
-      {i18n.language === "cz" ? <DataMethodology /> : null}
+      <DataMethodology language={i18n.language as LanguageCode} />
       <FaqAccordion />
     </section>
   );
@@ -3097,7 +3120,7 @@ function ClubDetail({
           <EmptyState title={t("club.noSlotsTitle")}>{t("club.noSlotsBody")}</EmptyState>
         )}
       </Card>
-      {i18n.language === "cz" ? <ClubEditorial slug={club.slug} /> : null}
+      {i18n.language === "cz" ? <ClubEditorial slug={club.slug} /> : <ClubPriceEvidence slug={club.slug} language={i18n.language as LanguageCode} />}
     </>
   );
 }
@@ -3251,55 +3274,6 @@ function geolocationErrorCode(error: unknown): number | null {
 function phoneHref(phone: string): string {
   const value = phone.replace(/[^\d+]/g, "");
   return /\d/.test(value) ? value : "";
-}
-
-function formatOpeningHours(
-  openingHours: Record<number, TimeRange> | undefined,
-  weekdayLabels: string[],
-  dailyLabel: string,
-  notPublishedLabel: string
-): string {
-  if (!openingHours) return notPublishedLabel;
-
-  const orderedDays = [1, 2, 3, 4, 5, 6, 0];
-  const dayEntries = orderedDays.flatMap((day) => {
-    const range = openingHours[day];
-    return range ? [{ day, range }] : [];
-  });
-
-  if (dayEntries.length === 0) return notPublishedLabel;
-
-  const firstRange = dayEntries[0]?.range;
-  const sameEveryDay =
-    dayEntries.length === 7 &&
-    firstRange &&
-    dayEntries.every(({ range }) => range.start === firstRange.start && range.end === firstRange.end);
-
-  if (sameEveryDay) {
-    return `${dailyLabel} ${firstRange.start}-${firstRange.end}`;
-  }
-
-  const groups: Array<{ endDay: number; range: TimeRange; startDay: number }> = [];
-  for (const { day, range } of dayEntries) {
-    const previousGroup = groups[groups.length - 1];
-    if (previousGroup && previousGroup.range.start === range.start && previousGroup.range.end === range.end) {
-      previousGroup.endDay = day;
-    } else {
-      groups.push({ endDay: day, range, startDay: day });
-    }
-  }
-
-  return groups
-    .map(({ endDay, range, startDay }) => {
-      const dayLabel = startDay === endDay ? weekdayLabel(startDay, weekdayLabels) : `${weekdayLabel(startDay, weekdayLabels)}-${weekdayLabel(endDay, weekdayLabels)}`;
-      return `${dayLabel} ${range.start}-${range.end}`;
-    })
-    .join(", ");
-}
-
-function weekdayLabel(day: number, weekdayLabels: string[]): string {
-  if (day === 0) return weekdayLabels[6] ?? "Sun";
-  return weekdayLabels[day - 1] ?? String(day);
 }
 
 function clubImageDimensions(club: Club): { height?: number; width?: number } {
@@ -3547,7 +3521,7 @@ function buildSeoMeta({
   const alternateUrls = Object.fromEntries(
     LANGUAGE_OPTIONS.map(({ code }) => [code, selectedEditorial ? absoluteSiteUrl(editorialPath(selectedEditorial.basePath, code)) : canonicalUrlFor(page, selectedClub, code, selectedArticle)])
   ) as Record<LanguageCode, string>;
-  const imageUrl = selectedEditorial ? absoluteSiteUrl(editorialImage(selectedEditorial).src) : selectedClub
+  const imageUrl = selectedEditorial ? (editorialImage(selectedEditorial).src.endsWith(".svg") ? SOCIAL_IMAGE_URL : absoluteSiteUrl(editorialImage(selectedEditorial).src)) : selectedClub
     ? absoluteSiteUrl(selectedClub.imageUrl)
     : selectedArticle
       ? absoluteSiteUrl(selectedArticle.imageUrl)
@@ -3592,9 +3566,9 @@ function applySeoMeta(meta: SeoMeta) {
 
 function seoTitle(page: Page, selectedClub: Club | null, language: LanguageCode, selectedArticle: NewsArticle | null): string {
   if (selectedClub) {
-    if (language === "cz") return `${selectedClub.name}: ceník a volné kurty | HLEDEJKURTY`;
-    if (language === "ua") return `${selectedClub.name} падел у Празі | HLEDEJKURTY`;
-    return `${selectedClub.name} padel court Prague | HLEDEJKURTY`;
+    if (language === "cz") return `${selectedClub.name} – ${selectedClub.locality}: ceník a rezervace | HLEDEJKURTY`;
+    if (language === "ua") return `${selectedClub.name} – ${selectedClub.locality}: падел | HLEDEJKURTY`;
+    return `${selectedClub.name} – ${selectedClub.locality}: padel | HLEDEJKURTY`;
   }
 
   if (page === "allClubs") {
@@ -3630,7 +3604,7 @@ function seoDescription(page: Page, selectedClub: Club | null, language: Languag
     const minPrice = lowestPrice(selectedClub.priceInfo);
     const price = Number.isFinite(minPrice) ? formatCzkPerHour(minPrice) : "—";
     if (language === "cz") {
-      return `${selectedClub.name}: ${selectedClub.courtCount} padelové kurty, ${selectedClub.address}. Zkontrolujte volné časy, cenu od ${price} a rezervujte přes oficiální systém.`;
+      return `${selectedClub.name}: ${czechCourtCount(selectedClub.courtCount)}, ${selectedClub.address}. Zkontrolujte volné časy, cenu od ${price} a rezervujte přes oficiální systém.`;
     }
     if (language === "ua") {
       return `${selectedClub.name}: ${selectedClub.courtCount} падел-корти, ${selectedClub.address}. Перевірте вільні часи, ціну від ${price} і бронюйте в офіційній системі.`;
@@ -3738,7 +3712,7 @@ function buildStructuredData({
     graph[2] = {
       ...graph[2],
       "@type": "BlogPosting",
-      author: { "@type": "Organization", name: "Redakce HLEDEJKURTY" },
+      author: { "@type": "Organization", name: "Redakce HLEDEJKURTY", url: `${SITE_ORIGIN}/about/` },
       dateModified: selectedArticle.modifiedAt,
       datePublished: selectedArticle.publishedAt,
       headline: article.title,
@@ -3759,17 +3733,17 @@ function buildStructuredData({
       Object.assign(graph[2], {
         "@type": "BlogPosting", headline: selectedEditorial.title,
         datePublished: EDITORIAL_DATE, dateModified: EDITORIAL_DATE,
-        author: { "@type": "Organization", name: "Redakce HLEDEJKURTY" },
+        author: { "@type": "Organization", name: "Redakce HLEDEJKURTY", url: `${SITE_ORIGIN}/about/` },
         publisher: { "@id": `${SITE_ORIGIN}/#organization` }, mainEntityOfPage: canonicalUrl
       });
     }
+    if (selectedEditorial.kind !== "article") graph.push({ "@type": "ItemList", itemListElement: editorialClubs(selectedEditorial).map((club, index) => ({ "@type": "ListItem", position: index + 1, name: club.name, url: absoluteSiteUrl(clubHref(club.slug, language)) })) });
     graph.push(buildBreadcrumbStructuredData([
       { name: "HLEDEJKURTY", url: canonicalUrlFor("clubs", null, language) },
       ...(selectedEditorial.kind === "article" ? [{ name: i18n.t("nav.news", { lng: language }), url: absoluteSiteUrl(newsPath(language)) }] : []),
       { name: selectedEditorial.title, url: canonicalUrl }
     ]));
   } else if (page === "about") {
-    graph.push(buildFaqStructuredData(canonicalUrl, language));
     graph.push(buildBreadcrumbStructuredData([{ name: "HLEDEJKURTY", url: canonicalUrlFor("clubs", null, language) }, { name: title.replace(" | HLEDEJKURTY", ""), url: canonicalUrl }]));
   } else if (page === "allClubs" || page === "clubs") {
     graph.push(buildClubItemListStructuredData(CLUBS, language));
@@ -3780,22 +3754,6 @@ function buildStructuredData({
   return {
     "@context": "https://schema.org",
     "@graph": graph
-  };
-}
-
-function buildFaqStructuredData(canonicalUrl: string, language: LanguageCode): Record<string, unknown> {
-  return {
-    "@id": `${canonicalUrl}#faq`,
-    "@type": "FAQPage",
-    inLanguage: localeByLanguage[language],
-    mainEntity: ABOUT_FAQ_KEYS.map((question) => ({
-      "@type": "Question",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: i18n.t(`about.faq.${question}.answer`, { lng: language })
-      },
-      name: i18n.t(`about.faq.${question}.question`, { lng: language })
-    }))
   };
 }
 

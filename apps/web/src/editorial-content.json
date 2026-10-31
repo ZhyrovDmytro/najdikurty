@@ -44,7 +44,7 @@
       },
       {
         "heading": "Metodika ceníku",
-        "body": "Při aktualizaci 31. října 2026 jsme ověřili ceníky Padel Powers, The Court a Neride na oficiálních webech. U ostatních uvádíme dosavadní záznam s označením Neověřeno. Neznámá cena není nula. U každého klubu otevřete zdroj a před platbou potvrďte cenu v oficiální rezervaci."
+        "body": "Ověření je uvedeno u každého ceníku zvlášť s odkazem na oficiální zdroj. Zkontrolované sazby standardních kurtů shrnujeme odděleně od neověřeného katalogu. Neznámá cena není nula a datum kontroly ceníku nepotvrzuje všechny služby klubu. Konečnou cenu konkrétního termínu potvrďte před platbou v rezervaci."
       }
     ],
     "clubs": [
@@ -63,7 +63,7 @@
     "path": "/padel-praha-multisport/",
     "kind": "multisport",
     "title": "Padel s Multisport v Praze: kluby a podmínky",
-    "description": "Kde v Praze uplatnit MultiSport na padel. Ověřené informace One Padel a Neride, klubový kredit, doplatky a seznam dalších klubů k ověření.",
+    "description": "Kde v Praze uplatnit MultiSport na padel. Porovnejte doložené podmínky, kredit, doplatky a další kluby s dosud neověřenou podporou karty.",
     "intro": "MultiSport neznamená automaticky celý kurt bez platby. Rozhoduje počet karet, čas hry a způsob vyrovnání. U One Padel je vrácení formou klubového kreditu, který lze použít při další návštěvě.",
     "sections": [
       {
@@ -71,8 +71,8 @@
         "body": "Klub od 1. října 2026 popisuje až čtyři karty na rezervaci. Pro denní pásmo uvádí současně 222 a 222,50 Kč za kartu a součet 888 Kč. Proto zde neslibujeme přesný doplatek ani hru zdarma. Výši kreditu pro váš termín si nechte potvrdit. Digitální kartu lze uplatnit při samoobslužném check-inu, plastovou na recepci s dokladem."
       },
       {
-        "heading": "Neride a ostatní kluby",
-        "body": "Neride uvádí podporu MultiSport i u zimního ceníku. Přesný aktuální doplatek zde nemáme ověřený. Ostatní označení v tabulce vycházejí z katalogu; nejde o nově potvrzené podmínky. Chybějící označení není důkaz, že klub kartu odmítá."
+        "heading": "Doplatek, kredit, nebo platba na místě",
+        "body": "Neride uvádí podporu karty bez ověřeného doplatku. Plechovka uvádí úhradu 25 % kurtu kartou a doplatek 25 Kč na hráče. Radotín a LTC Modřany vracejí poměrnou část první hodiny kreditem po předchozí platbě. Na Císařské louce se karta uplatňuje na místě a nelze ji zpětně použít na online platbu. Satalice požadují pro MultiSport telefonickou rezervaci. Každý model tedy vyžaduje jiný postup."
       },
       {
         "heading": "Pět otázek před rezervací",
@@ -82,7 +82,11 @@
     "clubs": [
       "one-padel",
       "padel-neride",
-      "padel-powers-smichov"
+      "padel-radotin",
+      "ltc-modrany-2005",
+      "plechovka-dubec",
+      "cisarska-louka-padel",
+      "sk-satalice"
     ],
     "sources": [
       "oneMultisport",
@@ -179,15 +183,29 @@
       {
         "heading": "Jak cenu rozumně snížit",
         "body": "Porovnejte několik termínů, domluvte si rozdělení nákladů a předem ověřte vybavení. MultiSport může znamenat kredit pro příště, nikoli nižší počáteční platbu. Úplné srovnání tarifů najdete na stránce cen; tady řešíme rozpočet jedné skupiny."
+      },
+      {
+        "heading": "Rozpočet pro čtyři s vlastním vybavením",
+        "body": "U zveřejněné sazby Powers 800 Kč za kurt vychází hodina na 200 Kč na hráče; při sazbě 900 Kč je to 225 Kč. Oba výpočty předpokládají čtyři platící lidi a vlastní vybavení. Pokud jeden hráč odpadne a ostatní zaplatí stejný kurt, dělí se částka třemi: 800 Kč znamená přibližně 267 Kč na osobu. Cenu za osobu proto nesrovnávejte bez počtu účastníků. Nejde o balíček klubu ani nabídku jednotlivých míst."
+      },
+      {
+        "heading": "Co připočítat při půjčení raket",
+        "body": "Džus uvádí raketu za 50 Kč na jednu hru. Čtyři půjčené rakety tedy v tomto příkladu přidají 200 Kč za skupinu, tedy 50 Kč na osobu. Pokud se použije zveřejněná denní cena Džusu 800 Kč za hodinu kurtu, kurt a čtyři rakety vyjdou na 1 000 Kč, tedy 250 Kč na hráče. Míčky, doprava a případný trenér v součtu nejsou. Předem potvrďte počet dostupných raket a cenu pro konkrétní délku hry."
+      },
+      {
+        "heading": "Delší hra a přechod do špičky",
+        "body": "Příklad pro The Court: všední standardní kurt od 12:00 do 14:00 zasáhne sazbu 800 Kč do 13:00 a 1 000 Kč od 13:00. Při účtování jednotlivých hodin je součet 1 800 Kč, tedy 450 Kč na hráče ve čtyřech, bez vybavení. Nelze jednoduše vzít dvě hodiny nejnižší sazby. U 90 minut si vždy přečtěte cenu konkrétního slotu; systém může mít vlastní rezervační bloky a storno pravidla."
       }
     ],
     "clubs": [
       "padel-powers-smichov",
-      "the-court"
+      "the-court",
+      "padel-dzus"
     ],
     "sources": [
       "powers",
-      "courtPrices"
+      "courtPrices",
+      "dzusPrices"
     ],
     "primaryQuery": "kolik stojí první hra padelu"
   },
@@ -306,6 +324,14 @@
       {
         "heading": "Příklad skóre a dohoda před zápasem",
         "body": "Běžné body jdou 0, 15, 30, 40 a hra. Při 30:15 po bodu přijímající dvojice hlásíte 30:30. Pro rekreační zápas si můžete dohodnout klasickou výhodu při shodě; pravidla 2026 obsahují i alternativní systémy. Šest her s rozdílem dvou obvykle znamená set, při 6:6 se běžně hraje tie-break. Před soutěží ověřte její formát."
+      },
+      {
+        "heading": "Co ukazuje schéma podání",
+        "body": "Bod 1 znázorňuje podávajícího za čárou podání na pravé straně vlastní poloviny. Bod 2 je protilehlé pole vlevo za sítí: tam musí první podání dopadnout. Před úderem nechte míček jednou dopadnout na zem; úder nesmí být nad pasem. Schéma ukazuje směr podání, nikoli polohu všech čtyř hráčů nebo každý detail postavení nohou. Po odehraném bodu se strany podání střídají. Při příjmu nehrajte podání z voleje."
+      },
+      {
+        "heading": "Tři situace, které začátečníky matou",
+        "body": "Míč při výměně nejprve dopadne do soupeřova pole a potom do skla: výměna pokračuje. Míč na soupeřově straně zasáhne přímo sklo bez předchozího dopadu do pole: bod ztrácí útočící dvojice. Správně dopadlé podání následně zasáhne kovové oplocení před druhým odskokem: jde o chybu podání, i když podobný odraz od oplocení při běžné výměně může být platný. Proto si nejprve řekněte, zda posuzujete podání, nebo rozehranou výměnu. Při sporu se v přátelské hře zastavte a dohodněte na pravidlech před dalším bodem."
       }
     ],
     "clubs": [

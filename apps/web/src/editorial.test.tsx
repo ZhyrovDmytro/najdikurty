@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { EDITORIAL_PAGES, EditorialPage, nearbyClubs } from "./editorial";
+import { EDITORIAL_PAGES, EditorialPage, nearbyClubs, editorialClubs } from "./editorial";
 import translatedPrices from "./editorial-prices.json";
 import sourceLabels from "./editorial-source-labels.json";
 import clubs from "./club-facts.json";
@@ -47,6 +47,9 @@ describe("SEO editorial pages", () => {
     const html = renderToStaticMarkup(<EditorialPage page={page} />);
     for (const club of clubs) expect(html).toContain(`/clubs/${club.slug}/`);
     expect(html).toContain("Neověřeno");
+    expect(html).toContain("13 z 18");
+    expect(html).toContain("medián těchto minim: 600 Kč");
+    expect(html).toContain("Od 1.11.2026");
     expect(html).not.toContain("Infinity");
   });
   it("preserves all catalog price amounts in the English and Ukrainian tables", () => {
@@ -57,6 +60,19 @@ describe("SEO editorial pages", () => {
         expect(price).toBeTruthy();
         expect(amounts(price)).toEqual(amounts(club.priceInfo));
       }
+    }
+  });
+  it("gives each hub its own dataset and reserves the full price table for prices", () => {
+    for (const language of ["cz", "en", "ua"] as const) {
+      const find = (kind: string) => EDITORIAL_PAGES.find(page => page.language === language && page.kind === kind)!;
+      expect(renderToStaticMarkup(<EditorialPage page={find("hub")} />)).not.toContain("<table>");
+      expect(editorialClubs(find("multisport")).every(club => club.acceptsMultisport)).toBe(true);
+      expect(editorialClubs(find("multisport")).length).toBeLessThan(clubs.length);
+      expect(editorialClubs(find("indoor")).every(club => club.courtTypes.includes("indoor"))).toBe(true);
+      expect(renderToStaticMarkup(<EditorialPage page={find("areas")} />)).toContain("Praha 5</h3>");
+      const prices = editorialClubs(find("prices"));
+      expect(prices.at(-1)!.slug).toBe("padel-cakovice");
+      expect(prices.findIndex(club => club.slug === "the-court")).toBeGreaterThan(prices.findIndex(club => club.slug === "padel-neride"));
     }
   });
   it("finds three nearby clubs by distance, excluding the current club", () => {

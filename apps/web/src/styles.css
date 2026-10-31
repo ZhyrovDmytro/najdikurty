@@ -3940,3 +3940,12 @@ a.detailInfoRow:hover {
 .newsArticle, .newsArticleContent { min-width: 0; }
 .newsArticleSection a { color: var(--blue); text-underline-offset: 3px; }
 .newsArticleSection ul { margin: 0; padding-left: 24px; color: var(--text-muted); line-height: 1.68; }
+
+.allClubsPage .pageHeader { flex-wrap: wrap; }
+.allClubsPage .pageHeaderControls { flex-wrap: wrap; }
+.directoryCardFilter { display: flex; align-items: center; gap: 8px; font-size: 14px; max-width: 260px; }
+.siteFooter > .editorialLinks { grid-column: 1 / -1; }
+@media (max-width: 700px) {
+  .allClubsPage .pageHeaderControls { display: grid; grid-template-columns: minmax(0, 1fr); width: 100%; }
+  .allClubsPage .pageHeaderControls > * { grid-column: 1; }
+}
