@@ -69,7 +69,7 @@ export function EditorialArticleCards({ limit, language = "cz" }: { limit?: numb
           <a className="newsReadMore" href={page.path}>{language === "cz" ? "Přečíst článek" : language === "en" ? "Read article" : "Читати статтю"}<ArrowRight size={17} /></a>
         </div>
       </article>);
-  return latest ? <>{cards}</> : <section aria-label={copy[language].articles}><div className="newsList">{cards}</div></section>;
+  return <>{cards}</>;
 }
 
 export function editorialImage(page: Editorial) {
@@ -132,7 +132,7 @@ export function EditorialPage({ page }: { page: Editorial }) {
       <section className="newsArticleSection"><h2>{text.mentioned}</h2><ul>{selected.map(club => <li key={club.slug}><a href={href(`/clubs/${club.slug}/`)}>{club.name}: {text.profile}</a></li>)}</ul></section>
       <EditorialLinks language={language} />
       <section className="newsArticleSection"><h2>{text.sources}</h2><p>{text.sourcesBody}</p><ul>{page.sources.map(id => <li key={id}><a href={EDITORIAL_SOURCES[id].url}>{language === "cz" ? EDITORIAL_SOURCES[id].label : (sourceLabels[language] as Record<string, string>)[id]}</a></li>)}</ul></section>
-      {page.kind === "hub" ? <EditorialArticleCards language={language} /> : null}
+      {page.kind === "hub" ? <section aria-label={text.articles}><div className="newsList"><EditorialArticleCards language={language} /></div></section> : null}
   </ArticleLayout>;
 }
 

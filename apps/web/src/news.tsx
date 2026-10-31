@@ -230,8 +230,9 @@ export function NewsIndexPage({ language, onOpenPost }: { language: LanguageCode
         <h1 id="news-title">{copy.title}</h1>
         <p>{copy.intro}</p>
       </header>
-      <EditorialLinks language={language} /><EditorialArticleCards language={language} />
+      <EditorialLinks language={language} />
       <div className="newsList">
+        <EditorialArticleCards language={language} />
         {NEWS_ARTICLES.map((article) => {
           const post = localizedNewsArticle(article, language);
           return (

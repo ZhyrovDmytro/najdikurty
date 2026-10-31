@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { EDITORIAL_PAGES, EditorialPage, EditorialArticleCards } from "./editorial";
-import { NEWS_ARTICLES, NewsArticlePage } from "./news";
+import { NEWS_ARTICLES, NewsArticlePage, NewsIndexPage } from "./news";
 
 describe("shared article design", () => {
   it("renders every guide and article with the original article layout", () => {
@@ -19,6 +19,9 @@ describe("shared article design", () => {
   });
   it("uses the original image-card styles for lists and home previews in every language", () => {
     for (const language of ["cz", "en", "ua"] as const) {
+      const index = renderToStaticMarkup(<NewsIndexPage language={language} onOpenPost={() => undefined} />);
+      expect(index.match(/class="newsList"/g)).toHaveLength(1);
+      expect(index.match(/class="newsCard"/g)).toHaveLength(12);
       const list = renderToStaticMarkup(<EditorialArticleCards language={language} />);
       expect(list.match(/class="newsCard"/g)).toHaveLength(11);
       expect(list.match(/<img /g)).toHaveLength(11);
