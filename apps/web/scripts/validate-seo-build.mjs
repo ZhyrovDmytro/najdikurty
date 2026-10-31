@@ -14,12 +14,16 @@ const sitemapDates = [...sitemap.matchAll(/<lastmod>([^<]+)<\/lastmod>/g)].map((
 const errors = [];
 const titles = new Map();
 const appSource = await readFile(path.join(appDir, "src/main.tsx"), "utf8");
-const sourceClubSlugs = new Set([...appSource.matchAll(/slug:\s*"([^"]+)"/g)].map((match) => match[1]));
-const sourceClubs = new Map([...appSource.matchAll(/slug:\s*"([^"]+)"[\s\S]*?name:\s*"([^"]+)"[\s\S]*?address:\s*"([^"]+)"[\s\S]*?courtCount:\s*(\d+)/g)].map((match) => [match[1], { name: match[2], address: match[3], courtCount: Number(match[4]) }]));
-const expectedLocationCount = (8 + sourceClubSlugs.size) * 3;
+const catalog = JSON.parse(await readFile(path.join(appDir, "src/club-facts.json"), "utf8"));
+const editorialPages = JSON.parse(await readFile(path.join(appDir, "src/editorial-content.json"), "utf8"));
+const sourceClubSlugs = new Set(catalog.map(club => club.slug));
+const sourceClubs = new Map(catalog.map(club => [club.slug, club]));
+const editorialPaths = new Set(editorialPages.map(page => page.path));
+const expectedLocationCount = (8 + sourceClubSlugs.size) * 3 + editorialPages.length;
 
 check(locations.length === expectedLocationCount, `Expected ${expectedLocationCount} sitemap URLs, found ${locations.length}`);
 check(new Set(locations).size === locations.length, "Sitemap contains duplicate URLs");
+check(catalog.every(club => appSource.includes(`"${club.slug}":`)), "Every catalog club must retain a booking URL function");
 check(sourceClubs.size === sourceClubSlugs.size, "Could not read every club's SEO facts from the app catalog");
 check(sitemapDates.length === locations.length, "Every sitemap URL must have one lastmod value");
 check(sitemapDates.every((value) => /^\d{4}-\d{2}-\d{2}$/.test(value)), "Sitemap lastmod values must use YYYY-MM-DD");
@@ -79,8 +83,8 @@ for (const location of locations) {
   check(canonical === location, `${location} canonical is ${canonical || "missing"}`);
   check(htmlLanguage === expectedLanguage, `${location} html language is ${htmlLanguage || "missing"}`);
   check(hreflangs.get("cs") === localizedUrl(""), `${location} has a wrong Czech alternate`);
-  check(hreflangs.get("en") === localizedUrl("/en"), `${location} has a wrong English alternate`);
-  check(hreflangs.get("uk") === localizedUrl("/ua"), `${location} has a wrong Ukrainian alternate`);
+  check(editorialPaths.has(url.pathname) ? !hreflangs.has("en") : hreflangs.get("en") === localizedUrl("/en"), `${location} has a wrong English alternate`);
+  check(editorialPaths.has(url.pathname) ? !hreflangs.has("uk") : hreflangs.get("uk") === localizedUrl("/ua"), `${location} has a wrong Ukrainian alternate`);
   check(hreflangs.get("x-default") === localizedUrl(""), `${location} has a wrong x-default alternate`);
   check(ogUrl === location, `${location} Open Graph URL is ${ogUrl || "missing"}`);
   check(Boolean(ogImageAlt), `${location} has no Open Graph image description`);
@@ -114,7 +118,7 @@ for (const location of locations) {
     check(data["@context"] === "https://schema.org", `${location} has an invalid structured-data context`);
     check(Array.isArray(data["@graph"]), `${location} structured data has no graph`);
     const graph = Array.isArray(data["@graph"]) ? data["@graph"] : [];
-    const article = graph.find((item) => item["@type"] === "Article");
+    const article = graph.find((item) => ["Article", "BlogPosting"].includes(item["@type"]));
     const breadcrumb = graph.find((item) => item["@type"] === "BreadcrumbList");
     const clubSchema = graph.find((item) => item["@type"] === "SportsActivityLocation");
     const clubSlug = url.pathname.match(/^\/(?:en\/|ua\/)?clubs\/([^/]+)\/$/)?.[1];
@@ -140,6 +144,22 @@ for (const location of locations) {
     errors.push(`${location} has invalid JSON-LD`);
   }
 
+  for (const [, href] of html.matchAll(/<a\b[^>]*href="([^"#?]+)[^"]*"/g)) {
+    if (href.startsWith("/") && !href.startsWith("//")) {
+      check(locations.includes(new URL(href, SITE_ORIGIN).toString()), `${location} links to an unbuilt page: ${href}`);
+    }
+  }
+  const editorial = editorialPages.find(page => page.path === url.pathname);
+  if (editorial) {
+    check(html.includes("Redakce HLEDEJKURTY"), `${location} has no visible editorial byline`);
+    check(/<time[^>]+datetime="2026-10-31"/i.test(html), `${location} has no visible content date`);
+    check(html.includes("Zdroje a ověření"), `${location} has no source section`);
+  }
+  if (basePath.startsWith("/clubs/") && basePath !== "/clubs/") {
+    const club = sourceClubs.get(basePath.split("/")[2]);
+    check(html.includes(club.priceInfo.replaceAll("&", "&amp;").replaceAll('"', "&quot;")), `${location} is missing the shared catalog price`);
+    check(!html.includes("Aktuální zveřejněné ceny najdete v přehledu klubu"), `${location} still uses a placeholder price`);
+  }
   const image = metaContent(html, "property", "og:image");
   if (image?.startsWith(`${SITE_ORIGIN}/`)) {
     const imagePath = new URL(image).pathname.replace(/^\//, "");

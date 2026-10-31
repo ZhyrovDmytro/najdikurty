@@ -84,6 +84,9 @@ import {
   newsPostPath,
   type NewsArticle
 } from "./news";
+import { ClubEditorial, DataMethodology, EditorialPage, EDITORIAL_PAGES } from "./editorial";
+import { lowestPrice } from "./pricing";
+import clubFactsData from "./club-facts.json";
 import "./styles.css";
 
 const MAX_SEARCH_DAYS_AHEAD = 7;
@@ -141,7 +144,7 @@ const localeByLanguage: Record<LanguageCode, string> = {
 };
 const SITE_ORIGIN = "https://hledejkurty.cz";
 const SERVICE_OPERATOR_NAME = "Dmytro Zhyrov";
-const SOCIAL_IMAGE_URL = `${SITE_ORIGIN}/logo.png`;
+const SOCIAL_IMAGE_URL = `${SITE_ORIGIN}/social-card.png`;
 const DEFAULT_META_DESCRIPTION =
   "Find free padel courts in Prague in one place. Compare availability, prices, court types, and Multisport, then book directly with the club.";
 
@@ -176,321 +179,32 @@ interface Club {
   bookingUrl: (date: string) => string;
 }
 
-const CLUBS: Club[] = [
-  {
-    slug: "tk-sparta-praha",
-    name: "TK Sparta Prague",
-    sport: "padel",
-    imageUrl: assetPath("clubs/tk-sparta-praha.png"),
-    address: "Za Císařským mlýnem 1115/2, 170 00 Praha 7-Bubeneč",
-    coordinates: { latitude: 50.1103645, longitude: 14.4092412 },
-    phone: "+420 731 422 225",
-    priceInfo: "1 h: Po-Pá 8-16 520 Kč, 16-21 580 Kč; víkend 540 Kč.",
-    courtCount: 2,
-    courtTypes: ["outdoor"],
-    courtTypeLabel: "2 outdoor courts",
-    acceptsMultisport: true,
-    openingHours: dailyOpeningHours({ start: "08:00", end: "21:00" }),
-    bookingUrl: (date: string) =>
-      `https://jdemenato.cz/reservation/myportalorganizationcalendar.navigation.daynavigationbar:selectdayinternal/${date}`
-  },
-  {
-    slug: "padel-prosek",
-    name: "Padel Prosek",
-    sport: "padel",
-    imageUrl: assetPath("clubs/padel-prosek.png"),
-    address: "Lovosická 559, 190 00 Praha 9-Střížkov",
-    coordinates: { latitude: 50.1288187, longitude: 14.4993459 },
-    phone: "+420 601 559 559",
-    priceInfo: "1 h: Po-Pá 7-22 600 Kč; víkend 480 Kč.",
-    courtCount: 4,
-    courtTypes: ["outdoor"],
-    courtTypeLabel: "4 outdoor courts",
-    acceptsMultisport: true,
-    openingHours: dailyOpeningHours({ start: "07:00", end: "22:00" }),
-    bookingUrl: (date: string) => skySportCityTimelineUrl(date)
-  },
-  {
-    slug: "padel-club-spoje",
-    name: "Padel Club Spoje",
-    sport: "padel",
-    imageUrl: assetPath("clubs/padel-club-spoje.png"),
-    address: "Na Balkáně 990/21A, 130 00 Praha",
-    coordinates: { latitude: 50.0959695, longitude: 14.4877421 },
-    phone: "+420 737 303 003",
-    priceInfo: "1 h: Po-Pá 8-14 480 Kč, 14-20 520 Kč; víkend 520 Kč.",
-    courtCount: 2,
-    courtTypes: ["outdoor"],
-    courtTypeLabel: "2 outdoor courts",
-    openingHours: weekdayOpeningHours({
-      0: { start: "09:00", end: "20:00" },
-      1: { start: "08:00", end: "21:00" },
-      2: { start: "08:00", end: "21:00" },
-      3: { start: "08:00", end: "21:00" },
-      4: { start: "08:00", end: "21:00" },
-      5: { start: "08:00", end: "21:00" },
-      6: { start: "09:00", end: "20:00" }
-    }),
-    bookingUrl: (date: string) => playtomicClubUrl("padel-club-spoje", date)
-  },
-  {
-    slug: "tenis-a-padel-klub-pisecna",
-    name: "Tenis & Padel klub Písečná",
-    sport: "padel",
-    imageUrl: assetPath("clubs/tenis-a-padel-klub-pisecna.png"),
-    address: "K Sadu 590/1, Praha 8 - Troja, 182 00 Praha",
-    coordinates: { latitude: 50.1241441, longitude: 14.4368368 },
-    phone: "+420 725 843 649",
-    priceInfo: "1 h: Po-Pá 8-16 540 Kč, 16-22 640 Kč; víkend 540 Kč.",
-    courtCount: 4,
-    courtTypes: ["indoor", "outdoor"],
-    courtTypeLabel: "2 indoor + 2 outdoor courts",
-    openingHours: dailyOpeningHours({ start: "08:00", end: "22:00" }),
-    bookingUrl: (date: string) => playtomicClubUrl("tenis-a-padel-klub-pisecna", date)
-  },
-  {
-    slug: "sk-slavia-praha-padel",
-    name: "SK Slavia Praha Padel",
-    sport: "padel",
-    imageUrl: assetPath("clubs/sk-slavia-praha-padel.png"),
-    address: "Vladivostocká 1460/10, Praha 10",
-    coordinates: { latitude: 50.067487, longitude: 14.4797136 },
-    phone: "+420 606 030 301",
-    priceInfo: "1 h: Po-Pá 8-10 690 Kč, 10-15 550 Kč, 15-22 690 Kč; víkend 550 Kč.",
-    courtCount: 4,
-    courtTypes: ["outdoor"],
-    courtTypeLabel: "4 outdoor courts",
-    openingHours: dailyOpeningHours({ start: "08:00", end: "22:00" }),
-    bookingUrl: (date: string) => `https://rezervace.padelslavia.cz/cs/rezervace/index/padel/${date}`
-  },
-  {
-    slug: "head-tenis-centrum-vestec",
-    name: "Head Tenis Centrum, Vestec",
-    sport: "padel",
-    imageUrl: assetPath("clubs/head-tenis-centrum-vestec.png"),
-    address: "Sportovní 456, 252 42 Vestec-Jesenice u Prahy",
-    coordinates: { latitude: 49.9898123, longitude: 14.4882419 },
-    phone: "+420 777 773 139",
-    priceInfo: "1 h: Po-Pá 7-16 750 Kč, 16-24 900 Kč; víkend 850 Kč.",
-    courtCount: 4,
-    courtTypes: ["indoor"],
-    courtTypeLabel: "4 indoor courts",
-    acceptsMultisport: true,
-    availabilityEnabled: true,
-    openingHours: dailyOpeningHours({ start: "07:00", end: "24:00" }),
-    bookingUrl: () => "https://teniscentrum.isportsystem.cz/?op=tab-id-13"
-  },
-  {
-    slug: "plechovka-dubec",
-    name: "Plechovka Dubeč",
-    sport: "padel",
-    imageUrl: assetPath("clubs/plechovka-dubec.png"),
-    address: "Kalašova, č.e. 196, 107 00 Praha-Dubeč",
-    coordinates: { latitude: 50.0633123, longitude: 14.589826 },
-    phone: "+420 281 931 829",
-    priceInfo: "1 h: Po-Pá 8-22 760 Kč; víkend 9-21 760 Kč.",
-    courtCount: 3,
-    courtTypes: ["indoor"],
-    courtTypeLabel: "3 indoor courts",
-    acceptsMultisport: true,
-    availabilityEnabled: true,
-    openingHours: weekdayOpeningHours({
-      0: { start: "09:00", end: "21:00" },
-      1: { start: "08:00", end: "22:00" },
-      2: { start: "08:00", end: "22:00" },
-      3: { start: "08:00", end: "22:00" },
-      4: { start: "08:00", end: "22:00" },
-      5: { start: "08:00", end: "22:00" },
-      6: { start: "09:00", end: "21:00" }
-    }),
-    bookingUrl: () => "https://plechovka.isportsystem.cz/?op=tab-id-20"
-  },
-  {
-    slug: "padel-radotin",
-    name: "Padel Radotín",
-    sport: "padel",
-    imageUrl: assetPath("clubs/padel-radotin.png"),
-    address: "Šárovo kolo 932/1, 153 00 Praha 16",
-    coordinates: { latitude: 49.9857783, longitude: 14.3721741 },
-    phone: "+420 739 504 053",
-    secondaryPhone: "+420 739 504 052",
-    priceInfo: "1 h: Po-Pá 7-15 560 Kč, 15-22 640 Kč; víkend 7-22 600 Kč.",
-    courtCount: 3,
-    courtTypes: ["outdoor"],
-    courtTypeLabel: "3 outdoor courts",
-    acceptsMultisport: true,
-    availabilityEnabled: true,
-    openingHours: dailyOpeningHours({ start: "07:00", end: "22:00" }),
-    bookingUrl: () => "https://padelradotin.isportsystem.cz/"
-  },
-  {
-    slug: "padel-hall-radotin",
-    name: "Padel Hall Olympia Radotín",
-    sport: "padel",
-    imageUrl: assetPath("clubs/padel-hall-radotin.png"),
-    address: "Ke Zděři 1741/21, 153 00 Praha 16-Radotín",
-    coordinates: { latitude: 49.9792788, longitude: 14.3557589 },
-    phone: "+420 724 525 702",
-    priceInfo: "1 h: denně 8-16 650 Kč, 16-23 750 Kč.",
-    courtCount: 1,
-    courtTypes: ["outdoor"],
-    courtTypeLabel: "1 outdoor court",
-    availabilityEnabled: true,
-    openingHours: dailyOpeningHours({ start: "08:00", end: "23:00" }),
-    bookingUrl: () => "https://padelhall.isportsystem.cz/"
-  },
-  {
-    slug: "padel-cakovice",
-    name: "Padel Čakovice",
-    sport: "padel",
-    imageUrl: assetPath("clubs/padel-cakovice.png"),
-    address: "Jizerská 328/4, 196 00 Praha-Čakovice",
-    coordinates: { latitude: 50.1495813, longitude: 14.5200855 },
-    phone: "Not published",
-    priceInfo: "1 h: price not published.",
-    courtCount: 2,
-    courtTypes: ["indoor"],
-    courtTypeLabel: "2 indoor courts",
-    availabilityEnabled: true,
-    openingHours: dailyOpeningHours({ start: "07:00", end: "22:00" }),
-    bookingUrl: () => "https://padelautomat.isportsystem.cz/"
-  },
-  {
-    slug: "the-court",
-    name: "The Court",
-    sport: "padel",
-    imageUrl: assetPath("clubs/the-court.png"),
-    address: "Mezi Stromy 507, 252 25 Jinočany",
-    coordinates: { latitude: 50.0318884, longitude: 14.2779745 },
-    phone: "+420 795 500 005",
-    priceInfo: "1 h: Po-Pá standard 800-1200 Kč, 1vs1 600-800 Kč; víkend standard 1200 Kč, 1vs1 800 Kč.",
-    courtCount: 3,
-    courtTypes: ["indoor"],
-    courtTypeLabel: "2 indoor courts + 1 single court",
-    hasSinglesCourt: true,
-    availabilityEnabled: true,
-    openingHours: dailyOpeningHours({ start: "07:00", end: "24:00" }),
-    bookingUrl: () => "https://thecourt.isportsystem.cz/"
-  },
-  {
-    slug: "ltc-modrany-2005",
-    name: "LTC Modřany",
-    sport: "padel",
-    imageUrl: assetPath("clubs/ltc-modrany-2005.png"),
-    address: "Komořanská 2229/49, 143 00 Praha 4-Modřany",
-    coordinates: { latitude: 49.997343, longitude: 14.398424 },
-    phone: "+420 774 313 113",
-    priceInfo: "1 h: Po-Pá 7-14 560 Kč, 15-22 640 Kč; víkend 7-22 560 Kč.",
-    courtCount: 3,
-    courtTypes: ["outdoor"],
-    courtTypeLabel: "3 outdoor courts",
-    availabilityEnabled: true,
-    openingHours: dailyOpeningHours({ start: "07:00", end: "22:00" }),
-    bookingUrl: () => "https://tenismodrany.isportsystem.cz/?op=tab-id-8"
-  },
-  {
-    slug: "padel-neride",
-    name: "Padel Neride",
-    sport: "padel",
-    imageUrl: assetPath("clubs/padel-neride.png"),
-    address: "V Chotejně 700, 102 00 Praha 15",
-    coordinates: { latitude: 50.0587784, longitude: 14.5316941 },
-    phone: "+420 272 111 817",
-    priceInfo: "1 h: léto Po-Pá 6-16 420 Kč, 16-24 490 Kč, víkend 420 Kč; zima 650-750 Kč.",
-    courtCount: 3,
-    courtTypes: ["indoor"],
-    courtTypeLabel: "3 indoor courts",
-    acceptsMultisport: true,
-    openingHours: dailyOpeningHours({ start: "06:00", end: "24:00" }),
-    bookingUrl: () => "https://padelneride.cz/rezervace/"
-  },
-  {
-    slug: "padel-dzus",
-    name: "Padel Džus",
-    sport: "padel",
-    imageUrl: assetPath("clubs/padel-dzus.png"),
-    address: "U Továren 999/31, 102 00 Praha 15-Hostivař",
-    coordinates: { latitude: 50.0580035, longitude: 14.5444159 },
-    phone: "+420 602 605 905",
-    priceInfo: "1 h: Po-Pá 7-16 650-800 Kč, 16-23 750-900 Kč; víkend 700-850 Kč.",
-    courtCount: 4,
-    courtTypes: ["indoor"],
-    courtTypeLabel: "4 indoor courts",
-    acceptsMultisport: true,
-    openingHours: dailyOpeningHours({ start: "07:00", end: "23:00" }),
-    bookingUrl: (date: string) => bookaballUrl(date)
-  },
-  {
-    slug: "padel-powers-smichov",
-    name: "Padel Powers Smíchov",
-    sport: "padel",
-    imageUrl: assetPath("clubs/padel-powers-smichov.png"),
-    address: "Křížová 6, 150 00 Praha 5-Smíchov",
-    coordinates: { latitude: 50.054572, longitude: 14.405485 },
-    phone: "+420 725 521 360",
-    priceInfo: "1 h: Po-Pá 7-16 800 Kč, 16-00 900 Kč.",
-    courtCount: 8,
-    courtTypes: ["indoor"],
-    courtTypeLabel: "8 indoor courts",
-    acceptsMultisport: true,
-    openingHours: dailyOpeningHours({ start: "07:00", end: "24:00" }),
-    bookingUrl: () => padelosCompanyUrl()
-  },
-  {
-    slug: "one-padel",
-    name: "One Padel",
-    sport: "padel",
-    imageUrl: assetPath("clubs/one-padel.png"),
-    address: "Ringhofferova 115, 155 21 Praha 17-Zličín",
-    coordinates: { latitude: 50.0549627, longitude: 14.2934101 },
-    phone: "Not published",
-    priceInfo: "1 h: from 850 Kč.",
-    courtCount: 9,
-    courtTypes: ["indoor"],
-    courtTypeLabel: "9 indoor courts",
-    openingHours: dailyOpeningHours({ start: "06:00", end: "24:00" }),
-    bookingUrl: () => "https://onepadel.cz/book"
-  },
-  {
-    slug: "cisarska-louka-padel",
-    name: "Císařská louka Padel",
-    sport: "padel",
-    imageUrl: assetPath("clubs/cisarska-louka-padel.png"),
-    address: "Areál Císařská louka, Praha 5-Smíchov",
-    coordinates: { latitude: 50.0549172, longitude: 14.41281 },
-    phone: "+420 725 795 323",
-    priceInfo: "1 h: Po-Pá 9-12 690 Kč, 12-16 790 Kč, 16-23 850 Kč; víkend 11-21:30 850 Kč.",
-    courtCount: 3,
-    courtTypes: ["outdoor"],
-    courtTypeLabel: "3 outdoor courts",
-    acceptsMultisport: true,
-    openingHours: weekdayOpeningHours({
-      0: { start: "11:00", end: "21:30" },
-      1: { start: "09:00", end: "23:00" },
-      2: { start: "09:00", end: "23:00" },
-      3: { start: "09:00", end: "23:00" },
-      4: { start: "09:00", end: "23:00" },
-      5: { start: "09:00", end: "23:00" },
-      6: { start: "11:00", end: "21:30" }
-    }),
-    bookingUrl: (date: string) => reenioBookingUrl(date)
-  },
-  {
-    slug: "sk-satalice",
-    name: "SK Satalice",
-    sport: "padel",
-    imageUrl: assetPath("clubs/sk-satalice.png"),
-    address: "Budovatelská 12, 190 15 Praha-Satalice",
-    coordinates: { latitude: 50.1212956, longitude: 14.5647693 },
-    phone: "+420 721 069 640",
-    priceInfo: "1 h: Po-Pá 8-22 590 Kč; víkend 8-22 540 Kč.",
-    courtCount: 2,
-    courtTypes: ["outdoor"],
-    courtTypeLabel: "2 outdoor courts",
-    openingHours: dailyOpeningHours({ start: "08:00", end: "22:00" }),
-    bookingUrl: (date: string) => rogerOnlineUrl(date)
-  }
-];
+const bookingUrls: Record<string, Club["bookingUrl"]> = {
+  "tk-sparta-praha": (date: string) =>
+      `https://jdemenato.cz/reservation/myportalorganizationcalendar.navigation.daynavigationbar:selectdayinternal/${date}`,
+  "padel-prosek": (date: string) => skySportCityTimelineUrl(date),
+  "padel-club-spoje": (date: string) => playtomicClubUrl("padel-club-spoje", date),
+  "tenis-a-padel-klub-pisecna": (date: string) => playtomicClubUrl("tenis-a-padel-klub-pisecna", date),
+  "sk-slavia-praha-padel": (date: string) => `https://rezervace.padelslavia.cz/cs/rezervace/index/padel/${date}`,
+  "head-tenis-centrum-vestec": () => "https://teniscentrum.isportsystem.cz/?op=tab-id-13",
+  "plechovka-dubec": () => "https://plechovka.isportsystem.cz/?op=tab-id-20",
+  "padel-radotin": () => "https://padelradotin.isportsystem.cz/",
+  "padel-hall-radotin": () => "https://padelhall.isportsystem.cz/",
+  "padel-cakovice": () => "https://padelautomat.isportsystem.cz/",
+  "the-court": () => "https://thecourt.isportsystem.cz/",
+  "ltc-modrany-2005": () => "https://tenismodrany.isportsystem.cz/?op=tab-id-8",
+  "padel-neride": () => "https://padelneride.cz/rezervace/",
+  "padel-dzus": (date: string) => bookaballUrl(date),
+  "padel-powers-smichov": () => padelosCompanyUrl(),
+  "one-padel": () => "https://onepadel.cz/book",
+  "cisarska-louka-padel": (date: string) => reenioBookingUrl(date),
+  "sk-satalice": (date: string) => rogerOnlineUrl(date)
+};
+const CLUBS: Club[] = (clubFactsData as Omit<Club, "imageUrl" | "bookingUrl">[]).map(club => ({
+  ...club,
+  imageUrl: assetPath(`clubs/${club.slug}.png`),
+  bookingUrl: bookingUrls[club.slug]
+}));
 
 const FETCHABLE_CLUBS = CLUBS.filter((club) => club.availabilityEnabled !== false);
 const HOME_FEATURED_CLUB_SLUGS = [
@@ -2319,6 +2033,7 @@ function AboutPage({ onBrowseClubs }: { onBrowseClubs: () => void }) {
         </Card>
       </div>
 
+      {i18n.language === "cz" ? <DataMethodology /> : null}
       <FaqAccordion />
     </section>
   );
@@ -3204,7 +2919,7 @@ function ClubDetail({
         <ClubImage club={club} loading="eager" />
         <div className="clubDetailBody">
           <div>
-            <h1>{club.name}</h1>
+            <h1>{i18n.language === "cz" ? `${club.name} – padelové kurty, ceník a rezervace` : club.name}</h1>
             <div className="detailLocationRow">
               <a
                 className="detailAddress"
@@ -3369,6 +3084,7 @@ function ClubDetail({
           <EmptyState title={t("club.noSlotsTitle")}>{t("club.noSlotsBody")}</EmptyState>
         )}
       </Card>
+      {i18n.language === "cz" ? <ClubEditorial slug={club.slug} /> : null}
     </>
   );
 }
@@ -3445,6 +3161,8 @@ function captureBookingSystemOpened(club: Club, source: string, date: string, sl
     club_slug: club.slug,
     date,
     source,
+    page_path: window.location.pathname,
+    page_type: window.location.pathname.includes("/clubs/") ? "club" : "search",
     ...(slot ? { court_count: slot.courts.length, slot_end: slot.end, slot_start: slot.start } : {})
   });
 }
@@ -3520,22 +3238,6 @@ function geolocationErrorCode(error: unknown): number | null {
 function phoneHref(phone: string): string {
   const value = phone.replace(/[^\d+]/g, "");
   return /\d/.test(value) ? value : "";
-}
-
-function dailyOpeningHours(range: TimeRange): Record<number, TimeRange> {
-  return {
-    0: range,
-    1: range,
-    2: range,
-    3: range,
-    4: range,
-    5: range,
-    6: range
-  };
-}
-
-function weekdayOpeningHours(openingHours: Record<number, TimeRange>): Record<number, TimeRange> {
-  return openingHours;
 }
 
 function formatOpeningHours(
@@ -3752,11 +3454,6 @@ function sortClubResults<T extends { club: Club }>(results: T[], sort: FindCourt
   });
 }
 
-function lowestPrice(priceInfo: string): number {
-  const prices = Array.from(priceInfo.matchAll(/(\d+)(?:-\d+)?\s*Kč/g), (match) => Number(match[1]));
-  return Math.min(...prices);
-}
-
 function formatCzk(price: number): string {
   return Number.isFinite(price) ? `${price} Kč` : i18n.t("club.priceUnknown");
 }
@@ -3868,6 +3565,8 @@ function applySeoMeta(meta: SeoMeta) {
   setMetaTag("property", "og:description", meta.description);
   setMetaTag("property", "og:url", meta.canonicalUrl);
   setMetaTag("property", "og:image", meta.imageUrl);
+  setMetaTag("property", "og:image:alt", meta.title);
+  setMetaTag("name", "twitter:image:alt", meta.title);
   setMetaTag("property", "og:locale", openGraphLocale(meta.locale));
   setMetaTag("name", "twitter:card", "summary_large_image");
   setMetaTag("name", "twitter:title", meta.title);
@@ -3878,7 +3577,7 @@ function applySeoMeta(meta: SeoMeta) {
 
 function seoTitle(page: Page, selectedClub: Club | null, language: LanguageCode, selectedArticle: NewsArticle | null): string {
   if (selectedClub) {
-    if (language === "cz") return `${selectedClub.name} padel Praha | HLEDEJKURTY`;
+    if (language === "cz") return `${selectedClub.name}: ceník a volné kurty | HLEDEJKURTY`;
     if (language === "ua") return `${selectedClub.name} падел у Празі | HLEDEJKURTY`;
     return `${selectedClub.name} padel court Prague | HLEDEJKURTY`;
   }
@@ -3913,7 +3612,8 @@ function seoTitle(page: Page, selectedClub: Club | null, language: LanguageCode,
 
 function seoDescription(page: Page, selectedClub: Club | null, language: LanguageCode, selectedArticle: NewsArticle | null): string {
   if (selectedClub) {
-    const price = formatCzkPerHour(lowestPrice(selectedClub.priceInfo));
+    const minPrice = lowestPrice(selectedClub.priceInfo);
+    const price = Number.isFinite(minPrice) ? formatCzkPerHour(minPrice) : "—";
     if (language === "cz") {
       return `${selectedClub.name}: ${selectedClub.courtCount} padelové kurty, ${selectedClub.address}. Zkontrolujte volné časy, cenu od ${price} a rezervujte přes oficiální systém.`;
     }
@@ -4007,6 +3707,8 @@ function buildStructuredData({
     }
   ];
 
+  graph.push({ "@type": "Organization", "@id": `${SITE_ORIGIN}/#organization`, name: "HLEDEJKURTY", alternateName: "HLEDEJKURTY – padel Praha", url: SITE_ORIGIN, logo: `${SITE_ORIGIN}/logo-256.webp` });
+
   if (selectedClub) {
     graph.push(buildClubStructuredData(selectedClub, date, canonicalUrl));
     graph.push(buildBreadcrumbStructuredData([
@@ -4018,8 +3720,8 @@ function buildStructuredData({
     const article = localizedNewsArticle(selectedArticle, language);
     graph[2] = {
       ...graph[2],
-      "@type": "Article",
-      author: { "@type": "Person", name: "Dmytro Zhyrov" },
+      "@type": "BlogPosting",
+      author: { "@type": "Organization", name: "Redakce HLEDEJKURTY" },
       dateModified: selectedArticle.modifiedAt,
       datePublished: selectedArticle.publishedAt,
       headline: article.title,
@@ -4091,7 +3793,6 @@ function buildClubStructuredData(club: Club, date: string, canonicalUrl: string)
     address: {
       "@type": "PostalAddress",
       addressCountry: "CZ",
-      addressLocality: "Praha",
       streetAddress: club.address
     },
     amenityFeature: club.courtTypes.map((courtType) => ({
@@ -4101,7 +3802,7 @@ function buildClubStructuredData(club: Club, date: string, canonicalUrl: string)
     })),
     image: absoluteSiteUrl(club.imageUrl),
     name: club.name,
-    priceRange: formatCzkPerHour(lowestPrice(club.priceInfo)),
+    priceRange: Number.isFinite(lowestPrice(club.priceInfo)) ? formatCzkPerHour(lowestPrice(club.priceInfo)) : undefined,
     sport: "Padel",
     telephone: telephone || undefined,
     url: canonicalUrl,
@@ -4481,8 +4182,11 @@ function pragueOffsetMinutes(date: Date): number {
   return hours * 60 + Math.sign(hours) * minutes;
 }
 
+const editorialPage = EDITORIAL_PAGES.find(page => page.path === window.location.pathname);
+if (editorialPage) capturePageView({ page: editorialPage.kind, language: "cz", path: editorialPage.path });
+
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <App />
+    {editorialPage ? <EditorialPage page={editorialPage} /> : <App />}
   </React.StrictMode>
 );

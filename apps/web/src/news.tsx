@@ -1,5 +1,6 @@
 import React from "react";
 import { ArrowRight, Bot, CalendarDays, ExternalLink, Instagram, Sparkles, Target, Video } from "lucide-react";
+import { EditorialArticleCards, EditorialLinks } from "./editorial";
 import type { LanguageCode } from "./i18n";
 
 export const THE_COURT_OPENING_SLUG = "the-court-opening";
@@ -55,24 +56,24 @@ export const NEWS_ARTICLES: NewsArticle[] = [
   {
     slug: THE_COURT_OPENING_SLUG,
     publishedAt: "2026-09-13",
-    modifiedAt: "2026-09-21",
+    modifiedAt: "2026-10-31",
     imageUrl: "clubs/optimized/the-court-1200.webp",
     translations: {
       cz: {
         category: "Nový padelový klub",
         title: "The Court přináší padel nové generace kousek za Prahu",
-        excerpt: "Dva panoramatické kurty s chytrým sledováním zápasů, samostatný kurt 1vs1 a míčový automat zdarma. Poznejte nový klub The Court v Jinočanech.",
-        intro: "V Jinočanech západně od Prahy otevírá The Court — nový krytý padelový klub, který spojuje komfortní zázemí s technologiemi pro hráče všech úrovní. Pod jednou střechou nabízí dva plnohodnotné panoramatické kurty a jeden speciální single kurt.",
+        excerpt: "The Court v Jinočanech nabízí dva standardní kryté kurty a jeden tréninkový kurt 1vs1. Přehled ceníku, zázemí a rezervace podle webu klubu.",
+        intro: "V Jinočanech západně od Prahy funguje The Court — krytý padelový klub, který spojuje komfortní zázemí s technologiemi pro hráče všech úrovní. Pod jednou střechou nabízí dva plnohodnotné panoramatické kurty a jeden speciální single kurt.",
         highlights: [
           { title: "Single kurt 1vs1", body: "Samostatný menší kurt je určený pro dynamickou hru jednoho proti jednomu i cílený trénink." },
-          { title: "Míčový automat zdarma", body: "Na tréninkovém kurtu bude hráčům k dispozici míčový automat bez dalšího poplatku." },
-          { title: "AI záznam zápasů", body: "Oba standardní kurty využívají chytrý systém pro automatické skóre a videozáznam hry dostupný v telefonu." }
+          { title: "Trénink pro dva", body: "Tréninkový kurt má samostatný tarif. Dostupnost a cenu míčového automatu se nám nepodařilo potvrdit." },
+          { title: "AI záznam zápasů", body: "Podle klubu oba standardní kurty využívají chytrý systém pro automatické skóre a videozáznam hry dostupný v telefonu." }
         ],
         sections: [
           {
             title: "Tři kurty, tři způsoby hry",
             paragraphs: [
-              "Dva panoramatické kurty mají klasické rozměry pro čtyřhru. Vedle nich je v klubu single kurt navržený pro 1vs1. Ten se hodí také pro individuální lekce a opakování úderů s míčovým automatem, který má být dostupný zdarma.",
+              "Dva panoramatické kurty mají klasické rozměry pro čtyřhru. Vedle nich je v klubu single kurt navržený pro 1vs1. Ten se hodí také pro individuální lekce a opakování úderů na menším kurtu. Dostupnost a cenu míčového automatu ověřte přímo u klubu.",
               "Rezervace všech kurtů probíhá přes systém iSport. Single kurt je označený speciálním štítkem 1vs1, takže ho snadno odlišíte od standardních kurtů."
             ]
           },
@@ -99,25 +100,25 @@ export const NEWS_ARTICLES: NewsArticle[] = [
             clubLinkLabel: "Otevřít profil The Court"
           }
         ],
-        sourceLabel: "Oficiální web The Court",
+        sourceLabel: "The Court (web klubu)",
         instagramLabel: "The Court na Instagramu",
         clubLinkLabel: "Zobrazit klub a volné termíny"
       },
       en: {
         category: "New padel club",
         title: "The Court brings next-generation padel just outside Prague",
-        excerpt: "Two panoramic courts with smart match tracking, a dedicated 1vs1 court, and a free ball machine. Meet the new The Court club in Jinočany.",
-        intro: "The Court is opening in Jinočany, west of Prague: a new indoor padel club combining comfortable facilities with technology for players of every level. It offers two full-size panoramic courts and one special singles court under one roof.",
+        excerpt: "Two indoor doubles courts and a dedicated training court, with facilities described by the club. Meet the new The Court club in Jinočany.",
+        intro: "The Court operates in Jinočany, west of Prague: a new indoor padel club combining comfortable facilities with technology for players of every level. It offers two full-size panoramic courts and one special singles court under one roof.",
         highlights: [
           { title: "1vs1 singles court", body: "The dedicated compact court is made for fast one-on-one games as well as focused practice." },
-          { title: "Free ball machine", body: "A ball machine will be available on the training court at no additional charge." },
+          { title: "Training court", body: "Availability and pricing of the ball machine have not been confirmed; ask the club before booking." },
           { title: "AI match recording", body: "Both standard courts use a smart system for automatic scoring and match video delivered to your phone." }
         ],
         sections: [
           {
             title: "Three courts, three ways to play",
             paragraphs: [
-              "The two panoramic courts have the standard dimensions used for doubles. Alongside them, the club has a singles court designed for 1vs1. It is also a practical space for individual coaching and repeating shots with the ball machine, which is planned to be available free of charge.",
+              "The two panoramic courts have the standard dimensions used for doubles. Alongside them, the club has a singles court designed for 1vs1. It is also a practical space for individual coaching and repeating shots with the ball machine, whose availability and price must be confirmed with the club.",
               "All courts are booked through iSport. The singles court carries a distinct 1vs1 badge, making it easy to distinguish from the standard courts."
             ]
           },
@@ -151,18 +152,18 @@ export const NEWS_ARTICLES: NewsArticle[] = [
       ua: {
         category: "Новий падел-клуб",
         title: "The Court відкриває падел нового покоління поруч із Прагою",
-        excerpt: "Два панорамні корти з розумним відстеженням матчів, окремий корт 1vs1 і безкоштовна машина для м’ячів. Знайомтеся з новим клубом The Court у Їночанах.",
-        intro: "У Їночанах на захід від Праги відкривається The Court — новий критий падел-клуб, що поєднує комфортну інфраструктуру з технологіями для гравців будь-якого рівня. Під одним дахом розташовані два повнорозмірні панорамні корти та один спеціальний одиночний корт.",
+        excerpt: "Два криті корти для парної гри та окремий тренувальний корт 1vs1 із послугами за описом клубу. Знайомтеся з новим клубом The Court у Їночанах.",
+        intro: "У Їночанах на захід від Праги працює The Court — новий критий падел-клуб, що поєднує комфортну інфраструктуру з технологіями для гравців будь-якого рівня. Під одним дахом розташовані два повнорозмірні панорамні корти та один спеціальний одиночний корт.",
         highlights: [
           { title: "Одиночний корт 1vs1", body: "Окремий компактний корт створений для динамічної гри один на один і цілеспрямованих тренувань." },
-          { title: "Машина для м’ячів безкоштовно", body: "На тренувальному корті машина для подачі м’ячів буде доступна без додаткової оплати." },
+          { title: "Тренувальний корт", body: "Наявність і ціну машини для м’ячів не підтверджено; уточніть у клубі перед бронюванням." },
           { title: "AI-запис матчів", body: "Обидва стандартні корти використовують розумну систему автоматичного рахунку та відеозапису гри на телефон." }
         ],
         sections: [
           {
             title: "Три корти — три формати гри",
             paragraphs: [
-              "Два панорамні корти мають стандартні розміри для парної гри. Поруч розташований одиночний корт для 1vs1. Він також підходить для індивідуальних занять і відпрацювання ударів із машиною для м’ячів, яка має бути доступною безкоштовно.",
+              "Два панорамні корти мають стандартні розміри для парної гри. Поруч розташований одиночний корт для 1vs1. Він також підходить для індивідуальних занять і відпрацювання ударів із машиною для м’ячів, наявність і ціну якої слід уточнити в клубі.",
               "Бронювання всіх кортів працює через iSport. Одиночний корт має спеціальну позначку 1vs1, тому його легко відрізнити від стандартних."
             ]
           },
@@ -215,7 +216,7 @@ function formattedDate(date: string, language: LanguageCode): string {
 }
 
 function articleImageUrl(article: NewsArticle): string {
-  return `${import.meta.env.BASE_URL}${article.imageUrl}`;
+  return `${(import.meta.env?.BASE_URL ?? "/")}${article.imageUrl}`;
 }
 
 export function NewsIndexPage({ language, onOpenPost }: { language: LanguageCode; onOpenPost: (slug: string) => void }) {
@@ -228,13 +229,14 @@ export function NewsIndexPage({ language, onOpenPost }: { language: LanguageCode
         <h1 id="news-title">{copy.title}</h1>
         <p>{copy.intro}</p>
       </header>
+      {language === "cz" ? <><EditorialLinks /><EditorialArticleCards /></> : null}
       <div className="newsList">
         {NEWS_ARTICLES.map((article) => {
           const post = localizedNewsArticle(article, language);
           return (
             <article className="newsCard" key={article.slug}>
               <a href={newsPostPath(article.slug, language)} onClick={(event) => { event.preventDefault(); onOpenPost(article.slug); }}>
-                <img src={articleImageUrl(article)} alt="The Court padel club" />
+                <img src={articleImageUrl(article)} alt={language === "cz" ? "Kryté padelové kurty The Court v Jinočanech" : language === "en" ? "The Court indoor padel club in Jinočany" : "Криті падел-корти The Court у Їночанах"} width="1200" height="670" />
               </a>
               <div className="newsCardBody">
                 <div className="newsMeta"><span>{post.category}</span><time dateTime={article.publishedAt}>{formattedDate(article.publishedAt, language)}</time></div>
@@ -260,6 +262,7 @@ export function LatestNewsCards({ language, onOpenPost }: { language: LanguageCo
 
   return (
     <section className="latestNews" aria-labelledby="latest-news-title">
+      {language === "cz" ? <><EditorialLinks /><EditorialArticleCards limit={2} /></> : null}
       <header className="latestNewsHeader">
         <div>
           <h2 id="latest-news-title">{copy.latestTitle}</h2>
@@ -278,7 +281,7 @@ export function LatestNewsCards({ language, onOpenPost }: { language: LanguageCo
           return (
             <article className="latestNewsCard" key={article.slug}>
               <a className="latestNewsImage" href={href} onClick={openPost}>
-                <img src={articleImageUrl(article)} alt="The Court padel club" />
+                <img src={articleImageUrl(article)} alt={language === "cz" ? "Kryté padelové kurty The Court v Jinočanech" : language === "en" ? "The Court indoor padel club in Jinočany" : "Криті падел-корти The Court у Їночанах"} width="1200" height="670" />
               </a>
               <div className="latestNewsCardBody">
                 <div className="newsMeta">
@@ -305,12 +308,13 @@ export function NewsArticlePage({ article, language, onOpenClub }: { article: Ne
   return (
     <article className="newsArticle">
       <header className="newsArticleHeader">
-        <div className="newsMeta"><span>{post.category}</span><time dateTime={article.publishedAt}><CalendarDays size={15} /> {copy.published} {formattedDate(article.publishedAt, language)}</time></div>
+        <div className="newsMeta"><span>{post.category}</span><span>Redakce HLEDEJKURTY</span><time dateTime={article.modifiedAt}>{language === "cz" ? "Aktualizováno" : language === "en" ? "Updated" : "Оновлено"} {formattedDate(article.modifiedAt, language)}</time><time dateTime={article.publishedAt}><CalendarDays size={15} /> {copy.published} {formattedDate(article.publishedAt, language)}</time></div>
         <h1>{post.title}</h1>
         <p>{post.excerpt}</p>
       </header>
-      <img className="newsArticleHeroImage" src={articleImageUrl(article)} alt="The Court padel club" />
+      <img className="newsArticleHeroImage" src={articleImageUrl(article)} alt={language === "cz" ? "Kryté padelové kurty The Court v Jinočanech" : language === "en" ? "The Court indoor padel club in Jinočany" : "Криті падел-корти The Court у Їночанах"} width="1200" height="670" />
       <div className="newsArticleContent">
+        {language === "cz" ? <><p>Kontrola webu klubu 31. 10. 2026: zveřejňuje dva standardní a jeden tréninkový kurt. Popis kamer, teploty a zázemí jsou tvrzení klubu; osobně jsme je netestovali. Dostupnost míčového automatu zdarma není potvrzena.</p><p>Klub může vyhovovat hráčům ze západního okolí Prahy i dvojicím hledajícím trénink 1vs1. Pro čtyřhru vyberte standardní kurt a jeho odpovídající tarif.</p><EditorialLinks /></> : null}
         <p className="newsLead">{post.intro}</p>
         <section className="newsHighlights" aria-label={post.category}>
           {post.highlights.map((highlight, index) => (

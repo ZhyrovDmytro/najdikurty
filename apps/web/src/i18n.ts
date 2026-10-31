@@ -1,3 +1,4 @@
+import editorialPages from "./editorial-content.json";
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 
@@ -25,6 +26,7 @@ export function languageFromPathname(pathname: string): LanguageCode {
 }
 
 export function pathnameForLanguage(pathname: string, language: LanguageCode): string {
+  if (editorialPages.some(page => page.path === pathname)) return pathname;
   const hasTrailingSlash = pathname.endsWith("/");
   const segments = pathname.split("/").filter(Boolean);
   if (["en", "ua"].includes(segments[0]?.toLowerCase())) segments.shift();
@@ -36,6 +38,7 @@ export function pathnameForLanguage(pathname: string, language: LanguageCode): s
 
 function initializeLanguageRoute(): LanguageCode {
   if (typeof window === "undefined") return "cz";
+  if (editorialPages.some(page => page.path === window.location.pathname)) return "cz";
   const firstSegment = window.location.pathname.split("/").filter(Boolean)[0]?.toLowerCase();
   const storedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY);
   const hasExplicitLanguage = firstSegment === "en" || firstSegment === "ua";

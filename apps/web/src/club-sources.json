@@ -1,0 +1,49 @@
+{
+  "padel-powers-smichov": {
+    "checkedAt": "2026-10-31",
+    "sources": [{"label": "Padel Powers – ceník a služby", "url": "https://www.padelpowers.com/praha-smichov/"}],
+    "verified": "Cena, 8 krytých kurtů, půjčovna a lekce. Česká a anglická část webu uvádějí různé provozní hodiny; před cestou je potvrďte. Podmínky Multisport nebyly ověřeny.",
+    "description": "Smíchovský klub nabízí osm krytých kurtů, půjčovnu, bar a bistro. Hodí se pro skupiny, které hledají více kurtů na jednom místě, i pro první hru s půjčeným vybavením.",
+    "rental": "Raketa 50 Kč podle ceníku klubu; délku zapůjčení potvrďte na recepci.",
+    "lessons": "Klub zveřejňuje individuální i úvodní lekce; cenu konkrétního formátu ověřte při přihlášení.",
+    "transport": "MHD a podmínky parkování neověřeny; použijte mapu a pokyny klubu."
+  },
+  "one-padel": {
+    "checkedAt": "2026-10-31",
+    "sources": [{"label": "One Padel – klub", "url": "https://onepadel.cz/"}, {"label": "Zázemí a služby", "url": "https://onepadel.cz/about"}, {"label": "Multisport od 1. 10. 2026", "url": "https://onepadel.cz/articles/nove-podminky-multisport-v-one-padel-od-1-10"}],
+    "verified": "9 halových kurtů, půjčovna, lekce a parkování podle webu klubu. Hodinovou cenu ověřte v rezervaci.",
+    "description": "One Padel na Zličíně má devět halových kurtů a nabízí otevřené hry v klubovém systému. Vedle hry ve vlastní čtveřici tu lze hledat spoluhráče nebo rezervovat lekci.",
+    "rental": "Klub nabízí zapůjčení raket a míčků; aktuální cenu ověřte před návštěvou.",
+    "lessons": "Individuální i skupinové lekce pro děti a dospělé podle nabídky klubu.",
+    "transport": "Parkování u areálu podle webu klubu; cenu a kapacitu potvrďte. MHD neověřena.",
+    "multisport": "Až čtyři karty na rezervaci. Vrácení probíhá do klubové peněženky jako kredit, nikoli v hotovosti. Web uvádí pro 7–15 h rozdílné částky 222 a 222,50 Kč na kartu a součet 888 Kč; přesnou částku a časové podmínky potvrďte u klubu. Digitální kartu lze uplatnit při samoobslužném check-inu, plastovou na recepci s dokladem."
+  },
+  "the-court": {
+    "checkedAt": "2026-10-31",
+    "sources": [{"label": "The Court – web klubu", "url": "https://thecourt.cz/"}, {"label": "The Court – ceník", "url": "https://thecourt.cz/r-prices-cz"}],
+    "verified": "Dva standardní kurty a jeden tréninkový kurt, ceník a otevírací doba podle webu klubu. Dostupnost míčového automatu zdarma nebyla potvrzena.",
+    "description": "The Court v Jinočanech kombinuje dva standardní kryté kurty s jedním tréninkovým kurtem pro 1vs1. Podle klubu jsou k dispozici sprchy, bar a dětský koutek; vyhovuje tak i hráčům, kteří chtějí po hře zůstat v zázemí.",
+    "rental": "Cena a dostupnost zapůjčení rakety neověřena.",
+    "lessons": "Aktuální nabídku a cenu lekcí ověřte přímo u klubu.",
+    "transport": "Mezi Stromy 507, Jinočany. Konkrétní spojení MHD a parkování neověřeny."
+  },
+  "padel-neride": {
+    "checkedAt": "2026-10-31",
+    "sources": [{"label": "Neride – zimní ceník a služby", "url": "https://padelneride.cz/"}],
+    "verified": "Zimní ceník platný 1.10.2026–30.4.2027, vytápěná hala, půjčovna a lekce. Web uvádí nonstop provoz. Počet kurtů je z katalogu, nově neověřen.",
+    "description": "Neride v Praze 15 zveřejňuje samostatný zimní a letní tarif. Vyhřívaná hala a nabídka lekcí jsou vhodné pro pravidelné hraní během chladných měsíců.",
+    "rental": "Zapůjčení vybavení je v nabídce klubu; samostatná cena nebyla ověřena.",
+    "lessons": "Web zveřejňuje tréninkové hodiny pro jednoho až čtyři hráče; cenu porovnávejte včetně kurtu.",
+    "transport": "Podle klubu lze v okolí parkovat zdarma; dostupnost míst není garantována. MHD neověřena.",
+    "multisport": "Klub uvádí podporu MultiSport i v zimním ceníku. Aktuální doplatek, registraci a storno ověřte u recepce; samotná podpora karty neznamená bezplatný celý kurt."
+  },
+  "padel-dzus": {
+    "checkedAt": "2026-10-31",
+    "sources": [{"label": "Padel Džus – web klubu", "url": "https://padeldzus.cz/"}],
+    "verified": "Čtyři indoor kurty, lekce, kavárna a rezervace Bookaball podle webu. Cena a podmínky Multisport nově neověřeny.",
+    "description": "Padel Džus v Hostivaři nabízí čtyři vnitřní kurty a kavárnu. Klub uvádí skupinové i individuální lekce a v systému Bookaball také otevřené hry.",
+    "rental": "Konkrétní nabídka a cena půjčovny neověřeny.",
+    "lessons": "Skupinové i individuální lekce podle webu klubu; ceny a volná místa ověřte u pořadatele.",
+    "transport": "MHD a parkování neověřeny; trasu naplánujte podle adresy klubu."
+  }
+}

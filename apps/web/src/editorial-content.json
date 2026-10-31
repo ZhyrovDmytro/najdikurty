@@ -1,0 +1,514 @@
+[
+  {
+    "path": "/padel-praha/",
+    "kind": "hub",
+    "title": "Padel v Praze: kluby, ceny a rezervace",
+    "description": "Srovnejte 18 padelových klubů v Praze a okolí. Přehled cen, krytých kurtů, Multisport a míst pro první hru s odkazy na volné termíny.",
+    "intro": "Kde hrát padel v Praze záleží na termínu, dojezdu i rozpočtu. Náš katalog zahrnuje 18 klubů v Praze a okolí; dostupnost hledáme pro dnešek a následujících sedm dní. Tady porovnáte jejich zázemí a vyberete další krok.",
+    "sections": [
+      {
+        "heading": "Nejdřív místo, potom konkrétní termín",
+        "body": "Pro zimní hru začněte přehledem hal. Pokud rozhoduje rozpočet, porovnejte celý hodinový tarif, nikoli pouze nejnižší cenu. Na klubovém profilu otevřete dostupnost; rezervaci a platbu dokončíte u provozovatele."
+      },
+      {
+        "heading": "Jak číst srovnání",
+        "body": "Katalog zahrnuje i Vestec a Jinočany, tedy okolí Prahy. U smíšeného areálu neznamená celkový počet kurtů počet krytých hřišť. Podpora MultiSport sama neurčuje výši doplatku. Datum kontroly zdroje se vztahuje pouze k výslovně uvedeným údajům."
+      }
+    ],
+    "clubs": [
+      "one-padel",
+      "padel-powers-smichov",
+      "padel-dzus"
+    ],
+    "sources": [
+      "one",
+      "powers",
+      "dzus"
+    ],
+    "primaryQuery": "padel Praha"
+  },
+  {
+    "path": "/padel-praha-ceny/",
+    "kind": "prices",
+    "title": "Ceník padelu v Praze 2026: srovnání klubů",
+    "description": "Hodinové ceny padelu v 18 pražských a okolních klubech. Časová pásma, typ kurtu, Multisport, zdroje a jasně označené neověřené údaje.",
+    "intro": "Cena se zpravidla vztahuje na celý kurt za hodinu, nikoli na jednoho hráče. Například Padel Powers zveřejňuje 800 Kč ve všední den do 16 h a 900 Kč večer a o víkendu. Níže uvádíme také dosavadní katalogové tarify, které nebyly nově ověřeny.",
+    "sections": [
+      {
+        "heading": "Porovnávejte stejnou délku a typ hry",
+        "body": "Hodinu čtyřhry porovnávejte s hodinou čtyřhry. The Court má zvláštní cenu tréninkového kurtu 1vs1; její minimum proto není cenou standardního kurtu. Devadesátiminutovou hru porovnávejte podle konečné částky v rezervaci, ne automatickým násobením reklamní ceny od."
+      },
+      {
+        "heading": "Co může cenu změnit",
+        "body": "Večerní pásmo, sezóna, členství a půjčení vybavení mohou změnit konečnou platbu. Zimní tarif Neride platí od 1. října 2026 do 30. dubna 2027. Kredity MultiSport sledujte odděleně od částky, kterou musíte zaplatit předem."
+      },
+      {
+        "heading": "Metodika ceníku",
+        "body": "Při aktualizaci 31. října 2026 jsme ověřili ceníky Padel Powers, The Court a Neride na oficiálních webech. U ostatních uvádíme dosavadní záznam s označením Neověřeno. Neznámá cena není nula. U každého klubu otevřete zdroj a před platbou potvrďte cenu v oficiální rezervaci."
+      }
+    ],
+    "clubs": [
+      "padel-powers-smichov",
+      "the-court",
+      "padel-neride"
+    ],
+    "sources": [
+      "powers",
+      "courtPrices",
+      "neride"
+    ],
+    "primaryQuery": "padel Praha cena"
+  },
+  {
+    "path": "/padel-praha-multisport/",
+    "kind": "multisport",
+    "title": "Padel s Multisport v Praze: kluby a podmínky",
+    "description": "Kde v Praze uplatnit MultiSport na padel. Ověřené informace One Padel a Neride, klubový kredit, doplatky a seznam dalších klubů k ověření.",
+    "intro": "MultiSport neznamená automaticky celý kurt bez platby. Rozhoduje počet karet, čas hry a způsob vyrovnání. U One Padel je vrácení formou klubového kreditu, který lze použít při další návštěvě.",
+    "sections": [
+      {
+        "heading": "One Padel: kredit a nejednoznačná částka",
+        "body": "Klub od 1. října 2026 popisuje až čtyři karty na rezervaci. Pro denní pásmo uvádí současně 222 a 222,50 Kč za kartu a součet 888 Kč. Proto zde neslibujeme přesný doplatek ani hru zdarma. Výši kreditu pro váš termín si nechte potvrdit. Digitální kartu lze uplatnit při samoobslužném check-inu, plastovou na recepci s dokladem."
+      },
+      {
+        "heading": "Neride a ostatní kluby",
+        "body": "Neride uvádí podporu MultiSport i u zimního ceníku. Přesný aktuální doplatek zde nemáme ověřený. Ostatní označení v tabulce vycházejí z katalogu; nejde o nově potvrzené podmínky. Chybějící označení není důkaz, že klub kartu odmítá."
+      },
+      {
+        "heading": "Pět otázek před rezervací",
+        "body": "Potvrďte platnost karty pro vybraný čas, maximální počet karet, cenu celé rezervace, způsob vrácení a storno. Zeptejte se i na to, zda se karta uplatňuje před platbou, při příchodu nebo až po hře. Kredit není totéž jako vrácení peněz na účet."
+      }
+    ],
+    "clubs": [
+      "one-padel",
+      "padel-neride",
+      "padel-powers-smichov"
+    ],
+    "sources": [
+      "oneMultisport",
+      "neride"
+    ],
+    "primaryQuery": "padel Praha Multisport"
+  },
+  {
+    "path": "/kryty-padel-praha/",
+    "kind": "indoor",
+    "title": "Krytý padel v Praze: haly pro zimní hraní",
+    "description": "Přehled krytých padelových kurtů v Praze a okolí. Porovnejte haly, počet kurtů, hodinové ceny a dostupnost před zimní rezervací.",
+    "intro": "Pro zimní padel vybírejte konkrétní krytý kurt. V katalogu najdete čistě halové i smíšené areály. Název klubu ani celkový počet kurtů sám o sobě neříká, kolik je jich právě v hale.",
+    "sections": [
+      {
+        "heading": "Velké haly a menší tréninkový areál",
+        "body": "One Padel uvádí devět halových kurtů, Padel Powers osm. The Court má pod střechou dva standardní a jeden tréninkový kurt. V Hostivaři nabízí Džus čtyři indoor kurty. To jsou různé možnosti pro skupiny i individuální trénink; nejde o pořadí kvality."
+      },
+      {
+        "heading": "Vytápění a provoz ověřte zvlášť",
+        "body": "Neride na svém webu popisuje vyhřívanou halu. U dalších míst nepotvrzujeme konkrétní teplotu ani celoroční dostupnost každého kurtu. Sezónní zastřešení, technická odstávka a provozní doba se mohou měnit; před cestou otevřete rezervaci klubu."
+      },
+      {
+        "heading": "Jak vybírat zimní termín",
+        "body": "Nejdřív porovnejte dojezd a cenu pro váš čas, potom volné termíny. Pro dvě souběžné čtveřice potřebujete dva kurty ve stejném intervalu. Samotný počet kurtů v areálu takovou dostupnost nezaručuje."
+      }
+    ],
+    "clubs": [
+      "one-padel",
+      "padel-powers-smichov",
+      "the-court",
+      "padel-dzus",
+      "padel-neride"
+    ],
+    "sources": [
+      "one",
+      "powers",
+      "court",
+      "dzus",
+      "neride"
+    ],
+    "primaryQuery": "krytý padel Praha"
+  },
+  {
+    "path": "/padel-praha-podle-lokalit/",
+    "kind": "areas",
+    "title": "Kde hrát padel v Praze podle lokality",
+    "description": "Padel na Smíchově, v Hostivaři, Radotíně i dalších částech Prahy. Kluby podle adresy v jednom přehledu s odkazy na ceny a rezervace.",
+    "intro": "Vyberte nejdřív část města, kam se dostanou všichni hráči. Lokality sdružujeme na jedné stránce podle adres v katalogu; nevytváříme samostatné stránky pro každou čtvrť.",
+    "sections": [
+      {
+        "heading": "Praha 5 a západní okolí",
+        "body": "Na Smíchově jsou Padel Powers a Císařská louka. Zličín nabízí One Padel, západně od města jsou Jinočany s The Court. Jde o rozdílná místa i typy kurtů, proto si před výběrem zkontrolujte konkrétní adresu a trasu."
+      },
+      {
+        "heading": "Praha 15 a 16",
+        "body": "V Praze 15 najdete Neride a Džus v oblasti Hostivaře. Radotín má Padel Radotín a Padel Hall Olympia Radotín. Přesné dopravní časy, dostupnost parkování ani návaznost MHD nemáme ověřené; plánujte je pro skutečný den a hodinu."
+      }
+    ],
+    "clubs": [
+      "padel-powers-smichov",
+      "cisarska-louka-padel",
+      "one-padel",
+      "the-court",
+      "padel-neride",
+      "padel-dzus",
+      "padel-radotin",
+      "padel-hall-radotin"
+    ],
+    "sources": [
+      "powers",
+      "one",
+      "court",
+      "dzus",
+      "neride"
+    ],
+    "primaryQuery": "padel Praha podle lokalit"
+  },
+  {
+    "path": "/blog/kolik-stoji-padel-praha/",
+    "kind": "article",
+    "title": "Kolik stojí první hra padelu v Praze",
+    "description": "Spočítejte cenu padelu pro čtyři hráče: kurt, půjčení raket a délka hry. Konkrétní příklad z ceníku Padel Powers a odkazy na srovnání klubů.",
+    "intro": "Při čtyřhře se cena celého kurtu dělí mezi čtyři hráče. V Padel Powers vychází hodina za 800 Kč na 200 Kč na osobu, večerních 900 Kč na 225 Kč. Vybavení a další služby počítejte zvlášť.",
+    "sections": [
+      {
+        "heading": "Příklad rozpočtu na první hodinu",
+        "body": "Pokud všichni čtyři potřebujete raketu a recepce potvrdí půjčovné 50 Kč na osobu pro vaši hru, vyjde denní hodina na 250 Kč na hráče. Jde o výpočet z klubového ceníku, nikoli o balíček nebo nabídku HLEDEJKURTY. Míčky ani trenér v něm nejsou započítány."
+      },
+      {
+        "heading": "Pozor na cenu od a na single kurt",
+        "body": "The Court odděluje cenu standardního a tréninkového kurtu. Nižší sazbu 1vs1 proto nesrovnávejte s cenou hřiště pro čtyři. U delší hry může rezervace zasáhnout dvě cenová pásma; rozhoduje konečný součet v systému."
+      },
+      {
+        "heading": "Jak cenu rozumně snížit",
+        "body": "Porovnejte několik termínů, domluvte si rozdělení nákladů a předem ověřte vybavení. MultiSport může znamenat kredit pro příště, nikoli nižší počáteční platbu. Úplné srovnání tarifů najdete na stránce cen; tady řešíme rozpočet jedné skupiny."
+      }
+    ],
+    "clubs": [
+      "padel-powers-smichov",
+      "the-court"
+    ],
+    "sources": [
+      "powers",
+      "courtPrices"
+    ],
+    "primaryQuery": "kolik stojí první hra padelu"
+  },
+  {
+    "path": "/blog/multisport-padel-jak-rezervovat/",
+    "kind": "article",
+    "title": "Padel a MultiSport: co vyřešit před rezervací",
+    "description": "Praktický postup rezervace padelu s MultiSport. Rozdíl mezi platbou, doplatkem a kreditem, uplatnění karty a kontrola storno podmínek.",
+    "intro": "Nejdřív zjistěte, jak klub kartu uplatňuje, a teprve potom plaťte rezervaci. Samotný štítek MultiSport neříká, kolik vás bude hra stát ani kdy se příspěvek vrátí.",
+    "sections": [
+      {
+        "heading": "Domluvte počet karet ve skupině",
+        "body": "Každý hráč si má ověřit svou kartu a požadavky klubu na prokázání totožnosti. Nespoléhejte na to, že jedna karta pokryje celou čtveřici. Podmínky mohou záviset na hodině hry a počtu přítomných držitelů."
+      },
+      {
+        "heading": "Příklad klubové peněženky",
+        "body": "One Padel popisuje vrácení příspěvku jako kredit do peněženky. Proto rozlišujte částku placenou nyní a kredit využitelný později. Přesnou hodnotu si potvrďte u klubu: jeho zveřejněný text obsahuje pro denní pásmo rozdílné částky."
+      },
+      {
+        "heading": "Před příchodem i při zrušení hry",
+        "body": "Ověřte čas check-inu, místo načtení karty a storno lhůtu. Po hře zkontrolujte připsaný kredit. Pokud některý hráč nepřijde, nepředpokládejte stejnou slevu. Přehled klubů a zdrojů najdete na srovnávací stránce Multisport."
+      }
+    ],
+    "clubs": [
+      "one-padel",
+      "padel-neride"
+    ],
+    "sources": [
+      "oneMultisport",
+      "neride"
+    ],
+    "primaryQuery": "rezervace padelu Multisport"
+  },
+  {
+    "path": "/blog/padel-v-zime-praha/",
+    "kind": "article",
+    "title": "Padel v zimě v Praze: jak vybrat halu a termín",
+    "description": "Zimní padel v Praze krok za krokem. Výběr krytého kurtu, sezónní tarify, vybavení a společný termín pro více hráčů nebo dvě čtveřice.",
+    "intro": "V zimě začněte ověřením zastřešení konkrétního kurtu a zimního tarifu. Ve smíšeném areálu mohou být v jedné nabídce vnitřní i venkovní hřiště.",
+    "sections": [
+      {
+        "heading": "Vyberte skutečně krytý kurt",
+        "body": "One Padel a Padel Powers popisují halové areály, The Court dva standardní a jeden tréninkový kurt pod střechou. U smíšených míst kontrolujte označení jednotlivého hřiště. Fotografie nebo název Hall nejsou samy o sobě potvrzením aktuálního zastřešení."
+      },
+      {
+        "heading": "Zimní cena může být jiná než letní",
+        "body": "Neride pro období 1.10.2026–30.4.2027 uvádí 690 Kč mimo večerní špičku a 820 Kč ve všední dny 16–24 h. Starý letní ceník proto nepoužívejte jako odhad zimní platby."
+      },
+      {
+        "heading": "Připravte společný plán",
+        "body": "Domluvte si čas příjezdu, vybavení a rozdělení nákladů. Pro dvě čtveřice ve vyhledávači nastavte dva kurty. Pokud vybraný termín zmizí, zkuste jiný začátek nebo jiný klub; naše uložená dostupnost není blokací kurtu."
+      }
+    ],
+    "clubs": [
+      "one-padel",
+      "padel-powers-smichov",
+      "the-court",
+      "padel-neride"
+    ],
+    "sources": [
+      "one",
+      "powers",
+      "court",
+      "neride"
+    ],
+    "primaryQuery": "padel v zimě Praha"
+  },
+  {
+    "path": "/blog/padel-pro-zacatecniky-praha/",
+    "kind": "article",
+    "title": "Padel pro začátečníky v Praze: první hra",
+    "description": "Jak připravit první padel v Praze: čtveřice, půjčení rakety, lekce, jednoduchá pravidla a rezervace. Ověřené příklady klubů pro první návštěvu.",
+    "intro": "Na první hru nemusíte hned kupovat raketu. Nejprve vyberte klub s půjčovnou a zjistěte, zda chcete úvodní lekci, nebo vlastní přátelskou čtyřhru.",
+    "sections": [
+      {
+        "heading": "Domluvte formát a vybavení",
+        "body": "Standardní čtyřhru plánujte pro čtyři hráče podobné úrovně. Vezměte sportovní oblečení, vodu a obuv podle pravidel konkrétního povrchu. Půjčovnu nabízí například Padel Powers a One Padel; dostupnost čtyř raket potvrďte předem."
+      },
+      {
+        "heading": "Lekce nebo vlastní první zápas",
+        "body": "Trenér může vysvětlit podání, pohyb ve dvojici a bezpečnou hru u skla. Padel Powers, One Padel a Džus lekce zveřejňují. Zeptejte se, zda cena zahrnuje kurt a vybavení, pro kolik lidí platí a zda je úroveň určena úplným začátečníkům."
+      },
+      {
+        "heading": "Přijďte s rezervací a jednoduchým cílem",
+        "body": "Po výběru volného času rezervaci dokončete u klubu a přečtěte si potvrzení. Před hrou se zahřejte, nasaďte pojistné poutko rakety a začněte pomalými výměnami. Pro první set si předem sjednoťte počítání a způsob řešení shody."
+      }
+    ],
+    "clubs": [
+      "padel-powers-smichov",
+      "one-padel",
+      "padel-dzus"
+    ],
+    "sources": [
+      "powers",
+      "oneAbout",
+      "dzus",
+      "fip"
+    ],
+    "primaryQuery": "padel pro začátečníky Praha"
+  },
+  {
+    "path": "/blog/pravidla-padelu/",
+    "kind": "article",
+    "title": "Pravidla padelu jednoduše: podání a skóre",
+    "description": "Český úvod do pravidel padelu podle FIP 2026. Podání spodem, použití skla, dva dopady a příklad počítání s vysvětlením různých režimů shody.",
+    "intro": "Pro první čtyřhru stačí pochopit podání, odskok a počítání. Shrnutí vychází z pravidel Mezinárodní padelové federace účinných od 1. ledna 2026; pro soutěž rozhoduje celý řád a vypsaný formát.",
+    "sections": [
+      {
+        "heading": "Jak se podává",
+        "body": "Podávající nechá míč dopadnout na zem a zasáhne ho nejvýše v úrovni pasu. Podává diagonálně do protilehlého pole, začíná zprava a má dva pokusy. Příjemce musí nechat podání dopadnout. Dopad podání do správného pole a následně na kovové oplocení před druhým odskokem je chyba."
+      },
+      {
+        "heading": "Sklo a konec výměny",
+        "body": "Při běžné výměně musí míč na soupeřově straně nejdříve dopadnout do kurtu, teprve potom může zasáhnout stěnu. Po odrazu od vlastního skla ho lze vrátit před druhým dopadem. Dva dopady na vaší straně znamenají ztrátu bodu. Pletivo má zvláštní pravidla; nepovažujte ho za sklo."
+      },
+      {
+        "heading": "Příklad skóre a dohoda před zápasem",
+        "body": "Běžné body jdou 0, 15, 30, 40 a hra. Při 30:15 po bodu přijímající dvojice hlásíte 30:30. Pro rekreační zápas si můžete dohodnout klasickou výhodu při shodě; pravidla 2026 obsahují i alternativní systémy. Šest her s rozdílem dvou obvykle znamená set, při 6:6 se běžně hraje tie-break. Před soutěží ověřte její formát."
+      }
+    ],
+    "clubs": [
+      "one-padel",
+      "padel-powers-smichov"
+    ],
+    "sources": [
+      "fip"
+    ],
+    "primaryQuery": "pravidla padelu"
+  },
+  {
+    "path": "/blog/padel-tenis-squash/",
+    "kind": "article",
+    "title": "Padel, tenis a squash: co zkusit jako první",
+    "description": "Praktické srovnání padelu, tenisu a squashe pro první návštěvu. Počet hráčů, stěny, vybavení a výběr vhodného formátu hry v Praze.",
+    "intro": "Všechny tři sporty používají raketu, ale rezervace kurtu a průběh hry se liší. Při výběru začněte počtem lidí a tím, zda chcete hru přes síť, nebo proti přední stěně.",
+    "sections": [
+      {
+        "heading": "Padel: čtyři hráči a stěny",
+        "body": "Standardní padelová čtyřhra používá kurt rozdělený sítí a stěny se zapojují po odskoku míče. Při přechodu z tenisu nepřenášejte automaticky zvyky podání nebo rozhodování o autu. Pro hru ve dvou hledejte výslovně formát 1vs1, například tréninkový kurt The Court."
+      },
+      {
+        "heading": "Tenis a squash vybírejte samostatně",
+        "body": "Tenis nabízí dvouhru i čtyřhru přes síť. Squash se standardně hraje ve dvou proti přední stěně; počítání a překážení mají vlastní pravidla. HLEDEJKURTY v tomto přehledu porovnává padelové termíny, takže dostupnost jiného sportu potvrďte přímo u sportoviště."
+      },
+      {
+        "heading": "První návštěva bez zbytečného nákupu",
+        "body": "Pro každý sport si půjčte odpovídající raketu a ověřte povolenou obuv. Padelová půjčovna neznamená půjčovnu pro squash. Před platbou se podívejte na délku rezervace a cenu za celý kurt. U padelu vám s výběrem pomůže přehled pražských klubů."
+      }
+    ],
+    "clubs": [
+      "the-court",
+      "one-padel"
+    ],
+    "sources": [
+      "fip",
+      "court",
+      "itf",
+      "squash"
+    ],
+    "primaryQuery": "padel vs tenis vs squash"
+  },
+  {
+    "path": "/blog/spoluhraci-padel-praha/",
+    "kind": "article",
+    "title": "Jak najít čtvrtého hráče na padel v Praze",
+    "description": "Kde hledat spoluhráče na padel v Praze. Otevřené hry One Padel a Džus, domluva úrovně, rozdělení ceny a rezervace bez nedorozumění.",
+    "intro": "Chybí vám jeden hráč? Začněte otevřenými hrami v klubových systémech. One Padel je nabízí na webu a Džus je uvádí mezi funkcemi svého rezervačního systému.",
+    "sections": [
+      {
+        "heading": "Otevřená hra má vlastní podmínky",
+        "body": "Nejde jen o volný kurt: otevřená hra nabízí místa do konkrétní skupiny. Zkontrolujte úroveň, čas, délku i cenu za hráče. U One Padel otevřete sekci her; u Džusu nabídku v Bookaball. HLEDEJKURTY samotné hráče nepáruje."
+      },
+      {
+        "heading": "Do zprávy dejte potřebné informace",
+        "body": "Napište datum, čas, klub, délku, orientační úroveň a podíl ceny. Například: Hledáme čtvrtého na přátelskou hru, hodina v hale, cenu a rezervaci potvrdíme po sestavení skupiny. Osobní kontakt posílejte až tam, kde je potřebný, a respektujte pravidla komunitní skupiny."
+      },
+      {
+        "heading": "Kdo platí a kdo může rezervaci zrušit",
+        "body": "Ještě před zaplacením určete organizátora, rozdělení nákladů a postup při odhlášení. Ve skupině sdílejte potvrzený termín, ne pouze nalezenou dostupnost. Pokud chcete nejprve vybrat klub, porovnejte dojezd a cenu v pražském přehledu."
+      }
+    ],
+    "clubs": [
+      "one-padel",
+      "padel-dzus"
+    ],
+    "sources": [
+      "one",
+      "dzus"
+    ],
+    "primaryQuery": "spoluhráč padel Praha"
+  },
+  {
+    "path": "/blog/jak-vybrat-padelovy-klub-praha/",
+    "kind": "article",
+    "title": "Nejlepší padelový klub v Praze pro vaši hru",
+    "description": "Vyberte padelový klub podle potřeby: první lekce, více kurtů, hra 1vs1 nebo cena. Transparentní kritéria a konkrétní pražské příklady.",
+    "intro": "Jeden nejlepší klub pro každého neexistuje. Doporučení níže vychází z doložených služeb a počtu kurtů, nikoli z hvězdiček, placeného pořadí nebo osobního testování.",
+    "sections": [
+      {
+        "heading": "Pro první hru a lekci",
+        "body": "Zkontrolujte půjčovnu, volnou úvodní lekci a formát pro vaši skupinu. One Padel a Padel Powers uvádějí půjčení vybavení i trenéry. Neznamená to, že půjčovna nebo lekce bude dostupná bez rezervace ve vašem termínu."
+      },
+      {
+        "heading": "Pro více skupin nebo hru ve dvou",
+        "body": "One Padel má podle webu devět halových kurtů a Padel Powers osm. Pro více čtveřic ověřte společný interval. Pokud jste dva a chcete 1vs1, The Court zveřejňuje samostatný tréninkový kurt. Celkový počet hřišť není zárukou volného místa."
+      },
+      {
+        "heading": "Pro rozpočet a pohodlný dojezd",
+        "body": "Vyberte stejnou hodinu u několika klubů a porovnejte konečnou cenu včetně vybavení. Nehodnotíme kluby podle marketingových přívlastků. Pro rodiny si ověřte konkrétní zázemí a dohled nad dětmi; dětský koutek sám neznamená hlídání. Pro dopravu použijte skutečnou adresu a aktuální trasu."
+      }
+    ],
+    "clubs": [
+      "one-padel",
+      "padel-powers-smichov",
+      "the-court"
+    ],
+    "sources": [
+      "one",
+      "oneAbout",
+      "powers",
+      "court"
+    ],
+    "primaryQuery": "jak vybrat padelový klub Praha"
+  },
+  {
+    "path": "/blog/padel-lekce-treneri-praha/",
+    "kind": "article",
+    "title": "Padel lekce a trenéři v Praze: jak vybírat",
+    "description": "Které pražské padelové kluby zveřejňují lekce a jak porovnat nabídku trenérů. Individuální či skupinový trénink, vybavení a cena kurtu.",
+    "intro": "Lekce nabízí například One Padel, Padel Powers, Džus a Neride. Nejdřív si ujasněte, zda chcete první seznámení s hrou, společný trénink čtveřice, nebo individuální práci na technice.",
+    "sections": [
+      {
+        "heading": "Ptejte se na celkovou cenu",
+        "body": "Porovnejte počet hráčů, délku a to, zda je v ceně kurt i raketa. Neride zveřejňuje ceny pro různě velké skupiny s halou a trenérem; jiný klub může uvádět pouze cenu určitého formátu. Stejná částka proto nemusí znamenat stejnou službu."
+      },
+      {
+        "heading": "Vyberte úroveň a jazyk",
+        "body": "Trenérovi napište dosavadní zkušenosti, počet lidí, jazyk a hlavní cíl. Začátečnická skupina a soutěžní příprava potřebují jiný obsah. One Padel výslovně uvádí individuální i skupinové lekce pro děti a dospělé; aktuální rozpis ověřte v klubové nabídce."
+      },
+      {
+        "heading": "Co potvrdit před první lekcí",
+        "body": "Vyžádejte si místo setkání, vybavení a storno podmínky. Běžná rezervace kurtu není rezervací trenéra. HLEDEJKURTY pomůže s dostupností hřiště; trenéra a jeho cenu potvrdí klub nebo přímo trenér."
+      }
+    ],
+    "clubs": [
+      "one-padel",
+      "padel-powers-smichov",
+      "padel-dzus",
+      "padel-neride"
+    ],
+    "sources": [
+      "oneAbout",
+      "powers",
+      "dzus",
+      "neride"
+    ],
+    "primaryQuery": "padel lekce Praha"
+  },
+  {
+    "path": "/blog/padel-firmy-teambuilding-praha/",
+    "kind": "article",
+    "title": "Padel pro firmy v Praze: příprava teambuildingu",
+    "description": "Jak naplánovat firemní padel v Praze: počet kurtů, začátečníci, trenér, občerstvení a potvrzení nabídky. Příklady klubů pro skupinovou akci.",
+    "intro": "Pro firemní akci potřebujete více než několik samostatných rezervací. S klubem potvrďte počet účastníků, rotaci na kurtech, vybavení a odpovědnost za celý program.",
+    "sections": [
+      {
+        "heading": "Počet hráčů převeďte na plán hry",
+        "body": "Na standardní čtyřhru potřebujete čtyři hráče na kurt. Pro dvanáct současně hrajících účastníků jsou tedy potřeba tři kurty. Pokud střídáte skupiny, připravte čekací program a orientační časový rozpis; zbytek týmu nemusí chtít celou dobu soutěžit."
+      },
+      {
+        "heading": "Vyberte podle zázemí a zkušeností týmu",
+        "body": "The Court na webu uvádí firemní večery a turnaje. Padel Powers má osm krytých kurtů a zasedací místnost, One Padel devět halových kurtů a lounge. To jsou důvody k poptávce, nikoli potvrzení kapacity akce nebo ceny balíčku."
+      },
+      {
+        "heading": "Vyžádejte si jednu písemnou nabídku",
+        "body": "Do nabídky zahrňte kurty, trenéra, rakety, míčky, občerstvení, fakturaci a storno. Napište, kolik je úplných začátečníků. Volné kurty nalezené ve vyhledávači nejsou potvrzeným firemním programem; hromadnou akci dohodněte přímo s provozovatelem."
+      }
+    ],
+    "clubs": [
+      "the-court",
+      "padel-powers-smichov",
+      "one-padel"
+    ],
+    "sources": [
+      "court",
+      "powers",
+      "oneAbout"
+    ],
+    "primaryQuery": "padel teambuilding Praha"
+  },
+  {
+    "path": "/blog/padel-turnaje-praha/",
+    "kind": "article",
+    "title": "Padelové turnaje v Praze: kde hledat termíny",
+    "description": "Odkazy na aktuální padelové turnaje a klubové kalendáře v Praze. Jak ověřit úroveň, partnera, startovné a registraci před přihlášením.",
+    "intro": "Termíny turnajů se mění a místa se plní. Proto vás vedeme do aktuálních kalendářů pořadatelů místo přepisování dat, která mohou být při další návštěvě zastaralá.",
+    "sections": [
+      {
+        "heading": "Začněte oficiálním klubovým kalendářem",
+        "body": "One Padel má na webu sekci turnajů, Džus zveřejňuje akce a Padel Powers klubové akce a turnaje. U vybraného záznamu ověřte datum, místo, počet míst a uzávěrku registrace. Pro federační soutěž zkontrolujte také podmínky České padelové federace."
+      },
+      {
+        "heading": "Ne každý turnaj je pro stejnou úroveň",
+        "body": "Přečtěte si popis kategorie a systém. U některých formátů se přihlašuje dvojice, jinde jednotlivec a partneři se střídají. Označení začátečnický nebo úrovňové písmeno posuzujte podle vysvětlení konkrétního pořadatele; mezi kluby nemusí znamenat totéž."
+      },
+      {
+        "heading": "Co zaplatit a co mít potvrzené",
+        "body": "Před úhradou zkontrolujte, zda je startovné na osobu nebo dvojici, co zahrnuje a jak se řeší odhlášení. Potvrzení rezervace běžného kurtu nenahrazuje přihlášku do turnaje. Pro vlastní přípravu si na klubových profilech vyberte tréninkový termín."
+      }
+    ],
+    "clubs": [
+      "one-padel",
+      "padel-dzus",
+      "padel-powers-smichov"
+    ],
+    "sources": [
+      "oneTournaments",
+      "powersEvents",
+      "dzusEvents",
+      "cpf"
+    ],
+    "primaryQuery": "padelové turnaje Praha"
+  }
+]

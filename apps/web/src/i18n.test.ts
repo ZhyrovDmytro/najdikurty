@@ -17,6 +17,11 @@ describe("language routes", () => {
     expect(languageFromPathname("/ua/about/")).toBe("ua");
   });
 
+  it("keeps Czech-only guides at their published URLs", () => {
+    expect(pathnameForLanguage("/padel-praha-ceny/", "en")).toBe("/padel-praha-ceny/");
+    expect(pathnameForLanguage("/blog/pravidla-padelu/", "ua")).toBe("/blog/pravidla-padelu/");
+  });
+
   it("builds Ukrainian URLs with the ua prefix", () => {
     expect(pathnameForLanguage("/clubs/padel-prosek/", "ua")).toBe("/ua/clubs/padel-prosek/");
     expect(pathnameForLanguage("/ua/about/", "cz")).toBe("/about/");
