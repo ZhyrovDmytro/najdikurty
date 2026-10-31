@@ -1,4 +1,6 @@
 import React from "react";
+import { ArrowRight } from "lucide-react";
+import { ArticleLayout } from "./article-layout";
 import clubs from "./club-facts.json";
 import sourceData from "./club-sources.json";
 import pages from "./editorial-content.json";
@@ -7,7 +9,7 @@ import ukrainian from "./editorial-ua.json";
 import copy from "./editorial-copy.json";
 import translatedPrices from "./editorial-prices.json";
 import sourceLabels from "./editorial-source-labels.json";
-import { LANGUAGE_STORAGE_KEY, type LanguageCode } from "./i18n";
+import { type LanguageCode } from "./i18n";
 import { distanceInKilometers } from "./distance";
 
 export const EDITORIAL_DATE = "2026-10-31";
@@ -57,12 +59,26 @@ export function EditorialLinks({ language = "cz" }: { language?: LanguageCode })
 }
 
 export function EditorialArticleCards({ limit, language = "cz" }: { limit?: number; language?: LanguageCode }) {
-  return <section className="editorialArticles" aria-label={copy[language].articles}>
-    <h2>{copy[language].articles}</h2>
-    {EDITORIAL_PAGES.filter(page => page.language === language && page.kind === "article").slice(0, limit).map(page => <article key={page.path}>
-      <h3><a href={page.path}>{page.title}</a></h3><p>{page.description}</p>
-    </article>)}
-  </section>;
+  const latest = limit !== undefined;
+  const Heading = latest ? "h3" : "h2";
+  const cards = EDITORIAL_PAGES.filter(page => page.language === language && page.kind === "article").slice(0, limit).map(page => <article className={latest ? "latestNewsCard" : "newsCard"} key={page.path}>
+        <a className={latest ? "latestNewsImage" : undefined} href={page.path}><img src={editorialImage(page).src} alt={editorialImage(page).alt} width="1200" height="670" loading="lazy" /></a>
+        <div className={latest ? "latestNewsCardBody" : "newsCardBody"}>
+          <div className="newsMeta"><span>{copy[language].articles}</span><time dateTime={EDITORIAL_DATE}>{editorialDate(language)}</time></div>
+          <Heading><a href={page.path}>{page.title}</a></Heading><p>{page.description}</p>
+          <a className="newsReadMore" href={page.path}>{language === "cz" ? "Přečíst článek" : language === "en" ? "Read article" : "Читати статтю"}<ArrowRight size={17} /></a>
+        </div>
+      </article>);
+  return latest ? <>{cards}</> : <section aria-label={copy[language].articles}><div className="newsList">{cards}</div></section>;
+}
+
+export function editorialImage(page: Editorial) {
+  const club = clubs.find(club => club.slug === page.clubs[0])!;
+  return { src: `${import.meta.env?.BASE_URL ?? "/"}clubs/optimized/${club.slug}-1200.webp`, alt: `${club.name} – ${courtLabel(club, page.language)}` };
+}
+
+function editorialDate(language: LanguageCode) {
+  return new Intl.DateTimeFormat(language === "cz" ? "cs" : language === "ua" ? "uk" : "en", { dateStyle: "long", timeZone: "Europe/Prague" }).format(new Date(`${EDITORIAL_DATE}T12:00:00Z`));
 }
 
 export function DataMethodology() {
@@ -102,25 +118,22 @@ export function EditorialPage({ page }: { page: Editorial }) {
   const language = page.language;
   const text = copy[language];
   const href = (path: string) => editorialPath(path, language);
-  const date = new Intl.DateTimeFormat(language === "cz" ? "cs" : language === "ua" ? "uk" : "en", { dateStyle: "long", timeZone: "Europe/Prague" }).format(new Date(`${EDITORIAL_DATE}T12:00:00Z`));
+  const date = editorialDate(language);
   const selected = clubs.filter(club => page.clubs.includes(club.slug));
   const rows = page.kind === "indoor" ? clubs.filter(club => club.courtTypes.includes("indoor")) : clubs;
-  return <main className="seoPrerender editorialPage">
-    <header className="seoPrerenderHeader"><a className="seoPrerenderBrand" href={href("/")}>HLEDEJKURTY</a><nav className="seoPrerenderNav" aria-label={text.nav}><a href={href("/")}>{text.search}</a><a href={href("/clubs/")}>{text.clubs}</a><a href={href("/blog/")}>{text.blog}</a><a href={href("/about/")}>{text.about}</a></nav></header>
-    <nav className="editorialLinks" aria-label={text.language}>{(["cz", "en", "ua"] as const).map(code => <a key={code} href={editorialPath(page.basePath, code)} onClick={() => localStorage.setItem(LANGUAGE_STORAGE_KEY, code)} hrefLang={code === "cz" ? "cs" : code === "ua" ? "uk" : "en"} lang={code === "cz" ? "cs" : code === "ua" ? "uk" : "en"} aria-current={code === language ? "page" : undefined}>{code === "cz" ? "Čeština" : code === "ua" ? "Українська" : "English"}</a>)}</nav>
-    <nav className="editorialBreadcrumbs" aria-label={text.breadcrumbs}><a href={href("/")}>HLEDEJKURTY</a> / {page.basePath !== "/padel-praha/" ? <><a href={href(page.kind === "article" ? "/blog/" : "/padel-praha/")}>{page.kind === "article" ? text.blog : text.hub}</a> / </> : null}<span>{page.title}</span></nav>
-    <article><h1>{page.title}</h1><p className="newsMeta">{text.byline} · {text.published} <time dateTime={EDITORIAL_DATE}>{date}</time></p><p className="newsLead">{page.intro}</p>
-      {page.sections.map(section => <section className="editorialSection" key={section.heading}><h2>{section.heading}</h2><p>{section.body}</p></section>)}
+  return <ArticleLayout title={page.title} description={page.description} image={editorialImage(page)}
+    meta={<div className="newsMeta"><span>{text.articles}</span><span>{text.byline}</span><time dateTime={EDITORIAL_DATE}>{text.published} {date}</time></div>}>
+      <p className="newsLead">{page.intro}</p>
+      {page.sections.map(section => <section className="newsArticleSection" key={section.heading}><h2>{section.heading}</h2><p>{section.body}</p></section>)}
       {["hub", "prices", "indoor", "multisport"].includes(page.kind) ? <div className="editorialTable" tabIndex={0} role="region" aria-label={text.table}><table><caption>{text.caption}</caption><thead><tr><th scope="col">{text.club}</th><th scope="col">{text.courts}</th><th scope="col">{text.price}</th><th scope="col">MultiSport</th><th scope="col">{text.verified}</th></tr></thead><tbody>
         {rows.map(club => <tr key={club.slug}><th scope="row"><a href={href(`/clubs/${club.slug}/`)}>{club.name}</a></th><td>{club.courtCount} {text.total}; {courtLabel(club, language)}</td><td>{language === "cz" ? club.priceInfo : (translatedPrices[language] as Record<string, string>)[club.slug]}</td><td>{multisportLabel(club, language)}</td><td>{priceVerified(club.slug) ? <><time dateTime={EDITORIAL_DATE}>{date}</time><br /><a href={sources[club.slug].sources.at(-1)!.url}>{text.priceSource}</a></> : text.unverified}</td></tr>)}
       </tbody></table></div> : null}
-      {page.kind === "areas" ? <section className="editorialSection"><h2>{text.areas}</h2><ul>{clubs.map(club => <li key={club.slug}><a href={href(`/clubs/${club.slug}/`)}>{club.name}</a> – {club.address}</li>)}</ul></section> : null}
-      <section className="editorialSection"><h2>{text.mentioned}</h2><ul>{selected.map(club => <li key={club.slug}><a href={href(`/clubs/${club.slug}/`)}>{club.name}: {text.profile}</a></li>)}</ul></section>
+      {page.kind === "areas" ? <section className="newsArticleSection"><h2>{text.areas}</h2><ul>{clubs.map(club => <li key={club.slug}><a href={href(`/clubs/${club.slug}/`)}>{club.name}</a> – {club.address}</li>)}</ul></section> : null}
+      <section className="newsArticleSection"><h2>{text.mentioned}</h2><ul>{selected.map(club => <li key={club.slug}><a href={href(`/clubs/${club.slug}/`)}>{club.name}: {text.profile}</a></li>)}</ul></section>
       <EditorialLinks language={language} />
-      <section className="editorialSection"><h2>{text.sources}</h2><p>{text.sourcesBody}</p><ul>{page.sources.map(id => <li key={id}><a href={EDITORIAL_SOURCES[id].url}>{language === "cz" ? EDITORIAL_SOURCES[id].label : (sourceLabels[language] as Record<string, string>)[id]}</a></li>)}</ul></section>
+      <section className="newsArticleSection"><h2>{text.sources}</h2><p>{text.sourcesBody}</p><ul>{page.sources.map(id => <li key={id}><a href={EDITORIAL_SOURCES[id].url}>{language === "cz" ? EDITORIAL_SOURCES[id].label : (sourceLabels[language] as Record<string, string>)[id]}</a></li>)}</ul></section>
       {page.kind === "hub" ? <EditorialArticleCards language={language} /> : null}
-    </article><footer className="seoPrerenderFooter"><a href={href("/about/")}>{text.methodology}</a><a href={href("/privacy-policy/")}>{text.privacy}</a><a href={href("/terms-of-use/")}>{text.terms}</a></footer>
-  </main>;
+  </ArticleLayout>;
 }
 
 function priceVerified(slug: string) { return ["padel-powers-smichov", "the-court", "padel-neride"].includes(slug); }

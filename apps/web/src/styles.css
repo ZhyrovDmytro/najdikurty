@@ -3918,21 +3918,21 @@ a.detailInfoRow:hover {
 }
 
 /* Editorial pages share the site's typography and neutral surfaces. */
-.editorialPage { max-width: 1120px; margin-inline: auto; }
-.editorialPage article { max-width: 100%; }
-.editorialSection, .editorialArticles { margin-block: 28px; line-height: 1.7; }
-.editorialSection h2, .editorialArticles h2 { margin-bottom: 12px; }
+.editorialSection { margin-block: 28px; line-height: 1.7; }
+.editorialSection h2 { margin-bottom: 12px; }
 .editorialSection h3 { margin-top: 20px; }
-.editorialSection p, .editorialArticles p { margin-block: 10px; }
+.editorialSection p { margin-block: 10px; }
 .editorialLinks { display: flex; flex-wrap: wrap; gap: 12px 24px; padding-block: 20px; line-height: 1.5; }
-.editorialLinks a, .editorialArticles a, .editorialSection a, .editorialTable a { text-decoration: underline; text-underline-offset: 3px; }
-.editorialArticles article { padding-block: 16px; border-bottom: 1px solid var(--border, #d8dee5); }
-.editorialBreadcrumbs { margin-block: 24px; font-size: 14px; line-height: 1.6; }
-.editorialTable { overflow-x: auto; margin-block: 28px; }
+.editorialLinks a, .editorialSection a, .editorialTable a { text-decoration: underline; text-underline-offset: 3px; }
+.editorialTable { min-width: 0; overflow-x: auto; }
 .editorialTable table { width: 100%; min-width: 760px; border-collapse: collapse; text-align: left; font-size: 14px; line-height: 1.5; }
 .editorialTable caption { text-align: left; font-weight: 600; padding-block: 12px; }
 .editorialTable th, .editorialTable td { padding: 14px 12px; border-bottom: 1px solid var(--border, #d8dee5); vertical-align: top; }
-.editorialTable thead { background: var(--surface-muted, #f2f5f7); color: #17202b; }
+.editorialTable thead { background: var(--surface-muted); color: var(--text); }
 .clubEditorial { padding: 16px; }
 .clubEditorial dl dt { font-weight: 600; margin-top: 12px; }
 .clubEditorial dl dd { margin: 0; }
+
+.newsArticle, .newsArticleContent { min-width: 0; }
+.newsArticleSection a { color: var(--blue); text-underline-offset: 3px; }
+.newsArticleSection ul { margin: 0; padding-left: 24px; color: var(--text-muted); line-height: 1.68; }

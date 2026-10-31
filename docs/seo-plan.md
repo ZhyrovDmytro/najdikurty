@@ -63,3 +63,7 @@ Validation commands: `npm test`, `npm run build`, and the web build's SEO valida
 ## Language parity follow-up
 
 All 11 new articles and five guide/comparison pages are published at the original Czech path, `/en/<same-path>/` and `/ua/<same-path>/`. URL slugs are shared across languages to preserve the existing route structure. Translation files contain the full title, description, introduction and matching body sections; shared club/source references keep the evidence unchanged. The existing The Court article also shows the new verification and suitability paragraphs in all three languages. Tests enforce section coverage, translated copy, localized club links and identical price amounts; build validation checks all language alternates and internal destinations. No new club verification was performed during translation.
+
+## Shared design correction
+
+All 48 localized editorial URLs now render through the existing app layout, retaining its header, language selector, light/dark theme, breadcrumbs, footer and cookie controls. Editorial routes participate in the app's history and SEO metadata updates. The Court and the new pages share `ArticleLayout`; new blog entries use the existing image-card styles, and home previews share the original latest-news grid. Existing club photos illustrate the guides with venue-specific alt text. No article claims or translations changed. Automated checks cover shared markup on every translation; browser checks verified all 48 routes, overflow, theme behavior and back navigation.

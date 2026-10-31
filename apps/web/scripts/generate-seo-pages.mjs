@@ -1,6 +1,6 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { ClubEditorial, DataMethodology, EditorialArticleCards, EditorialLinks, EditorialPage, EDITORIAL_DATE, EDITORIAL_PAGES } from "../src/editorial.tsx";
+import { ClubEditorial, DataMethodology, EditorialArticleCards, EditorialLinks, EditorialPage, editorialImage, EDITORIAL_DATE, EDITORIAL_PAGES } from "../src/editorial.tsx";
 import { NEWS_ARTICLES, NewsArticlePage, localizedNewsArticle } from "../src/news.tsx";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -123,7 +123,7 @@ function localizePage(page, language) {
 
 function renderPage(page) {
   const canonical = new URL(page.path, SITE_ORIGIN).toString();
-  const image = page.club ? `${SITE_ORIGIN}/clubs/optimized/${page.club.slug}-1200.webp` : page.key === "newsArticle" ? `${SITE_ORIGIN}/${page.selectedArticle.imageUrl}` : `${SITE_ORIGIN}/social-card.png`;
+  const image = page.editorial ? new URL(editorialImage(page.editorial).src, SITE_ORIGIN).toString() : page.club ? `${SITE_ORIGIN}/clubs/optimized/${page.club.slug}-1200.webp` : page.key === "newsArticle" ? `${SITE_ORIGIN}/${page.selectedArticle.imageUrl}` : `${SITE_ORIGIN}/social-card.png`;
   let html = template.replace(/<html lang="[^"]*">/, `<html lang="${page.language.html}">`);
   html = replaceTag(html, "title", page.title);
   for (const [attribute, key, value] of [["name", "description", page.description], ["property", "og:type", page.key === "newsArticle" || page.editorial?.kind === "article" ? "article" : "website"], ["property", "og:title", page.title], ["property", "og:description", page.description], ["property", "og:url", canonical], ["property", "og:image", image], ["property", "og:image:alt", socialAlt(page)], ["property", "og:locale", page.language.og], ["name", "twitter:title", page.title], ["name", "twitter:description", page.description], ["name", "twitter:image", image], ["name", "twitter:image:alt", socialAlt(page)]]) html = replaceMeta(html, attribute, key, value);
@@ -142,19 +142,19 @@ function renderNotFoundPage(homePage) {
 }
 
 function visibleContent(page) {
-  if (page.editorial) return renderToStaticMarkup(React.createElement(EditorialPage, { page: page.editorial }));
   const localized = copy[page.language.code];
   const [search, clubsLabel, newsLabel, about, privacy, terms, cookies] = localized.nav;
   const clubLinks = clubs.map((club) => `<li><a href="${localPath(`/clubs/${club.slug}/`, page.language)}">${escapeHtml(club.name)}</a><span>${escapeHtml(localized.count(club.courtCount))} · ${escapeHtml(club.address)}</span></li>`).join("");
   let details = "";
-  if (page.key === "home") details = `${sections(localized.sections.home)}${renderToStaticMarkup(React.createElement(EditorialLinks, { language: page.language.code })) + renderToStaticMarkup(React.createElement(EditorialArticleCards, { limit: 2, language: page.language.code }))}<section><h2>${escapeHtml(clubsLabel)}</h2><p>${escapeHtml(localized.sections.clubs[0][1])}</p><ul class="seoPrerenderClubs">${clubLinks}</ul></section>`;
+  if (page.key === "home") details = `${sections(localized.sections.home)}${renderToStaticMarkup(React.createElement(EditorialLinks, { language: page.language.code })) + `<div class="latestNewsGrid">${renderToStaticMarkup(React.createElement(EditorialArticleCards, { limit: 2, language: page.language.code }))}</div>`}<section><h2>${escapeHtml(clubsLabel)}</h2><p>${escapeHtml(localized.sections.clubs[0][1])}</p><ul class="seoPrerenderClubs">${clubLinks}</ul></section>`;
   else if (page.key === "allClubs") details = `${sections(localized.sections.clubs)}<section><h2>${escapeHtml(localized.labels[6])}</h2><ul class="seoPrerenderClubs">${clubLinks}</ul></section>`;
   else if (page.key === "news") details = `${renderToStaticMarkup(React.createElement(EditorialLinks, { language: page.language.code })) + renderToStaticMarkup(React.createElement(EditorialArticleCards, { language: page.language.code }))}${NEWS_ARTICLES.map(article => { const post = localizedNewsArticle(article, page.language.code); return `<section><h2><a href="${localPath(`/blog/${article.slug}/`, page.language)}">${escapeHtml(post.title)}</a></h2><p>${escapeHtml(post.excerpt)}</p></section>`; }).join("")}`;
+  else if (page.editorial) details = renderToStaticMarkup(React.createElement(EditorialPage, { page: page.editorial }));
   else if (page.key === "newsArticle") details = renderToStaticMarkup(React.createElement(NewsArticlePage, { article: page.selectedArticle, language: page.language.code, onOpenClub: () => {} }));
   else if (page.key === "about" && page.language.code === "cz") details = renderToStaticMarkup(React.createElement(DataMethodology));
   else if (page.club) details = clubDetails(page.club, page.language);
   else details = `<section><h2>${escapeHtml(about)}</h2><p><a href="${localPath("/clubs/", page.language)}">${escapeHtml(localized.sections.clubs[0][1])}</a></p></section>`;
-  return `<main class="seoPrerender"><header class="seoPrerenderHeader"><a class="seoPrerenderBrand" href="${localPath("/", page.language)}">HLEDEJKURTY</a><nav class="seoPrerenderNav" aria-label="Primary navigation"><a href="${localPath("/", page.language)}">${escapeHtml(search)}</a><a href="${localPath("/clubs/", page.language)}">${escapeHtml(clubsLabel)}</a><a href="${localPath("/blog/", page.language)}">${escapeHtml(newsLabel)}</a><a href="${localPath("/about/", page.language)}">${escapeHtml(about)}</a></nav></header>${page.key === "newsArticle" ? details : `<article><h1>${escapeHtml(page.h1)}</h1><p>${escapeHtml(page.body)}</p>${details}</article>`}<footer class="seoPrerenderFooter"><a href="${localPath("/blog/", page.language)}">${escapeHtml(newsLabel)}</a><a href="${localPath("/about/", page.language)}">${escapeHtml(about)}</a><a href="${localPath("/privacy-policy/", page.language)}">${escapeHtml(privacy)}</a><a href="${localPath("/terms-of-use/", page.language)}">${escapeHtml(terms)}</a><a href="${localPath("/cookie-policy/", page.language)}">${escapeHtml(cookies)}</a></footer></main>`;
+  return `<main class="seoPrerender"><header class="seoPrerenderHeader"><a class="seoPrerenderBrand" href="${localPath("/", page.language)}">HLEDEJKURTY</a><nav class="seoPrerenderNav" aria-label="Primary navigation"><a href="${localPath("/", page.language)}">${escapeHtml(search)}</a><a href="${localPath("/clubs/", page.language)}">${escapeHtml(clubsLabel)}</a><a href="${localPath("/blog/", page.language)}">${escapeHtml(newsLabel)}</a><a href="${localPath("/about/", page.language)}">${escapeHtml(about)}</a></nav></header>${page.key === "newsArticle" || page.editorial ? details : `<article><h1>${escapeHtml(page.h1)}</h1><p>${escapeHtml(page.body)}</p>${details}</article>`}<footer class="seoPrerenderFooter"><a href="${localPath("/blog/", page.language)}">${escapeHtml(newsLabel)}</a><a href="${localPath("/about/", page.language)}">${escapeHtml(about)}</a><a href="${localPath("/privacy-policy/", page.language)}">${escapeHtml(privacy)}</a><a href="${localPath("/terms-of-use/", page.language)}">${escapeHtml(terms)}</a><a href="${localPath("/cookie-policy/", page.language)}">${escapeHtml(cookies)}</a></footer></main>`;
 }
 
 function clubDetails(club, language) {

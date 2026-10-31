@@ -84,7 +84,7 @@ import {
   newsPostPath,
   type NewsArticle
 } from "./news";
-import { ClubEditorial, DataMethodology, EditorialPage, EDITORIAL_PAGES } from "./editorial";
+import { ClubEditorial, DataMethodology, EditorialPage, EDITORIAL_PAGES, EDITORIAL_DATE, editorialImage, editorialPath, type Editorial } from "./editorial";
 import { lowestPrice } from "./pricing";
 import clubFactsData from "./club-facts.json";
 import "./styles.css";
@@ -104,7 +104,7 @@ const API_BASE_URL = (
   (import.meta.env.MODE === "production" && window.location.hostname.endsWith("github.io") ? GITHUB_PAGES_API_BASE_URL : "")
 ).replace(/\/$/, "");
 const USE_DATABASE_SEARCH = import.meta.env.VITE_USE_DATABASE_SEARCH === "true";
-type Page = "clubs" | "allClubs" | "news" | "about" | "privacy" | "terms" | "cookies";
+type Page = "editorial" | "clubs" | "allClubs" | "news" | "about" | "privacy" | "terms" | "cookies";
 const initialRoute = routeFromLocation(window.location.pathname, initialParams);
 const initialPage: Page = initialRoute.page;
 type CourtType = "indoor" | "outdoor";
@@ -353,6 +353,7 @@ function App() {
   const [now, setNow] = useState(() => new Date());
   const [availabilityByClub, setAvailabilityByClub] = useState<AvailabilityByClub>({});
   const [selectedClubSlug, setSelectedClubSlug] = useState<string | null>(initialPage === "clubs" ? initialRoute.clubSlug : null);
+  const [selectedEditorialPath, setSelectedEditorialPath] = useState<string | null>(initialRoute.editorialPath ?? null);
   const [selectedArticleSlug, setSelectedArticleSlug] = useState<string | null>(initialPage === "news" ? initialRoute.articleSlug : null);
   const [allClubsSort, setAllClubsSort] = useState<FindCourtSort>(() => storedSortPreference(ALL_CLUBS_SORT_STORAGE_KEY));
   const [findCourtSort, setFindCourtSort] = useState<FindCourtSort>(() => storedSortPreference(FIND_COURT_SORT_STORAGE_KEY));
@@ -596,7 +597,7 @@ function App() {
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
-  }, [page, selectedArticleSlug, selectedClubSlug]);
+  }, [page, selectedArticleSlug, selectedClubSlug, selectedEditorialPath]);
 
   useEffect(() => {
     manualRefreshSequenceRef.current += 1;
@@ -616,6 +617,7 @@ function App() {
       const nextPage = nextRoute.page;
       setLanguage(nextRoute.language);
       setPage(nextPage);
+      setSelectedEditorialPath(nextRoute.editorialPath ?? null);
       setDate(selectableDate(params.get("date"), pragueDateInputValue(new Date())));
       setSelectedClubSlug(nextPage === "clubs" ? nextRoute.clubSlug : null);
       setSelectedArticleSlug(nextPage === "news" ? nextRoute.articleSlug : null);
@@ -649,6 +651,7 @@ function App() {
 
   const selectedClub = page === "clubs" ? (CLUBS.find((club) => club.slug === selectedClubSlug) ?? null) : null;
   const selectedArticle = page === "news" ? newsArticle(selectedArticleSlug) : null;
+  const selectedEditorial = page === "editorial" ? EDITORIAL_PAGES.find(item => item.basePath === selectedEditorialPath && item.language === language) ?? null : null;
   const selectedAvailability = selectedClub ? availabilityByClub[selectedClub.slug] : null;
   const selectedClubFailure = selectedClub ? failedClubs.find(({ club }) => club.slug === selectedClub.slug) : null;
   const isSelectedClubSlotsLoading =
@@ -659,8 +662,8 @@ function App() {
     !selectedClubFailure;
 
   useEffect(() => {
-    applySeoMeta(buildSeoMeta({ date, language, page, selectedArticle, selectedClub }));
-  }, [date, language, page, selectedArticle, selectedClub]);
+    applySeoMeta(buildSeoMeta({ date, language, page, selectedArticle, selectedClub, selectedEditorial }));
+  }, [date, language, page, selectedArticle, selectedClub, selectedEditorial]);
 
   const durationOptions = useMemo(() => {
     const firstAvailability = Object.values(availabilityByClub)[0];
@@ -907,7 +910,7 @@ function App() {
       path: window.location.pathname,
       search: window.location.search
     });
-  }, [analyticsConsent, date, language, page, selectedArticleSlug, selectedClubSlug]);
+  }, [analyticsConsent, date, language, page, selectedArticleSlug, selectedClubSlug, selectedEditorialPath]);
 
   const refreshAvailabilityButton = (
       <Button
@@ -1046,7 +1049,7 @@ function App() {
           <a className={page === "allClubs" ? "topbarNavLink active" : "topbarNavLink"} href={allClubsHref(language)} onClick={(event) => handleInternalNavigation(event, () => navigateToAllClubs("push"))}>
             {t("nav.allClubs")}
           </a>
-          <a className={page === "news" ? "topbarNavLink active" : "topbarNavLink"} href={newsPath(language)} onClick={(event) => handleInternalNavigation(event, () => navigateToNews(null, "push"))}>
+          <a className={page === "news" || selectedEditorial?.kind === "article" ? "topbarNavLink active" : "topbarNavLink"} href={newsPath(language)} onClick={(event) => handleInternalNavigation(event, () => navigateToNews(null, "push"))}>
             {t("nav.news")}
           </a>
           <a className={page === "about" ? "topbarNavLink active" : "topbarNavLink"} href={aboutHref(language)} onClick={(event) => handleInternalNavigation(event, () => navigateToAbout("push"))}>
@@ -1065,7 +1068,7 @@ function App() {
                 captureEvent("language_changed", { language: nextLanguage, previous_language: language });
                 localStorage.setItem(LANGUAGE_STORAGE_KEY, nextLanguage);
                 const currentUrlDate = new URLSearchParams(window.location.search).get("date");
-                const nextUrl = localizedPageUrl(page, selectedClubSlug, selectedArticleSlug, nextLanguage, currentUrlDate);
+                const nextUrl = selectedEditorial ? editorialPath(selectedEditorial.basePath, nextLanguage) : localizedPageUrl(page, selectedClubSlug, selectedArticleSlug, nextLanguage, currentUrlDate);
                 window.location.assign(nextUrl);
               }}
             >
@@ -1104,6 +1107,7 @@ function App() {
         <nav className="breadcrumbBar" aria-label={t("nav.pageNavigation")}>
           <Breadcrumbs
             article={selectedArticle}
+            editorial={selectedEditorial}
             language={language}
             page={page}
             selectedClub={selectedClub}
@@ -1113,7 +1117,9 @@ function App() {
         </nav>
       ) : null}
 
-      {page === "about" ? (
+      {selectedEditorial ? (
+        <EditorialPage page={selectedEditorial} />
+      ) : page === "about" ? (
         <AboutPage onBrowseClubs={() => navigateToClubs("push")} />
       ) : page === "news" && selectedArticle ? (
         <NewsArticlePage article={selectedArticle} language={language} onOpenClub={() => updateSelectedClub("the-court")} />
@@ -1547,6 +1553,7 @@ function handleInternalNavigation(event: React.MouseEvent<HTMLAnchorElement>, na
 
 function Breadcrumbs({
   article,
+  editorial,
   language,
   page,
   selectedClub,
@@ -1554,6 +1561,7 @@ function Breadcrumbs({
   onNews
 }: {
   article: NewsArticle | null;
+  editorial: Editorial | null;
   language: LanguageCode;
   page: Page;
   selectedClub: Club | null;
@@ -1564,7 +1572,7 @@ function Breadcrumbs({
 
   return (
     <ol className="breadcrumbs">
-      {page !== "news" ? (
+      {page !== "news" && !editorial ? (
         <li>
           <button type="button" onClick={onHome}>
             {t("nav.clubs")}
@@ -1581,6 +1589,11 @@ function Breadcrumbs({
           {article ? <button type="button" onClick={onNews}>{t("nav.news")}</button> : <span>{t("nav.news")}</span>}
         </li>
       ) : null}
+      {editorial ? <>
+        <li><button type="button" onClick={onHome}>HLEDEJKURTY</button></li>
+        {editorial.kind === "article" ? <li><button type="button" onClick={onNews}>{t("nav.news")}</button></li> : null}
+        <li aria-current="page"><span>{editorial.title}</span></li>
+      </> : null}
       {article ? (
         <li aria-current="page">
           <span>{localizedNewsArticle(article, language).title}</span>
@@ -3519,35 +3532,37 @@ function buildSeoMeta({
   language,
   page,
   selectedArticle,
+  selectedEditorial,
   selectedClub
 }: {
   date: string;
   language: LanguageCode;
   page: Page;
   selectedArticle: NewsArticle | null;
+  selectedEditorial: Editorial | null;
   selectedClub: Club | null;
 }): SeoMeta {
   const locale = localeByLanguage[language];
-  const canonicalUrl = canonicalUrlFor(page, selectedClub, language, selectedArticle);
+  const canonicalUrl = selectedEditorial ? absoluteSiteUrl(selectedEditorial.path) : canonicalUrlFor(page, selectedClub, language, selectedArticle);
   const alternateUrls = Object.fromEntries(
-    LANGUAGE_OPTIONS.map(({ code }) => [code, canonicalUrlFor(page, selectedClub, code, selectedArticle)])
+    LANGUAGE_OPTIONS.map(({ code }) => [code, selectedEditorial ? absoluteSiteUrl(editorialPath(selectedEditorial.basePath, code)) : canonicalUrlFor(page, selectedClub, code, selectedArticle)])
   ) as Record<LanguageCode, string>;
-  const imageUrl = selectedClub
+  const imageUrl = selectedEditorial ? absoluteSiteUrl(editorialImage(selectedEditorial).src) : selectedClub
     ? absoluteSiteUrl(selectedClub.imageUrl)
     : selectedArticle
       ? absoluteSiteUrl(selectedArticle.imageUrl)
       : SOCIAL_IMAGE_URL;
-  const title = seoTitle(page, selectedClub, language, selectedArticle);
-  const description = seoDescription(page, selectedClub, language, selectedArticle);
+  const title = selectedEditorial ? `${selectedEditorial.title} | HLEDEJKURTY` : seoTitle(page, selectedClub, language, selectedArticle);
+  const description = selectedEditorial ? selectedEditorial.description : seoDescription(page, selectedClub, language, selectedArticle);
 
   return {
     alternateUrls,
     canonicalUrl,
     description,
     imageUrl,
-    jsonLd: buildStructuredData({ canonicalUrl, date, description, imageUrl, language, page, selectedArticle, selectedClub, title }),
+    jsonLd: buildStructuredData({ canonicalUrl, date, description, imageUrl, language, page, selectedArticle, selectedClub, selectedEditorial, title }),
     locale,
-    openGraphType: selectedArticle ? "article" : "website",
+    openGraphType: selectedArticle || selectedEditorial?.kind === "article" ? "article" : "website",
     title
   };
 }
@@ -3662,6 +3677,7 @@ function buildStructuredData({
   language,
   page,
   selectedArticle,
+  selectedEditorial,
   selectedClub,
   title
 }: {
@@ -3672,6 +3688,7 @@ function buildStructuredData({
   language: LanguageCode;
   page: Page;
   selectedArticle: NewsArticle | null;
+  selectedEditorial: Editorial | null;
   selectedClub: Club | null;
   title: string;
 }): Record<string, unknown> {
@@ -3736,6 +3753,20 @@ function buildStructuredData({
       { name: "HLEDEJKURTY", url: canonicalUrlFor("clubs", null, language) },
       { name: i18n.t("nav.news", { lng: language }), url: new URL(newsPath(language), SITE_ORIGIN).toString() },
       { name: article.title, url: canonicalUrl }
+    ]));
+  } else if (selectedEditorial) {
+    if (selectedEditorial.kind === "article") {
+      Object.assign(graph[2], {
+        "@type": "BlogPosting", headline: selectedEditorial.title,
+        datePublished: EDITORIAL_DATE, dateModified: EDITORIAL_DATE,
+        author: { "@type": "Organization", name: "Redakce HLEDEJKURTY" },
+        publisher: { "@id": `${SITE_ORIGIN}/#organization` }, mainEntityOfPage: canonicalUrl
+      });
+    }
+    graph.push(buildBreadcrumbStructuredData([
+      { name: "HLEDEJKURTY", url: canonicalUrlFor("clubs", null, language) },
+      ...(selectedEditorial.kind === "article" ? [{ name: i18n.t("nav.news", { lng: language }), url: absoluteSiteUrl(newsPath(language)) }] : []),
+      { name: selectedEditorial.title, url: canonicalUrl }
     ]));
   } else if (page === "about") {
     graph.push(buildFaqStructuredData(canonicalUrl, language));
@@ -3913,6 +3944,7 @@ function legalHref(page: "privacy" | "terms" | "cookies", language: LanguageCode
 
 function isIndexablePath(pathname: string): boolean {
   if (pathname !== "/" && !pathname.endsWith("/")) return false;
+  if (EDITORIAL_PAGES.some(page => page.path === pathname)) return true;
 
   let segments: string[];
   try {
@@ -3932,8 +3964,10 @@ function isIndexablePath(pathname: string): boolean {
   return false;
 }
 
-function routeFromLocation(pathname: string, params: URLSearchParams): { page: Page; clubSlug: string | null; articleSlug: string | null; language: LanguageCode } {
+function routeFromLocation(pathname: string, params: URLSearchParams): { page: Page; clubSlug: string | null; articleSlug: string | null; language: LanguageCode; editorialPath?: string } {
   const language = languageFromPathname(pathname);
+  const editorial = EDITORIAL_PAGES.find(page => page.path === pathname);
+  if (editorial) return { page: "editorial", editorialPath: editorial.basePath, clubSlug: null, articleSlug: null, language };
   const segments = pathname.split("/").filter(Boolean).map(decodeURIComponent);
   if (segments[0] === "en" || segments[0] === "ua") segments.shift();
   if (segments[0] === "clubs" && segments[1]) return { page: "clubs", clubSlug: segments[1], articleSlug: null, language };
@@ -4182,11 +4216,6 @@ function pragueOffsetMinutes(date: Date): number {
   return hours * 60 + Math.sign(hours) * minutes;
 }
 
-const editorialPage = EDITORIAL_PAGES.find(page => page.path === window.location.pathname);
-if (editorialPage) capturePageView({ page: editorialPage.kind, language: editorialPage.language, path: editorialPage.path });
-
 createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    {editorialPage ? <EditorialPage page={editorialPage} /> : <App />}
-  </React.StrictMode>
+  <React.StrictMode><App /></React.StrictMode>
 );

@@ -151,6 +151,9 @@ for (const location of locations) {
   }
   const editorial = editorialPages.find(page => page.path === basePath);
   if (editorial) {
+    for (const className of ["newsArticleHeader", "newsArticleHeroImage", "newsArticleContent"]) {
+      check(html.includes(`class="${className}"`), `${location} is missing the shared article layout: ${className}`);
+    }
     check(html.includes(editorialCopy[languagePrefix === "cs" ? "cz" : languagePrefix].byline), `${location} has no visible editorial byline`);
     check(/<time[^>]+datetime="2026-10-31"/i.test(html), `${location} has no visible content date`);
     check(html.includes(editorialCopy[languagePrefix === "cs" ? "cz" : languagePrefix].sources), `${location} has no source section`);
