@@ -229,7 +229,7 @@ export function NewsIndexPage({ language, onOpenPost }: { language: LanguageCode
         <h1 id="news-title">{copy.title}</h1>
         <p>{copy.intro}</p>
       </header>
-      {language === "cz" ? <><EditorialLinks /><EditorialArticleCards /></> : null}
+      <EditorialLinks language={language} /><EditorialArticleCards language={language} />
       <div className="newsList">
         {NEWS_ARTICLES.map((article) => {
           const post = localizedNewsArticle(article, language);
@@ -262,7 +262,7 @@ export function LatestNewsCards({ language, onOpenPost }: { language: LanguageCo
 
   return (
     <section className="latestNews" aria-labelledby="latest-news-title">
-      {language === "cz" ? <><EditorialLinks /><EditorialArticleCards limit={2} /></> : null}
+      <EditorialLinks language={language} /><EditorialArticleCards language={language} limit={2} />
       <header className="latestNewsHeader">
         <div>
           <h2 id="latest-news-title">{copy.latestTitle}</h2>
@@ -314,7 +314,8 @@ export function NewsArticlePage({ article, language, onOpenClub }: { article: Ne
       </header>
       <img className="newsArticleHeroImage" src={articleImageUrl(article)} alt={language === "cz" ? "Kryté padelové kurty The Court v Jinočanech" : language === "en" ? "The Court indoor padel club in Jinočany" : "Криті падел-корти The Court у Їночанах"} width="1200" height="670" />
       <div className="newsArticleContent">
-        {language === "cz" ? <><p>Kontrola webu klubu 31. 10. 2026: zveřejňuje dva standardní a jeden tréninkový kurt. Popis kamer, teploty a zázemí jsou tvrzení klubu; osobně jsme je netestovali. Dostupnost míčového automatu zdarma není potvrzena.</p><p>Klub může vyhovovat hráčům ze západního okolí Prahy i dvojicím hledajícím trénink 1vs1. Pro čtyřhru vyberte standardní kurt a jeho odpovídající tarif.</p><EditorialLinks /></> : null}
+        {language === "cz" ? <><p>Kontrola webu klubu 31. 10. 2026: zveřejňuje dva standardní a jeden tréninkový kurt. Popis kamer, teploty a zázemí jsou tvrzení klubu; osobně jsme je netestovali. Dostupnost míčového automatu zdarma není potvrzena.</p><p>Klub může vyhovovat hráčům ze západního okolí Prahy i dvojicím hledajícím trénink 1vs1. Pro čtyřhru vyberte standardní kurt a jeho odpovídající tarif.</p></> : language === "en" ? <><p>Club website checked on 31 October 2026: it lists two standard courts and one training court. Cameras, temperature and facilities are described by the club; we have not tested them ourselves. A free ball machine has not been confirmed.</p><p>The club may suit players from Prague's western surroundings and pairs looking for 1vs1 practice. For doubles, choose a standard court and its corresponding tariff.</p></> : <><p>Сайт клубу перевірено 31 жовтня 2026 року: він вказує два стандартні та один тренувальний корт. Камери, температура й зручності описані за твердженнями клубу; особисто ми їх не тестували. Безкоштовну машину для м’ячів не підтверджено.</p><p>Клуб може підійти гравцям із західних околиць Праги та парам, які шукають тренування 1vs1. Для парної гри обирайте стандартний корт і відповідний тариф.</p></>}
+        <EditorialLinks language={language} />
         <p className="newsLead">{post.intro}</p>
         <section className="newsHighlights" aria-label={post.category}>
           {post.highlights.map((highlight, index) => (

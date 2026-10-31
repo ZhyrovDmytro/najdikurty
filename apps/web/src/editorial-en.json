@@ -1,0 +1,160 @@
+{
+  "/padel-praha/": {
+    "title":"Padel in Prague: clubs, prices and booking",
+    "description":"Compare 18 padel clubs in Prague and nearby. Explore prices, indoor courts, MultiSport and places for your first game, with links to available times.",
+    "intro":"Where to play padel in Prague depends on your schedule, journey and budget. Our catalog covers 18 clubs in Prague and nearby; we search availability for today and the following seven days. Compare their facilities here and choose your next step.",
+    "sections":[
+      {"heading":"Choose a venue, then a time", "body":"For winter play, start with the indoor overview. If budget matters most, compare the full hourly tariff rather than just the lowest advertised price. Open availability on the club profile; complete booking and payment with the operator."},
+      {"heading":"How to read the comparison", "body":"The catalog also includes Vestec and Jinočany outside Prague. At a mixed venue, the total court count is not the number of indoor courts. MultiSport acceptance alone does not establish your supplement. A source-check date applies only to the facts explicitly listed as checked."}
+    ]
+  },
+  "/padel-praha-ceny/": {
+    "title":"Prague padel prices 2026: club comparison",
+    "description":"Hourly padel prices at 18 clubs in Prague and nearby. Time bands, court types, MultiSport, sources and clearly marked unverified information.",
+    "intro":"The price usually covers a whole court for one hour, not one player. For example, Padel Powers publishes 800 CZK on weekdays before 16:00 and 900 CZK in the evening and at weekends. Below we also show older catalog tariffs that have not been checked again.",
+    "sections":[
+      {"heading":"Compare the same duration and format", "body":"Compare an hour of doubles with an hour of doubles. The Court has a separate tariff for its 1vs1 training court; its minimum is therefore not the standard-court price. Compare a 90-minute game by its final booking total, rather than automatically multiplying an advertised starting price."},
+      {"heading":"What can change the total", "body":"Evening time bands, season, membership and equipment rental can change your final payment. Neride's winter tariff applies from 1 October 2026 to 30 April 2027. Keep MultiSport credits separate from the amount you must pay upfront."},
+      {"heading":"Price comparison methodology", "body":"For the 31 October 2026 update, we checked the Padel Powers, The Court and Neride price lists on their official websites. Other entries show the existing catalog record marked Unverified. An unknown price is not zero. Open each club's source and confirm the price in its official booking system before paying."}
+    ]
+  },
+  "/padel-praha-multisport/": {
+    "title":"Padel with MultiSport in Prague: clubs and terms",
+    "description":"Where to use MultiSport for padel in Prague. Checked One Padel and Neride information, club credit, supplements and other clubs whose terms need confirmation.",
+    "intro":"MultiSport does not automatically mean a whole court without payment. The number of cards, playing time and reimbursement method matter. At One Padel, reimbursement takes the form of club credit for a later visit.",
+    "sections":[
+      {"heading":"One Padel: credit and conflicting amounts", "body":"From 1 October 2026, the club describes up to four cards per booking. For daytime play it lists both 222 and 222.50 CZK per card and a total of 888 CZK. We therefore do not promise an exact supplement or free play. Ask the club to confirm credit for your time. Digital cards can be used at self-service check-in; plastic cards are checked at reception with ID."},
+      {"heading":"Neride and other clubs", "body":"Neride lists MultiSport acceptance in its winter price list too. We have not verified the exact current supplement. Other labels in the table come from the catalog and do not represent newly confirmed terms. A missing label is not evidence that a club rejects the card."},
+      {"heading":"Five questions before booking", "body":"Confirm card eligibility for your time, the maximum number of cards, the full booking price, reimbursement and cancellation. Also ask whether the card is applied before payment, on arrival or after play. Club credit is not the same as money refunded to your bank account."}
+    ]
+  },
+  "/kryty-padel-praha/": {
+    "title":"Indoor padel in Prague: courts for winter play",
+    "description":"Indoor padel courts in Prague and nearby. Compare halls, court counts, hourly prices and availability before making your winter booking.",
+    "intro":"For winter padel, choose a specific covered court. The catalog includes fully indoor and mixed venues. A club's name or total court count alone does not tell you how many courts are currently indoors.",
+    "sections":[
+      {"heading":"Large halls and a smaller training venue", "body":"One Padel lists nine indoor courts, and Padel Powers eight. The Court has two standard courts and one training court under a roof. In Hostivař, Džus offers four indoor courts. These are different options for groups and individual practice, not a ranking of quality."},
+      {"heading":"Check heating and operation separately", "body":"Neride describes a heated hall on its website. For other venues we do not confirm a specific temperature or year-round availability of every court. Seasonal covers, maintenance closures and opening hours can change; open the club's booking system before travelling."},
+      {"heading":"Choosing a winter time", "body":"First compare the journey and price for your preferred hour, then available times. Two groups of four playing simultaneously need two courts for the same interval. The venue's court count alone does not guarantee that availability."}
+    ]
+  },
+  "/padel-praha-podle-lokalit/": {
+    "title":"Where to play padel in Prague by location",
+    "description":"Padel in Smíchov, Hostivař, Radotín and other parts of Prague. Clubs grouped by address in one overview, with links to prices and booking.",
+    "intro":"Start with an area everyone can reach. We group locations on one page using catalog addresses rather than creating a separate page for every district.",
+    "sections":[
+      {"heading":"Prague 5 and the western surroundings", "body":"Smíchov has Padel Powers and Císařská louka. Zličín has One Padel, and west of the city Jinočany has The Court. These are different locations and court types, so check the specific address and route before choosing."},
+      {"heading":"Prague 15 and 16", "body":"In Prague 15 you will find Neride and Džus in the Hostivař area. Radotín has Padel Radotín and Padel Hall Olympia Radotín. We have not verified precise journey times, parking availability or public-transport connections; plan these for the actual day and hour."}
+    ]
+  },
+  "/blog/kolik-stoji-padel-praha/": {
+    "title":"How much does your first padel game in Prague cost?",
+    "description":"Work out padel costs for four players: court hire, racket rental and playing time. A Padel Powers price example and links to the club comparison.",
+    "intro":"For doubles, divide the whole-court price between four players. An 800 CZK hour at Padel Powers works out at 200 CZK each, or 225 CZK each for an evening hour at 900 CZK. Budget separately for equipment and other services.",
+    "sections":[
+      {"heading":"Example budget for your first hour", "body":"If all four players need a racket and reception confirms a 50 CZK rental per person for your game, the daytime hour works out at 250 CZK per player. This is a calculation from the club's price list, not a package or HLEDEJKURTY offer. It does not include balls or a coach."},
+      {"heading":"Watch starting prices and singles courts", "body":"The Court separates standard-court and training-court prices. Do not compare the lower 1vs1 tariff with a court for four players. A longer booking may cross two price bands; the final total in the booking system is what matters."},
+      {"heading":"How to keep costs sensible", "body":"Compare several times, agree how to split costs and check equipment in advance. MultiSport may mean credit for next time rather than a smaller upfront payment. The prices page provides the full tariff comparison; this article focuses on one group's budget."}
+    ]
+  },
+  "/blog/multisport-padel-jak-rezervovat/": {
+    "title":"Padel and MultiSport: what to check before booking",
+    "description":"A practical guide to booking padel with MultiSport. Understand upfront payment, supplements, club credit, card check-in and cancellation terms.",
+    "intro":"Find out how the club applies your card before paying for a booking. A MultiSport label alone does not tell you what the game will cost or when your contribution will be returned.",
+    "sections":[
+      {"heading":"Agree how many cards your group has", "body":"Each player should check their own card and the club's identification requirements. Do not assume one card covers all four players. Terms may depend on the playing hour and the number of cardholders who attend."},
+      {"heading":"A club-wallet example", "body":"One Padel describes reimbursement as wallet credit. Distinguish the amount payable now from credit usable later. Confirm the exact value with the club: its published text gives conflicting amounts for the daytime band."},
+      {"heading":"Before arrival and when cancelling", "body":"Check check-in time, where to scan the card and the cancellation deadline. After playing, check that credit was added. If someone does not attend, do not assume the same discount. The MultiSport comparison page lists clubs and sources."}
+    ]
+  },
+  "/blog/padel-v-zime-praha/": {
+    "title":"Winter padel in Prague: choosing a hall and time",
+    "description":"Plan winter padel in Prague step by step. Choose an indoor court, check seasonal prices and equipment, and find a shared time for one or two groups.",
+    "intro":"In winter, start by checking the cover of your specific court and the winter tariff. Mixed venues can list both indoor and outdoor courts in the same booking system.",
+    "sections":[
+      {"heading":"Choose a court that is actually covered", "body":"One Padel and Padel Powers describe indoor venues; The Court describes two standard and one training court under a roof. At mixed venues, check the individual court label. A photograph or the word Hall in the name alone does not confirm current cover."},
+      {"heading":"Winter prices may differ from summer prices", "body":"For 1 October 2026–30 April 2027, Neride lists 690 CZK outside the evening peak and 820 CZK on weekdays from 16:00 to 24:00. Do not use the old summer list to estimate a winter payment."},
+      {"heading":"Make a shared plan", "body":"Agree arrival time, equipment and how to split costs. For two groups of four, select two courts in the finder. If your chosen time disappears, try another start time or club; our saved availability does not hold a court for you."}
+    ]
+  },
+  "/blog/padel-pro-zacatecniky-praha/": {
+    "title":"Padel for beginners in Prague: your first game",
+    "description":"Prepare for your first padel game in Prague: four players, racket rental, lessons, basic rules and booking, with checked examples of local clubs.",
+    "intro":"You do not need to buy a racket straight away for your first game. First choose a club with equipment rental and decide whether you want an introductory lesson or a friendly doubles game of your own.",
+    "sections":[
+      {"heading":"Agree the format and equipment", "body":"Plan standard doubles for four players of a similar level. Bring sportswear, water and shoes that meet the venue's surface rules. Padel Powers and One Padel offer equipment rental; confirm availability of four rackets in advance."},
+      {"heading":"A lesson or your own first match", "body":"A coach can explain serving, movement as a pair and safe play near the glass. Padel Powers, One Padel and Džus publish lessons. Ask whether the price includes the court and equipment, how many people it covers and whether it is suitable for complete beginners."},
+      {"heading":"Arrive with a booking and a simple aim", "body":"After choosing an available time, complete the booking with the club and read the confirmation. Warm up before play, use the racket's safety strap and start with slow rallies. Before your first set, agree how you will score and handle deuce."}
+    ]
+  },
+  "/blog/pravidla-padelu/": {
+    "title":"Padel rules made simple: serving and scoring",
+    "description":"A beginner's guide to padel rules based on FIP 2026. Underarm serving, glass walls, two bounces and a scoring example with different deuce formats.",
+    "intro":"For your first doubles game, understand serving, bounces and scoring. This summary follows International Padel Federation rules effective from 1 January 2026; competitions are governed by the full rules and their announced format.",
+    "sections":[
+      {"heading":"How to serve", "body":"The server lets the ball bounce and hits it at or below waist height. Serve diagonally into the opposite service box, starting from the right, with two attempts. The receiver must let the serve bounce. A serve that lands in the correct box and then hits the metal fence before its second bounce is a fault."},
+      {"heading":"Glass and the end of a rally", "body":"During a rally, the ball must first bounce in the opponent's court before hitting a wall there. After rebounding off your own glass, you can return it before its second ground bounce. Two bounces on your side lose the point. The fence has separate rules; do not treat it as glass."},
+      {"heading":"A scoring example and a pre-match agreement", "body":"Regular points run 0, 15, 30, 40, game. At 30:15, a point for the receiving pair makes it 30:30. For a recreational match you can agree on traditional advantage at deuce; the 2026 rules also contain alternative systems. Six games with a two-game lead usually win a set, with a tie-break commonly played at 6:6. Check the competition's format before entering."}
+    ]
+  },
+  "/blog/padel-tenis-squash/": {
+    "title":"Padel, tennis and squash: which should you try first?",
+    "description":"A practical first-visit comparison of padel, tennis and squash: players, walls, equipment and choosing a suitable game format in Prague.",
+    "intro":"All three sports use rackets, but court booking and play differ. Start with how many people you have and whether you want a game across a net or against a front wall.",
+    "sections":[
+      {"heading":"Padel: four players and walls", "body":"Standard padel doubles uses a court divided by a net, with walls coming into play after a bounce. If you come from tennis, do not automatically transfer your serving habits or out calls. For two players, look explicitly for a 1vs1 format, such as The Court's training court."},
+      {"heading":"Choose tennis and squash separately", "body":"Tennis offers singles and doubles across a net. Squash is normally played by two people against a front wall, with its own scoring and interference rules. HLEDEJKURTY compares padel times in this overview, so confirm availability for other sports directly with the venue."},
+      {"heading":"A first visit without unnecessary purchases", "body":"Rent the correct racket for each sport and check permitted footwear. A padel rental service does not necessarily rent squash equipment. Before paying, check the booking duration and whole-court price. For padel, the Prague club overview can help you choose."}
+    ]
+  },
+  "/blog/spoluhraci-padel-praha/": {
+    "title":"How to find a fourth padel player in Prague",
+    "description":"Find padel partners in Prague through One Padel and Džus open games. Agree on level, split the cost and confirm bookings without misunderstandings.",
+    "intro":"Missing one player? Start with open games in club systems. One Padel lists them on its website, and Džus describes them among its booking-system features.",
+    "sections":[
+      {"heading":"Open games have their own terms", "body":"An open game is more than an available court: it offers places in a particular group. Check the level, time, duration and per-player price. At One Padel, open the games section; at Džus, look in Bookaball. HLEDEJKURTY itself does not match players."},
+      {"heading":"Include the information people need", "body":"State the date, time, club, duration, approximate level and share of the price. For example: Looking for a fourth player for a friendly one-hour indoor game; price and booking to be confirmed once the group is complete. Share personal contact details only where needed and follow the community group's rules."},
+      {"heading":"Who pays and who can cancel?", "body":"Before paying, agree on an organizer, cost-sharing and what happens if someone drops out. Share the confirmed booking with the group, not just a time found in the availability search. If you need to choose a club first, compare journeys and prices in the Prague overview."}
+    ]
+  },
+  "/blog/jak-vybrat-padelovy-klub-praha/": {
+    "title":"The best padel club in Prague for your game",
+    "description":"Choose a padel club for your needs: a first lesson, several courts, 1vs1 play or price. Transparent criteria and specific Prague examples.",
+    "intro":"There is no single best club for everyone. These suggestions use documented services and court counts, not star ratings, paid rankings or personal testing.",
+    "sections":[
+      {"heading":"For a first game or lesson", "body":"Check equipment rental, available introductory lessons and a format suitable for your group. One Padel and Padel Powers list both rental and coaches. That does not mean rental equipment or lessons will be available without a reservation at your chosen time."},
+      {"heading":"For several groups or two players", "body":"One Padel's website lists nine indoor courts, and Padel Powers eight. For several groups of four, confirm a shared time interval. If two of you want 1vs1 play, The Court lists a separate training court. The overall court count does not guarantee availability."},
+      {"heading":"For your budget and journey", "body":"Compare the same hour at several clubs and include equipment in the final price. We do not judge clubs by marketing adjectives. Families should check specific facilities and supervision; a children's corner does not mean childcare. Plan transport using the real address and a current route."}
+    ]
+  },
+  "/blog/padel-lekce-treneri-praha/": {
+    "title":"Padel lessons and coaches in Prague: how to choose",
+    "description":"Prague padel clubs that advertise lessons, and how to compare coaching. Individual or group training, equipment and whether court hire is included.",
+    "intro":"Clubs advertising lessons include One Padel, Padel Powers, Džus and Neride. First decide whether you want an introduction, a session for your group of four or individual technique work.",
+    "sections":[
+      {"heading":"Ask for the full price", "body":"Compare the number of players, duration and whether the court and racket are included. Neride publishes prices for different group sizes with a hall and coach; another club may quote a particular lesson format. The same amount may therefore cover a different service."},
+      {"heading":"Choose a level and language", "body":"Tell the coach your experience, group size, preferred language and main goal. A beginner group and competition preparation need different content. One Padel explicitly lists individual and group lessons for children and adults; check its current schedule with the club."},
+      {"heading":"What to confirm before your first lesson", "body":"Ask about the meeting point, equipment and cancellation terms. An ordinary court booking does not book a coach. HLEDEJKURTY can help with court availability; the club or coach confirms the coaching and its price."}
+    ]
+  },
+  "/blog/padel-firmy-teambuilding-praha/": {
+    "title":"Corporate padel in Prague: planning a team event",
+    "description":"Plan a corporate padel event in Prague: court numbers, beginners, coaching, refreshments and a confirmed quote, with examples of clubs for groups.",
+    "intro":"A corporate event needs more than a few separate court bookings. Confirm the participant count, court rotation, equipment and responsibility for the full program with the club.",
+    "sections":[
+      {"heading":"Turn player numbers into a playing plan", "body":"Standard doubles needs four players per court. Twelve people playing simultaneously therefore need three courts. If groups rotate, plan activities while they wait and an approximate timetable; not everyone may want to compete throughout."},
+      {"heading":"Choose for facilities and your team's experience", "body":"The Court advertises corporate evenings and tournaments. Padel Powers has eight indoor courts and a meeting room; One Padel has nine indoor courts and a lounge. These are reasons to make an enquiry, not confirmation of event capacity or a package price."},
+      {"heading":"Request one written quote", "body":"Include courts, coaching, rackets, balls, refreshments, invoicing and cancellation in the quote. State how many complete beginners are attending. Available courts found in the search are not a confirmed corporate program; agree a group event directly with the operator."}
+    ]
+  },
+  "/blog/padel-turnaje-praha/": {
+    "title":"Padel tournaments in Prague: where to find dates",
+    "description":"Find current padel tournaments and club calendars in Prague. Check the level, partner requirements, entry fee and registration before signing up.",
+    "intro":"Tournament dates can change and places fill up. We link to organizers' current calendars instead of copying dates that may be outdated by your next visit.",
+    "sections":[
+      {"heading":"Start with the official club calendar", "body":"One Padel has a tournament section, Džus publishes events, and Padel Powers lists club events and tournaments. For each listing, check the date, location, spaces and registration deadline. For federation competitions, also check Czech Padel Federation requirements."},
+      {"heading":"Tournaments suit different levels", "body":"Read the category description and format. Some events require a pair, while others accept individuals and rotate partners. Interpret beginner labels or level letters using that organizer's explanation; they may mean different things at different clubs."},
+      {"heading":"What to pay and confirm", "body":"Before paying, check whether the entry fee is per person or pair, what it includes and how withdrawals work. An ordinary court-booking confirmation does not replace tournament registration. For your own preparation, choose a training time on the club profiles."}
+    ]
+  }
+}

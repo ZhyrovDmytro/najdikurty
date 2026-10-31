@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { LatestNewsCards, NEWS_ARTICLES, NewsArticlePage, localizedNewsArticle, newsPath, newsPostPath } from "./news";
+import { LatestNewsCards, NEWS_ARTICLES, NewsArticlePage, NewsIndexPage, localizedNewsArticle, newsPath, newsPostPath } from "./news";
 
 describe("localized news", () => {
   it("provides complete Czech, English, and Ukrainian versions of every post", () => {
@@ -17,6 +17,15 @@ describe("localized news", () => {
     }
   });
 
+  it("lists the same new guides on every language's blog index", () => {
+    for (const language of ["cz", "en", "ua"] as const) {
+      const prefix = language === "cz" ? "" : `/${language}`;
+      const markup = renderToStaticMarkup(<NewsIndexPage language={language} onOpenPost={() => undefined} />);
+      expect(markup).toContain(`href="${prefix}/blog/pravidla-padelu/"`);
+      expect(markup).toContain(`href="${prefix}/blog/padel-turnaje-praha/"`);
+      expect(markup).toContain(`href="${prefix}/padel-praha-ceny/"`);
+    }
+  });
   it("builds localized index and article routes", () => {
     expect(newsPath("cz")).toBe("/blog/");
     expect(newsPath("en")).toBe("/en/blog/");

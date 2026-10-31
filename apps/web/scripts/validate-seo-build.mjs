@@ -18,8 +18,8 @@ const catalog = JSON.parse(await readFile(path.join(appDir, "src/club-facts.json
 const editorialPages = JSON.parse(await readFile(path.join(appDir, "src/editorial-content.json"), "utf8"));
 const sourceClubSlugs = new Set(catalog.map(club => club.slug));
 const sourceClubs = new Map(catalog.map(club => [club.slug, club]));
-const editorialPaths = new Set(editorialPages.map(page => page.path));
-const expectedLocationCount = (8 + sourceClubSlugs.size) * 3 + editorialPages.length;
+const editorialCopy = JSON.parse(await readFile(path.join(appDir, "src/editorial-copy.json"), "utf8"));
+const expectedLocationCount = (8 + sourceClubSlugs.size) * 3 + editorialPages.length * 3;
 
 check(locations.length === expectedLocationCount, `Expected ${expectedLocationCount} sitemap URLs, found ${locations.length}`);
 check(new Set(locations).size === locations.length, "Sitemap contains duplicate URLs");
@@ -83,8 +83,8 @@ for (const location of locations) {
   check(canonical === location, `${location} canonical is ${canonical || "missing"}`);
   check(htmlLanguage === expectedLanguage, `${location} html language is ${htmlLanguage || "missing"}`);
   check(hreflangs.get("cs") === localizedUrl(""), `${location} has a wrong Czech alternate`);
-  check(editorialPaths.has(url.pathname) ? !hreflangs.has("en") : hreflangs.get("en") === localizedUrl("/en"), `${location} has a wrong English alternate`);
-  check(editorialPaths.has(url.pathname) ? !hreflangs.has("uk") : hreflangs.get("uk") === localizedUrl("/ua"), `${location} has a wrong Ukrainian alternate`);
+  check(hreflangs.get("en") === localizedUrl("/en"), `${location} has a wrong English alternate`);
+  check(hreflangs.get("uk") === localizedUrl("/ua"), `${location} has a wrong Ukrainian alternate`);
   check(hreflangs.get("x-default") === localizedUrl(""), `${location} has a wrong x-default alternate`);
   check(ogUrl === location, `${location} Open Graph URL is ${ogUrl || "missing"}`);
   check(Boolean(ogImageAlt), `${location} has no Open Graph image description`);
@@ -149,11 +149,11 @@ for (const location of locations) {
       check(locations.includes(new URL(href, SITE_ORIGIN).toString()), `${location} links to an unbuilt page: ${href}`);
     }
   }
-  const editorial = editorialPages.find(page => page.path === url.pathname);
+  const editorial = editorialPages.find(page => page.path === basePath);
   if (editorial) {
-    check(html.includes("Redakce HLEDEJKURTY"), `${location} has no visible editorial byline`);
+    check(html.includes(editorialCopy[languagePrefix === "cs" ? "cz" : languagePrefix].byline), `${location} has no visible editorial byline`);
     check(/<time[^>]+datetime="2026-10-31"/i.test(html), `${location} has no visible content date`);
-    check(html.includes("Zdroje a ověření"), `${location} has no source section`);
+    check(html.includes(editorialCopy[languagePrefix === "cs" ? "cz" : languagePrefix].sources), `${location} has no source section`);
   }
   if (basePath.startsWith("/clubs/") && basePath !== "/clubs/") {
     const club = sourceClubs.get(basePath.split("/")[2]);

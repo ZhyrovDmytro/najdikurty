@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { EDITORIAL_PAGES, EditorialPage, nearbyClubs } from "./editorial";
+import translatedPrices from "./editorial-prices.json";
+import sourceLabels from "./editorial-source-labels.json";
 import clubs from "./club-facts.json";
 
 describe("SEO editorial pages", () => {
@@ -9,10 +11,35 @@ describe("SEO editorial pages", () => {
     for (const page of EDITORIAL_PAGES) {
       const html = renderToStaticMarkup(<EditorialPage page={page} />);
       expect(html).toMatch(/datetime="2026-10-31"/i);
-      expect(html).toContain("Redakce HLEDEJKURTY");
-      expect(html).toContain('href="/clubs/');
-      expect(html).toContain('href="/padel-praha/');
+      expect(html).toContain("HLEDEJKURTY");
+      expect(html).toMatch(/href="\/(?:en\/|ua\/)?clubs\//);
+      expect(html).toMatch(/href="\/(?:en\/|ua\/)?padel-praha\//);
       expect(html.match(/<h1/g)).toHaveLength(1);
+    }
+  });
+  it("publishes every article and guide in all three languages with matching sections", () => {
+    const czechPages = EDITORIAL_PAGES.filter(page => page.language === "cz");
+    expect(czechPages).toHaveLength(16);
+    for (const czech of czechPages) {
+      for (const language of ["en", "ua"] as const) {
+        const translated = EDITORIAL_PAGES.find(page => page.basePath === czech.basePath && page.language === language)!;
+        expect(translated).toBeDefined();
+        expect(translated.sections).toHaveLength(czech.sections.length);
+        translated.sections.forEach((section, index) => {
+          expect(section.heading).not.toBe(czech.sections[index].heading);
+          expect(section.body).not.toBe(czech.sections[index].body);
+        });
+        for (const id of translated.sources) {
+          expect((sourceLabels[language] as Record<string, string>)[id]).toBeTruthy();
+        }
+        expect(translated.title).not.toBe(czech.title);
+        expect(translated.intro).not.toBe(czech.intro);
+        expect(translated.sources).toEqual(czech.sources);
+        const html = renderToStaticMarkup(<EditorialPage page={translated} />);
+        expect(html).toContain(`href="/${language}/clubs/`);
+        expect(html).not.toContain('href="/clubs/');
+        expect(html).toContain(`href="/${language}/padel-praha/`);
+      }
     }
   });
   it("compares all clubs without presenting missing prices or Multisport as zero or no", () => {
@@ -21,6 +48,16 @@ describe("SEO editorial pages", () => {
     for (const club of clubs) expect(html).toContain(`/clubs/${club.slug}/`);
     expect(html).toContain("Neověřeno");
     expect(html).not.toContain("Infinity");
+  });
+  it("preserves all catalog price amounts in the English and Ukrainian tables", () => {
+    const amounts = (value: string) => [...value.matchAll(/(\d+(?:[-–]\d+)?)\s*(?:Kč|CZK)/g)].map(match => match[1].replaceAll("-", "–"));
+    for (const club of clubs) {
+      for (const language of ["en", "ua"] as const) {
+        const price = (translatedPrices[language] as Record<string, string>)[club.slug];
+        expect(price).toBeTruthy();
+        expect(amounts(price)).toEqual(amounts(club.priceInfo));
+      }
+    }
   });
   it("finds three nearby clubs by distance, excluding the current club", () => {
     const club = clubs.find(club => club.slug === "padel-powers-smichov")!;

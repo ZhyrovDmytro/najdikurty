@@ -2,11 +2,27 @@ import React from "react";
 import clubs from "./club-facts.json";
 import sourceData from "./club-sources.json";
 import pages from "./editorial-content.json";
+import english from "./editorial-en.json";
+import ukrainian from "./editorial-ua.json";
+import copy from "./editorial-copy.json";
+import translatedPrices from "./editorial-prices.json";
+import sourceLabels from "./editorial-source-labels.json";
+import { LANGUAGE_STORAGE_KEY, type LanguageCode } from "./i18n";
 import { distanceInKilometers } from "./distance";
 
 export const EDITORIAL_DATE = "2026-10-31";
-export const EDITORIAL_PAGES = pages;
-export type Editorial = typeof pages[number];
+type ArticleCopy = Pick<typeof pages[number], "title" | "description" | "intro" | "sections">;
+const translations: Record<"en" | "ua", Record<string, ArticleCopy>> = { en: english, ua: ukrainian };
+export const EDITORIAL_PAGES = (["cz", "en", "ua"] as const).flatMap(language => pages.map(page => {
+  const translated = language === "cz" ? page : translations[language][page.path];
+  if (!translated) throw new Error(`Missing ${language} editorial translation: ${page.path}`);
+  return { ...page, ...translated, language, basePath: page.path, path: editorialPath(page.path, language) };
+}));
+export type Editorial = typeof EDITORIAL_PAGES[number];
+
+export function editorialPath(basePath: string, language: LanguageCode): string {
+  return language === "cz" ? basePath : `/${language}${basePath}`;
+}
 type CatalogClub = typeof clubs[number];
 type ClubSource = typeof sourceData[keyof typeof sourceData];
 const sources: Record<string, ClubSource> = sourceData;
@@ -34,16 +50,16 @@ export function nearbyClubs(club: Pick<CatalogClub, "slug" | "coordinates">) {
     .slice(0, 3);
 }
 
-export function EditorialLinks() {
-  return <nav className="editorialLinks" aria-label="Průvodce padel Praha">
-    {pages.filter(page => page.kind !== "article").map(page => <a key={page.path} href={page.path}>{page.title}</a>)}
+export function EditorialLinks({ language = "cz" }: { language?: LanguageCode }) {
+  return <nav className="editorialLinks" aria-label={copy[language].guideNav}>
+    {EDITORIAL_PAGES.filter(page => page.language === language && page.kind !== "article").map(page => <a key={page.path} href={page.path}>{page.title}</a>)}
   </nav>;
 }
 
-export function EditorialArticleCards({ limit }: { limit?: number }) {
-  return <section className="editorialArticles" aria-label="Praktické články o padelu">
-    <h2>Průvodci pro hráče</h2>
-    {pages.filter(page => page.kind === "article").slice(0, limit).map(page => <article key={page.path}>
+export function EditorialArticleCards({ limit, language = "cz" }: { limit?: number; language?: LanguageCode }) {
+  return <section className="editorialArticles" aria-label={copy[language].articles}>
+    <h2>{copy[language].articles}</h2>
+    {EDITORIAL_PAGES.filter(page => page.language === language && page.kind === "article").slice(0, limit).map(page => <article key={page.path}>
       <h3><a href={page.path}>{page.title}</a></h3><p>{page.description}</p>
     </article>)}
   </section>;
@@ -83,30 +99,39 @@ export function ClubEditorial({ slug }: { slug: string }) {
 }
 
 export function EditorialPage({ page }: { page: Editorial }) {
+  const language = page.language;
+  const text = copy[language];
+  const href = (path: string) => editorialPath(path, language);
+  const date = new Intl.DateTimeFormat(language === "cz" ? "cs" : language === "ua" ? "uk" : "en", { dateStyle: "long", timeZone: "Europe/Prague" }).format(new Date(`${EDITORIAL_DATE}T12:00:00Z`));
   const selected = clubs.filter(club => page.clubs.includes(club.slug));
   const rows = page.kind === "indoor" ? clubs.filter(club => club.courtTypes.includes("indoor")) : clubs;
   return <main className="seoPrerender editorialPage">
-    <header className="seoPrerenderHeader"><a className="seoPrerenderBrand" href="/">HLEDEJKURTY</a><nav className="seoPrerenderNav" aria-label="Hlavní navigace"><a href="/">Hledat dostupnost</a><a href="/clubs/">Kluby</a><a href="/blog/">Články</a><a href="/about/">Jak to funguje</a></nav></header>
-    <nav className="editorialBreadcrumbs" aria-label="Drobečková navigace"><a href="/">HLEDEJKURTY</a> / {page.path !== "/padel-praha/" ? <><a href={page.kind === "article" ? "/blog/" : "/padel-praha/"}>{page.kind === "article" ? "Články" : "Padel Praha"}</a> / </> : null}<span>{page.title}</span></nav>
-    <article><h1>{page.title}</h1><p className="newsMeta">Redakce HLEDEJKURTY · Publikováno a aktualizováno <time dateTime={EDITORIAL_DATE}>31. 10. 2026</time></p><p className="newsLead">{page.intro}</p>
+    <header className="seoPrerenderHeader"><a className="seoPrerenderBrand" href={href("/")}>HLEDEJKURTY</a><nav className="seoPrerenderNav" aria-label={text.nav}><a href={href("/")}>{text.search}</a><a href={href("/clubs/")}>{text.clubs}</a><a href={href("/blog/")}>{text.blog}</a><a href={href("/about/")}>{text.about}</a></nav></header>
+    <nav className="editorialLinks" aria-label={text.language}>{(["cz", "en", "ua"] as const).map(code => <a key={code} href={editorialPath(page.basePath, code)} onClick={() => localStorage.setItem(LANGUAGE_STORAGE_KEY, code)} hrefLang={code === "cz" ? "cs" : code === "ua" ? "uk" : "en"} lang={code === "cz" ? "cs" : code === "ua" ? "uk" : "en"} aria-current={code === language ? "page" : undefined}>{code === "cz" ? "Čeština" : code === "ua" ? "Українська" : "English"}</a>)}</nav>
+    <nav className="editorialBreadcrumbs" aria-label={text.breadcrumbs}><a href={href("/")}>HLEDEJKURTY</a> / {page.basePath !== "/padel-praha/" ? <><a href={href(page.kind === "article" ? "/blog/" : "/padel-praha/")}>{page.kind === "article" ? text.blog : text.hub}</a> / </> : null}<span>{page.title}</span></nav>
+    <article><h1>{page.title}</h1><p className="newsMeta">{text.byline} · {text.published} <time dateTime={EDITORIAL_DATE}>{date}</time></p><p className="newsLead">{page.intro}</p>
       {page.sections.map(section => <section className="editorialSection" key={section.heading}><h2>{section.heading}</h2><p>{section.body}</p></section>)}
-      {["hub", "prices", "indoor", "multisport"].includes(page.kind) ? <div className="editorialTable" tabIndex={0} role="region" aria-label="Srovnání padelových klubů"><table><caption>Katalog klubů – kontrola uvedených zdrojů 31. 10. 2026</caption><thead><tr><th scope="col">Klub</th><th scope="col">Kurty</th><th scope="col">Cena za kurt / hodinu</th><th scope="col">MultiSport</th><th scope="col">Ověření ceny</th></tr></thead><tbody>
-        {rows.map(club => <tr key={club.slug}><th scope="row"><a href={`/clubs/${club.slug}/`}>{club.name}</a></th><td>{club.courtCount} celkem; {courtLabel(club)}</td><td>{club.priceInfo}</td><td>{multisportLabel(club)}</td><td>{priceVerified(club.slug) ? <><time dateTime={EDITORIAL_DATE}>31. 10. 2026</time><br /><a href={sources[club.slug].sources.at(-1)!.url}>Zdroj ceny</a></> : "Neověřeno – dosavadní katalog"}</td></tr>)}
+      {["hub", "prices", "indoor", "multisport"].includes(page.kind) ? <div className="editorialTable" tabIndex={0} role="region" aria-label={text.table}><table><caption>{text.caption}</caption><thead><tr><th scope="col">{text.club}</th><th scope="col">{text.courts}</th><th scope="col">{text.price}</th><th scope="col">MultiSport</th><th scope="col">{text.verified}</th></tr></thead><tbody>
+        {rows.map(club => <tr key={club.slug}><th scope="row"><a href={href(`/clubs/${club.slug}/`)}>{club.name}</a></th><td>{club.courtCount} {text.total}; {courtLabel(club, language)}</td><td>{language === "cz" ? club.priceInfo : (translatedPrices[language] as Record<string, string>)[club.slug]}</td><td>{multisportLabel(club, language)}</td><td>{priceVerified(club.slug) ? <><time dateTime={EDITORIAL_DATE}>{date}</time><br /><a href={sources[club.slug].sources.at(-1)!.url}>{text.priceSource}</a></> : text.unverified}</td></tr>)}
       </tbody></table></div> : null}
-      {page.kind === "areas" ? <section className="editorialSection"><h2>Všechny lokality v katalogu</h2><ul>{clubs.map(club => <li key={club.slug}><a href={`/clubs/${club.slug}/`}>{club.name}</a> – {club.address}</li>)}</ul></section> : null}
-      <section className="editorialSection"><h2>Kluby zmíněné v průvodci</h2><ul>{selected.map(club => <li key={club.slug}><a href={`/clubs/${club.slug}/`}>{club.name}: profil a volné termíny</a></li>)}</ul></section>
-      <EditorialLinks />
-      <section className="editorialSection"><h2>Zdroje a ověření</h2><p>Klubové služby jsou tvrzení provozovatelů, nikoli náš osobní test. Zdroje jsme kontrolovali 31. 10. 2026. Podmínky se mohou změnit; neověřené katalogové údaje nejsou potvrzenou nabídkou.</p><ul>{page.sources.map(id => <li key={id}><a href={EDITORIAL_SOURCES[id].url}>{EDITORIAL_SOURCES[id].label}</a></li>)}</ul></section>
-      {page.kind === "hub" ? <EditorialArticleCards /> : null}
-    </article><footer className="seoPrerenderFooter"><a href="/about/">Metodika a opravy údajů</a><a href="/privacy-policy/">Ochrana soukromí</a><a href="/terms-of-use/">Podmínky</a></footer>
+      {page.kind === "areas" ? <section className="editorialSection"><h2>{text.areas}</h2><ul>{clubs.map(club => <li key={club.slug}><a href={href(`/clubs/${club.slug}/`)}>{club.name}</a> – {club.address}</li>)}</ul></section> : null}
+      <section className="editorialSection"><h2>{text.mentioned}</h2><ul>{selected.map(club => <li key={club.slug}><a href={href(`/clubs/${club.slug}/`)}>{club.name}: {text.profile}</a></li>)}</ul></section>
+      <EditorialLinks language={language} />
+      <section className="editorialSection"><h2>{text.sources}</h2><p>{text.sourcesBody}</p><ul>{page.sources.map(id => <li key={id}><a href={EDITORIAL_SOURCES[id].url}>{language === "cz" ? EDITORIAL_SOURCES[id].label : (sourceLabels[language] as Record<string, string>)[id]}</a></li>)}</ul></section>
+      {page.kind === "hub" ? <EditorialArticleCards language={language} /> : null}
+    </article><footer className="seoPrerenderFooter"><a href={href("/about/")}>{text.methodology}</a><a href={href("/privacy-policy/")}>{text.privacy}</a><a href={href("/terms-of-use/")}>{text.terms}</a></footer>
   </main>;
 }
 
 function priceVerified(slug: string) { return ["padel-powers-smichov", "the-court", "padel-neride"].includes(slug); }
-function courtLabel(club: CatalogClub) { return club.courtTypes.length > 1 ? "kryté i venkovní" : club.courtTypes[0] === "indoor" ? "kryté" : "venkovní"; }
-function multisportLabel(club: CatalogClub) {
-  if (club.slug === "one-padel") return "Ano – vrácení kreditem, podmínky viz zdroj";
-  if (club.slug === "padel-neride") return "Klub uvádí ano, doplatek neověřen";
-  return club.acceptsMultisport ? "Katalog uvádí ano, nově neověřeno" : "Neověřeno";
+function courtLabel(club: CatalogClub, language: LanguageCode = "cz") {
+  const text = copy[language];
+  return club.courtTypes.length > 1 ? text.mixed : club.courtTypes[0] === "indoor" ? text.indoor : text.outdoor;
+}
+function multisportLabel(club: CatalogClub, language: LanguageCode = "cz") {
+  const text = copy[language];
+  if (club.slug === "one-padel") return text.msOne;
+  if (club.slug === "padel-neride") return text.msNeride;
+  return club.acceptsMultisport ? text.msCatalog : text.unknown;
 }
 function correctionUrl(name: string) { return `mailto:dmytrozhyrov@gmail.com?subject=${encodeURIComponent(`Oprava údajů: ${name}`)}`; }

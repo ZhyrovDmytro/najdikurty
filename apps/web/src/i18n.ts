@@ -26,7 +26,6 @@ export function languageFromPathname(pathname: string): LanguageCode {
 }
 
 export function pathnameForLanguage(pathname: string, language: LanguageCode): string {
-  if (editorialPages.some(page => page.path === pathname)) return pathname;
   const hasTrailingSlash = pathname.endsWith("/");
   const segments = pathname.split("/").filter(Boolean);
   if (["en", "ua"].includes(segments[0]?.toLowerCase())) segments.shift();

@@ -17,9 +17,9 @@ describe("language routes", () => {
     expect(languageFromPathname("/ua/about/")).toBe("ua");
   });
 
-  it("keeps Czech-only guides at their published URLs", () => {
-    expect(pathnameForLanguage("/padel-praha-ceny/", "en")).toBe("/padel-praha-ceny/");
-    expect(pathnameForLanguage("/blog/pravidla-padelu/", "ua")).toBe("/blog/pravidla-padelu/");
+  it("builds localized URLs for the same editorial pages", () => {
+    expect(pathnameForLanguage("/padel-praha-ceny/", "en")).toBe("/en/padel-praha-ceny/");
+    expect(pathnameForLanguage("/blog/pravidla-padelu/", "ua")).toBe("/ua/blog/pravidla-padelu/");
   });
 
   it("builds Ukrainian URLs with the ua prefix", () => {

@@ -4183,7 +4183,7 @@ function pragueOffsetMinutes(date: Date): number {
 }
 
 const editorialPage = EDITORIAL_PAGES.find(page => page.path === window.location.pathname);
-if (editorialPage) capturePageView({ page: editorialPage.kind, language: "cz", path: editorialPage.path });
+if (editorialPage) capturePageView({ page: editorialPage.kind, language: editorialPage.language, path: editorialPage.path });
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

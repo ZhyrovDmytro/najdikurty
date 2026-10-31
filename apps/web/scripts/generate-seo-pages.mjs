@@ -91,7 +91,7 @@ const basePages = [
 ].map(([key, basePath, club]) => ({ key, basePath, club, lastModified: ["home", "allClubs", "club", "news", "newsArticle", "about"].includes(key) ? EDITORIAL_DATE : SEO_CONTENT_LAST_MODIFIED }));
 const pages = [
   ...languages.flatMap((language) => basePages.map((page) => localizePage(page, language))),
-  ...EDITORIAL_PAGES.map(editorial => ({ key: "editorial", basePath: editorial.path, path: editorial.path, language: languages[0], title: `${editorial.title} | HLEDEJKURTY`, description: editorial.description, h1: editorial.title, body: editorial.intro, lastModified: EDITORIAL_DATE, editorial }))
+  ...EDITORIAL_PAGES.map(editorial => ({ key: "editorial", basePath: editorial.basePath, path: editorial.path, language: languages.find(language => language.code === editorial.language), title: `${editorial.title} | HLEDEJKURTY`, description: editorial.description, h1: editorial.title, body: editorial.intro, lastModified: EDITORIAL_DATE, editorial }))
 ];
 
 for (const page of pages) {
@@ -147,9 +147,9 @@ function visibleContent(page) {
   const [search, clubsLabel, newsLabel, about, privacy, terms, cookies] = localized.nav;
   const clubLinks = clubs.map((club) => `<li><a href="${localPath(`/clubs/${club.slug}/`, page.language)}">${escapeHtml(club.name)}</a><span>${escapeHtml(localized.count(club.courtCount))} · ${escapeHtml(club.address)}</span></li>`).join("");
   let details = "";
-  if (page.key === "home") details = `${sections(localized.sections.home)}${page.language.code === "cz" ? renderToStaticMarkup(React.createElement(EditorialLinks)) + renderToStaticMarkup(React.createElement(EditorialArticleCards, { limit: 2 })) : ""}<section><h2>${escapeHtml(clubsLabel)}</h2><p>${escapeHtml(localized.sections.clubs[0][1])}</p><ul class="seoPrerenderClubs">${clubLinks}</ul></section>`;
+  if (page.key === "home") details = `${sections(localized.sections.home)}${renderToStaticMarkup(React.createElement(EditorialLinks, { language: page.language.code })) + renderToStaticMarkup(React.createElement(EditorialArticleCards, { limit: 2, language: page.language.code }))}<section><h2>${escapeHtml(clubsLabel)}</h2><p>${escapeHtml(localized.sections.clubs[0][1])}</p><ul class="seoPrerenderClubs">${clubLinks}</ul></section>`;
   else if (page.key === "allClubs") details = `${sections(localized.sections.clubs)}<section><h2>${escapeHtml(localized.labels[6])}</h2><ul class="seoPrerenderClubs">${clubLinks}</ul></section>`;
-  else if (page.key === "news") details = `${page.language.code === "cz" ? renderToStaticMarkup(React.createElement(EditorialLinks)) + renderToStaticMarkup(React.createElement(EditorialArticleCards)) : ""}${NEWS_ARTICLES.map(article => { const post = localizedNewsArticle(article, page.language.code); return `<section><h2><a href="${localPath(`/blog/${article.slug}/`, page.language)}">${escapeHtml(post.title)}</a></h2><p>${escapeHtml(post.excerpt)}</p></section>`; }).join("")}`;
+  else if (page.key === "news") details = `${renderToStaticMarkup(React.createElement(EditorialLinks, { language: page.language.code })) + renderToStaticMarkup(React.createElement(EditorialArticleCards, { language: page.language.code }))}${NEWS_ARTICLES.map(article => { const post = localizedNewsArticle(article, page.language.code); return `<section><h2><a href="${localPath(`/blog/${article.slug}/`, page.language)}">${escapeHtml(post.title)}</a></h2><p>${escapeHtml(post.excerpt)}</p></section>`; }).join("")}`;
   else if (page.key === "newsArticle") details = renderToStaticMarkup(React.createElement(NewsArticlePage, { article: page.selectedArticle, language: page.language.code, onOpenClub: () => {} }));
   else if (page.key === "about" && page.language.code === "cz") details = renderToStaticMarkup(React.createElement(DataMethodology));
   else if (page.club) details = clubDetails(page.club, page.language);
@@ -170,10 +170,10 @@ function pageClubExtras(club, language) {
   return facts + (language.code === "cz" ? renderToStaticMarkup(React.createElement(ClubEditorial, { slug: club.slug })) : "");
 }
 function sections(values) { return values.map(([heading, body]) => `<section><h2>${escapeHtml(heading)}</h2><p>${escapeHtml(body)}</p></section>`).join(""); }
-function socialAlt(page) { return page.club ? `${page.club.name} – padelové kurty` : page.key === "newsArticle" ? page.h1 : "HLEDEJKURTY – padelové kurty v Praze"; }
-function alternateUrls(basePath) { if (EDITORIAL_PAGES.some(page => page.path === basePath)) return [["cs", new URL(basePath, SITE_ORIGIN).toString()]]; return languages.map((language) => [language.hreflang, new URL(localPath(basePath, language), SITE_ORIGIN).toString()]); }
+function socialAlt(page) { return page.club ? `${page.club.name} – padelové kurty` : page.key === "newsArticle" || page.editorial ? page.h1 : "HLEDEJKURTY – padelové kurty v Praze"; }
+function alternateUrls(basePath) { return languages.map((language) => [language.hreflang, new URL(localPath(basePath, language), SITE_ORIGIN).toString()]); }
 function alternateTags(page) {
-  const og = (page.editorial ? [] : languages).filter((language) => language.code !== page.language.code).map((language) => `    <meta property="og:locale:alternate" content="${language.og}" />`).join("\n");
+  const og = languages.filter((language) => language.code !== page.language.code).map((language) => `    <meta property="og:locale:alternate" content="${language.og}" />`).join("\n");
   const values = [...alternateUrls(page.basePath), ["x-default", new URL(page.basePath, SITE_ORIGIN).toString()]];
   return `${og}\n${values.map(([lang, href]) => `    <link rel="alternate" hreflang="${lang}" href="${href}" />`).join("\n")}`;
 }
@@ -189,7 +189,7 @@ function breadcrumbStructuredData(page, canonical) {
   const items = [{ name: "HLEDEJKURTY", url: home }];
   if (page.club) items.push({ name: copy[page.language.code].nav[1], url: new URL(localPath("/clubs/", page.language), SITE_ORIGIN).toString() });
   if (page.key === "newsArticle" || page.editorial?.kind === "article") items.push({ name: copy[page.language.code].nav[2], url: new URL(localPath("/blog/", page.language), SITE_ORIGIN).toString() });
-  if (page.editorial && page.editorial.kind !== "article" && page.path !== "/padel-praha/") items.push({ name: "Padel Praha", url: `${SITE_ORIGIN}/padel-praha/` });
+  if (page.editorial && page.editorial.kind !== "article" && page.basePath !== "/padel-praha/") items.push({ name: "Padel Praha", url: new URL(localPath("/padel-praha/", page.language), SITE_ORIGIN).toString() });
   items.push({ name: page.h1, url: canonical });
   return { "@type": "BreadcrumbList", itemListElement: items.map((item, index) => ({ "@type": "ListItem", position: index + 1, name: item.name, item: item.url })) };
 }

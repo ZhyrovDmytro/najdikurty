@@ -1,0 +1,36 @@
+{
+  "en": {
+    "powers":"Padel Powers – prices and services",
+    "one":"One Padel – club and open games",
+    "oneAbout":"One Padel – rental, coaching and facilities",
+    "oneMultisport":"One Padel – MultiSport from 1 October 2026",
+    "court":"The Court (club website)",
+    "courtPrices":"The Court – prices",
+    "neride":"Neride – winter prices and services",
+    "dzus":"Padel Džus – club and coaching",
+    "fip":"FIP – Rules of Padel 2026",
+    "itf":"ITF – rules of tennis",
+    "squash":"World Squash – rules",
+    "oneTournaments":"One Padel – current tournaments",
+    "powersEvents":"Padel Powers – tournaments",
+    "dzusEvents":"Padel Džus – current events on the club website",
+    "cpf":"Czech Padel Federation – current competitions"
+  },
+  "ua": {
+    "powers":"Padel Powers — ціни та послуги",
+    "one":"One Padel — клуб і відкриті ігри",
+    "oneAbout":"One Padel — прокат, уроки та зручності",
+    "oneMultisport":"One Padel — MultiSport із 1 жовтня 2026 року",
+    "court":"The Court (сайт клубу)",
+    "courtPrices":"The Court — ціни",
+    "neride":"Neride — зимові ціни та послуги",
+    "dzus":"Padel Džus — клуб і уроки",
+    "fip":"FIP — правила паделу 2026",
+    "itf":"ITF — правила тенісу",
+    "squash":"World Squash — правила",
+    "oneTournaments":"One Padel — актуальні турніри",
+    "powersEvents":"Padel Powers — турніри",
+    "dzusEvents":"Padel Džus — актуальні події на сайті клубу",
+    "cpf":"Чеська федерація паделу — актуальні змагання"
+  }
+}
