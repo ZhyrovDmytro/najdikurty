@@ -253,14 +253,14 @@ export const resources = {
         trackedCourtsHelp: "Actively checked for availability"
       },
       location: {
-        enableDistanceHelp: "Enable location access to see how far this club is from you."
+        enableDistanceHelp: "Enable location access in your browser’s site settings to see how far this club is from you."
       },
       legal: {
         badgeCookies: "Cookies",
         badgeLegal: "Legal",
         badgeTerms: "Terms",
         cookiesIntro: "This page explains cookies and similar browser storage used by HLEDEJKURTY.",
-        cookiesSection1Body: "The app does not currently set its own HTTP cookies. It uses local storage for functional preferences: mamekurt-theme (light or dark theme), mamekurt-language (language), mamekurt-results-view (results layout), mamekurt-results-sort (search-results order), and mamekurt-all-clubs-sort (all-clubs order). It also stores mamekurt-analytics-consent-v1 so it can respect your analytics choice. Preferences remain until changed or cleared; the consent choice expires after 12 months.",
+        cookiesSection1Body: "The app does not currently set its own HTTP cookies. It uses local storage for functional preferences: mamekurt-theme (light or dark theme), mamekurt-language (language), mamekurt-results-view (results layout), mamekurt-results-sort (search-results order), and mamekurt-all-clubs-sort (all-clubs order). It also stores mamekurt-analytics-consent-v1 so it can respect your analytics choice. It stores mamekurt-location-permission-v1 to remember the location permission outcome and avoid repeated prompts; precise coordinates stay in memory. Enable location in your browser’s site settings to change that permission. Preferences remain until changed or cleared; the consent choice expires after 12 months.",
         cookiesSection1Title: "Functional browser storage",
         cookiesSection2Body: "PostHog product analytics is optional and starts only after you select Accept analytics. We send selected page views and interactions such as filter changes, club selections, searches, sharing actions, and booking-link clicks, together with limited technical context. Autocapture, advertising, session recording, heatmaps, performance capture, surveys, and person profiles are disabled. The analytics identifier is kept in memory only for the current page session and is not persisted in cookies or local storage.",
         cookiesSection2Title: "Optional analytics",
@@ -521,14 +521,14 @@ export const resources = {
         trackedCourtsHelp: "Активно перевіряються на доступність"
       },
       location: {
-        enableDistanceHelp: "Увімкніть доступ до геолокації, щоб побачити відстань до цього клубу."
+        enableDistanceHelp: "Увімкніть доступ до геолокації в налаштуваннях сайту у браузері, щоб побачити відстань до цього клубу."
       },
       legal: {
         badgeCookies: "Cookies",
         badgeLegal: "Юридичне",
         badgeTerms: "Умови",
         cookiesIntro: "Ця сторінка пояснює використання cookies і подібного сховища браузера HLEDEJKURTY.",
-        cookiesSection1Body: "Застосунок зараз не встановлює власних HTTP cookies. Для функціональних налаштувань він використовує local storage: mamekurt-theme (світла або темна тема), mamekurt-language (мова), mamekurt-results-view (вигляд результатів), mamekurt-results-sort (порядок результатів пошуку) та mamekurt-all-clubs-sort (порядок усіх клубів). Також зберігається mamekurt-analytics-consent-v1, щоб дотримуватися вашого вибору щодо аналітики. Налаштування залишаються до зміни чи очищення; вибір аналітики спливає через 12 місяців.",
+        cookiesSection1Body: "Застосунок зараз не встановлює власних HTTP cookies. Для функціональних налаштувань він використовує local storage: mamekurt-theme (світла або темна тема), mamekurt-language (мова), mamekurt-results-view (вигляд результатів), mamekurt-results-sort (порядок результатів пошуку) та mamekurt-all-clubs-sort (порядок усіх клубів). Також зберігається mamekurt-analytics-consent-v1, щоб дотримуватися вашого вибору щодо аналітики. Ключ mamekurt-location-permission-v1 зберігає результат дозволу геолокації, щоб уникати повторних запитів; точні координати залишаються в пам’яті. Дозвіл можна змінити в налаштуваннях сайту у браузері. Налаштування залишаються до зміни чи очищення; вибір аналітики спливає через 12 місяців.",
         cookiesSection1Title: "Функціональне сховище браузера",
         cookiesSection2Body: "Продуктова аналітика PostHog є необов'язковою й запускається лише після вибору «Дозволити аналітику». Ми надсилаємо вибрані перегляди сторінок та взаємодії, як-от зміни фільтрів, вибір клубів, пошуки, поширення й кліки на бронювання, разом з обмеженим технічним контекстом. Автозбір, реклама, запис сесій, теплові карти, вимірювання продуктивності, опитування та профілі осіб вимкнені. Аналітичний ідентифікатор зберігається лише в пам'яті поточної сторінки, а не в cookies чи local storage.",
         cookiesSection2Title: "Необов'язкова аналітика",
@@ -789,14 +789,14 @@ export const resources = {
         trackedCourtsHelp: "Aktivně kontrolováno pro dostupnost"
       },
       location: {
-        enableDistanceHelp: "Povolte přístup k poloze, abyste viděli vzdálenost k tomuto klubu."
+        enableDistanceHelp: "Povolte přístup k poloze v nastavení webu v prohlížeči, abyste viděli vzdálenost k tomuto klubu."
       },
       legal: {
         badgeCookies: "Cookies",
         badgeLegal: "Právní",
         badgeTerms: "Podmínky",
         cookiesIntro: "Tato stránka vysvětluje používání cookies a podobného úložiště prohlížeče službou HLEDEJKURTY.",
-        cookiesSection1Body: "Aplikace nyní nenastavuje vlastní HTTP cookies. Pro funkční předvolby používá local storage: mamekurt-theme (světlý nebo tmavý motiv), mamekurt-language (jazyk), mamekurt-results-view (zobrazení výsledků), mamekurt-results-sort (řazení výsledků hledání) a mamekurt-all-clubs-sort (řazení všech klubů). Ukládá také mamekurt-analytics-consent-v1, aby respektovala vaši volbu analytiky. Předvolby zůstávají do změny či vymazání; volba analytiky vyprší po 12 měsících.",
+        cookiesSection1Body: "Aplikace nyní nenastavuje vlastní HTTP cookies. Pro funkční předvolby používá local storage: mamekurt-theme (světlý nebo tmavý motiv), mamekurt-language (jazyk), mamekurt-results-view (zobrazení výsledků), mamekurt-results-sort (řazení výsledků hledání) a mamekurt-all-clubs-sort (řazení všech klubů). Ukládá také mamekurt-analytics-consent-v1, aby respektovala vaši volbu analytiky. Klíč mamekurt-location-permission-v1 uchovává výsledek povolení polohy, aby se dotaz neopakoval; přesné souřadnice zůstávají v paměti. Povolení můžete změnit v nastavení webu v prohlížeči. Předvolby zůstávají do změny či vymazání; volba analytiky vyprší po 12 měsících.",
         cookiesSection1Title: "Funkční úložiště prohlížeče",
         cookiesSection2Body: "Produktová analytika PostHog je volitelná a spustí se až po volbě „Povolit analytiku“. Odesíláme vybraná zobrazení stránek a interakce, například změny filtrů, výběry klubů, hledání, sdílení a kliknutí na rezervaci, spolu s omezeným technickým kontextem. Automatický sběr, reklama, záznam relací, heatmapy, měření výkonu, průzkumy a profily osob jsou vypnuté. Analytický identifikátor je pouze v paměti aktuální relace stránky a neukládá se do cookies ani local storage.",
         cookiesSection2Title: "Volitelná analytika",
