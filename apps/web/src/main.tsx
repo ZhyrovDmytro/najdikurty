@@ -84,7 +84,7 @@ import {
   newsPostPath,
   type NewsArticle
 } from "./news";
-import { ClubEditorial, ClubPriceEvidence, DataMethodology, EditorialPage, EditorialLinks, editorialClubs, EDITORIAL_PAGES, EDITORIAL_DATE, editorialImage, editorialPath, type Editorial } from "./editorial";
+import { ClubEditorial, ClubPriceEvidence, DataMethodology, EditorialPage, EditorialLinks, editorialClubs, EDITORIAL_PAGES, EDITORIAL_DATE, EDITORIAL_MODIFIED_DATE, editorialImage, editorialPath, type Editorial } from "./editorial";
 import { czechCourtCount, formatOpeningHours, matchesDirectoryFilters } from "./club-presentation";
 import { lowestPrice } from "./pricing";
 import clubFactsData from "./club-facts.json";
@@ -3732,7 +3732,7 @@ function buildStructuredData({
     if (selectedEditorial.kind === "article") {
       Object.assign(graph[2], {
         "@type": "BlogPosting", headline: selectedEditorial.title,
-        datePublished: EDITORIAL_DATE, dateModified: EDITORIAL_DATE,
+        datePublished: EDITORIAL_DATE, dateModified: EDITORIAL_MODIFIED_DATE,
         author: { "@type": "Organization", name: "Redakce HLEDEJKURTY", url: `${SITE_ORIGIN}/about/` },
         publisher: { "@id": `${SITE_ORIGIN}/#organization` }, mainEntityOfPage: canonicalUrl
       });
