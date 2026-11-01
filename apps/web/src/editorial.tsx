@@ -1,6 +1,6 @@
 import React from "react";
 import { ArrowRight } from "lucide-react";
-import { ArticleLayout } from "./article-layout";
+import { ArticleContents, ArticleLayout } from "./article-layout";
 import articleImages from "./article-images.json";
 import priceChecksData from "./club-price-checks.json";
 import { lowestPrice } from "./pricing";
@@ -17,10 +17,16 @@ import { type LanguageCode } from "./i18n";
 import { distanceInKilometers } from "./distance";
 
 export const EDITORIAL_DATE = "2026-10-31";
-type ArticleCopy = Pick<typeof pages[number], "title" | "description" | "intro" | "sections">;
+export const EDITORIAL_MODIFIED_DATE = "2026-11-01";
+type ArticleCopy = {
+  title: string;
+  description: string;
+  intro: string;
+  sections: Array<{ heading: string; body: string; items?: string[] }>;
+};
 const translations: Record<"en" | "ua", Record<string, ArticleCopy>> = { en: english, ua: ukrainian };
 export const EDITORIAL_PAGES = (["cz", "en", "ua"] as const).flatMap(language => pages.map(page => {
-  const translated = language === "cz" ? page : translations[language][page.path];
+  const translated: ArticleCopy = language === "cz" ? page : translations[language][page.path];
   if (!translated) throw new Error(`Missing ${language} editorial translation: ${page.path}`);
   return { ...page, ...translated, language, basePath: page.path, path: editorialPath(page.path, language) };
 }));
@@ -70,7 +76,7 @@ export function EditorialArticleCards({ limit, language = "cz" }: { limit?: numb
   const cards = EDITORIAL_PAGES.filter(page => page.language === language && page.kind === "article").slice(0, limit).map(page => <article className={latest ? "latestNewsCard" : "newsCard"} key={page.path}>
         <a className={latest ? "latestNewsImage" : undefined} href={page.path}><img src={editorialImage(page).src} alt={editorialImage(page).alt} srcSet={editorialImage(page).srcSet} sizes="(max-width: 700px) 100vw, 600px" width="1200" height="670" loading="lazy" /></a>
         <div className={latest ? "latestNewsCardBody" : "newsCardBody"}>
-          <div className="newsMeta"><span>{copy[language].articles}</span><time dateTime={EDITORIAL_DATE}>{editorialDate(language)}</time></div>
+          <div className="newsMeta"><span>{copy[language].articles}</span><time dateTime={EDITORIAL_MODIFIED_DATE}>{copy[language].updated} {editorialDate(language, EDITORIAL_MODIFIED_DATE)}</time></div>
           <Heading><a href={page.path}>{page.title}</a></Heading><p>{page.description}</p>
           <a className="newsReadMore" href={page.path}>{language === "cz" ? "Přečíst článek" : language === "en" ? "Read article" : "Читати статтю"}<ArrowRight size={17} /></a>
         </div>
@@ -112,8 +118,8 @@ export function ClubPriceEvidence({ slug, language = "cz" }: { slug: string; lan
   return <p className="editorialSection">{text.verified}: {check ? <><time dateTime={check.checkedAt}>{check.checkedAt}</time> · <a href={check.url}>{text.priceSource}</a></> : text.unverified}</p>;
 }
 
-function editorialDate(language: LanguageCode) {
-  return new Intl.DateTimeFormat(language === "cz" ? "cs" : language === "ua" ? "uk" : "en", { dateStyle: "long", timeZone: "Europe/Prague" }).format(new Date(`${EDITORIAL_DATE}T12:00:00Z`));
+function editorialDate(language: LanguageCode, date = EDITORIAL_DATE) {
+  return new Intl.DateTimeFormat(language === "cz" ? "cs" : language === "ua" ? "uk" : "en", { dateStyle: "long", timeZone: "Europe/Prague" }).format(new Date(`${date}T12:00:00Z`));
 }
 
 export function DataMethodology({ language = "cz" }: { language?: LanguageCode }) {
@@ -159,10 +165,15 @@ export function EditorialPage({ page }: { page: Editorial }) {
   const selected = clubs.filter(club => page.clubs.includes(club.slug));
   const rows = editorialClubs(page);
   return <ArticleLayout title={page.title} description={page.description} image={editorialImage(page)}
-    meta={<div className="newsMeta"><span>{text.articles}</span><a href={href("/about/")}>{text.byline}</a><time dateTime={EDITORIAL_DATE}>{text.published} {date}</time></div>}>
+    meta={<div className="newsMeta"><span>{text.articles}</span><a rel="author" href={href("/about/")}>{text.byline}</a><time dateTime={EDITORIAL_DATE}>{text.published} {date}</time><time dateTime={EDITORIAL_MODIFIED_DATE}>{text.updated} {editorialDate(language, EDITORIAL_MODIFIED_DATE)}</time></div>}>
       <p className="newsLead">{page.intro}</p>
+      <ArticleContents headings={page.sections.map(section => section.heading)} language={language} />
       {page.basePath === "/blog/pravidla-padelu/" ? <img className="newsArticleDiagram" src={`${import.meta.env?.BASE_URL ?? "/"}padel-serve.svg`} alt={language === "cz" ? "Schéma diagonálního podání: od hráče 1 do pole 2" : language === "en" ? "Diagonal serve diagram: from player 1 into service box 2" : "Схема діагональної подачі: від гравця 1 у поле 2"} width="1200" height="670" loading="lazy" /> : null}
-      {page.sections.map(section => <section className="newsArticleSection" key={section.heading}><h2>{section.heading}</h2><p>{section.body}</p></section>)}
+      {page.sections.map((section, index) => <section className="newsArticleSection" aria-labelledby={`section-${index + 1}`} key={section.heading}>
+        <h2 id={`section-${index + 1}`}>{section.heading}</h2>
+        {section.body.split("\n\n").map(paragraph => <p key={paragraph}>{paragraph}</p>)}
+        {section.items ? <ol>{section.items.map(item => <li key={item}>{item}</li>)}</ol> : null}
+      </section>)}
       {page.kind === "prices" ? <div className="editorialTable" tabIndex={0} role="region" aria-label={text.table}><table><caption>{text.caption}</caption><thead><tr><th scope="col">{text.club}</th><th scope="col">{text.courts}</th><th scope="col">{text.price}</th><th scope="col">MultiSport</th><th scope="col">{text.verified}</th></tr></thead><tbody>
         {rows.map(club => <tr key={club.slug}><th scope="row"><a href={href(`/clubs/${club.slug}/`)}>{club.name}</a></th><td>{club.courtCount} {text.total}; {courtLabel(club, language)}</td><td>{language === "cz" ? club.priceInfo : (translatedPrices[language] as Record<string, string>)[club.slug]}</td><td>{multisportLabel(club, language)}</td><td>{priceVerified(club.slug) ? <><time dateTime={priceChecks[club.slug].checkedAt}>{priceChecks[club.slug].checkedAt}</time><br /><a href={priceChecks[club.slug].url}>{text.priceSource}</a></> : text.unverified}</td></tr>)}
       </tbody></table></div> : null}
@@ -171,6 +182,12 @@ export function EditorialPage({ page }: { page: Editorial }) {
       {page.kind === "multisport" || page.kind === "indoor" ? <section className="newsArticleSection"><h2>{page.kind === "multisport" ? "MultiSport" : text.indoorLink}</h2><p>{page.kind === "multisport" ? text.msCaption : text.indoorCaption}</p><ul>{rows.map(club => <li key={club.slug}><a href={href(`/clubs/${club.slug}/`)}>{club.name}</a> – {page.kind === "multisport" ? multisportLabel(club, language) : `${club.courtCount} ${text.total}; ${courtLabel(club, language)}`} {(multisportSources[club.slug] || club.slug === "one-padel" || club.slug === "padel-neride") && page.kind === "multisport" ? <a href={multisportSources[club.slug]?.url ?? (club.slug === "one-padel" ? EDITORIAL_SOURCES.oneMultisport.url : EDITORIAL_SOURCES.neride.url)}>{text.msSource} (31. 10. 2026)</a> : null}</li>)}</ul></section> : null}
       {page.kind === "areas" ? <section className="newsArticleSection"><h2>{text.areas}</h2>{[...new Set(clubs.map(club => club.district))].sort((a,b) => a.localeCompare(b, "cs", { numeric: true })).map(district => <section key={district}><h3>{district}</h3><ul>{clubs.filter(club => club.district === district).map(club => <li key={club.slug}><a href={href(`/clubs/${club.slug}/`)}>{club.name}</a> – {club.address}</li>)}</ul></section>)}</section> : null}
       <section className="newsArticleSection"><h2>{text.mentioned}</h2><ul>{selected.map(club => <li key={club.slug}><a href={href(`/clubs/${club.slug}/`)}>{club.name}: {text.profile}</a></li>)}</ul></section>
+      <section className="newsArticleSection"><h2>{language === "cz" ? "Související čtení" : language === "en" ? "Related reading" : "Пов’язані статті"}</h2>
+        <ul>{page.related.map(path => {
+          const related = EDITORIAL_PAGES.find(item => item.basePath === path && item.language === language)!;
+          return <li key={path}><a href={related.path}>{related.title}</a></li>;
+        })}</ul>
+      </section>
       <EditorialLinks language={language} />
       <section className="newsArticleSection"><h2>{text.sources}</h2><p>{text.sourcesBody}</p><ul>{page.sources.map(id => <li key={id}><a href={EDITORIAL_SOURCES[id].url}>{language === "cz" ? EDITORIAL_SOURCES[id].label : (sourceLabels[language] as Record<string, string>)[id]}</a></li>)}</ul></section>
       {page.kind === "hub" ? <section aria-label={text.articles}><div className="newsList"><EditorialArticleCards language={language} /></div></section> : null}

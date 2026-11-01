@@ -11,10 +11,19 @@ describe("SEO editorial pages", () => {
     for (const page of EDITORIAL_PAGES) {
       const html = renderToStaticMarkup(<EditorialPage page={page} />);
       expect(html).toMatch(/datetime="2026-10-31"/i);
+      expect(html).toMatch(/datetime="2026-11-01"/i);
       expect(html).toContain("HLEDEJKURTY");
       expect(html).toMatch(/href="\/(?:en\/|ua\/)?clubs\//);
       expect(html).toMatch(/href="\/(?:en\/|ua\/)?padel-praha\//);
       expect(html.match(/<h1/g)).toHaveLength(1);
+      const example = page.sections.at(-1)!;
+      for (const item of example.items!) expect(html).toContain(`<li>${item}</li>`);
+      for (const path of page.related) {
+        const related = EDITORIAL_PAGES.find(other => other.basePath === path && other.language === page.language);
+        expect(related).toBeDefined();
+        expect(related!.path).not.toBe(page.path);
+        expect(html).toContain(`href="${related!.path}"`);
+      }
     }
   });
   it("publishes every article and guide in all three languages with matching sections", () => {

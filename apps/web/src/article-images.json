@@ -88,11 +88,11 @@
     }
   },
   "club-opening": {
-    "file": "articles/club-opening-1200.webp",
+    "file": "articles/singles-court-1200.webp",
     "alt": {
-      "cz": "Celkový pohled na běžný krytý padelový kurt za denního světla",
-      "en": "A wide view of a typical indoor padel court in daylight",
-      "ua": "Загальний вигляд звичайного критого падел-корту при денному світлі"
+      "cz": "Prázdný úzký krytý padelový kurt pro hru 1vs1",
+      "en": "An empty narrow indoor padel court for 1vs1 play",
+      "ua": "Порожній вузький критий падел-корт для гри 1vs1"
     }
   }
 }

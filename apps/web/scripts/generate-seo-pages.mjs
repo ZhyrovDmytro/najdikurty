@@ -1,7 +1,7 @@
 import { czechCourtCount, formatOpeningHours } from "../src/club-presentation.ts";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { ClubEditorial, ClubPriceEvidence, DataMethodology, EditorialArticleCards, EditorialLinks, EditorialPage, editorialImage, EDITORIAL_DATE, EDITORIAL_PAGES, editorialClubs } from "../src/editorial.tsx";
+import { ClubEditorial, ClubPriceEvidence, DataMethodology, EditorialArticleCards, EditorialLinks, EditorialPage, editorialImage, EDITORIAL_DATE, EDITORIAL_MODIFIED_DATE, EDITORIAL_PAGES, editorialClubs } from "../src/editorial.tsx";
 import { NEWS_ARTICLES, NewsArticlePage, NewsIndexPage, localizedNewsArticle } from "../src/news.tsx";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -92,7 +92,7 @@ const basePages = [
 ].map(([key, basePath, club]) => ({ key, basePath, club, lastModified: ["home", "allClubs", "club", "news", "newsArticle", "about"].includes(key) ? EDITORIAL_DATE : SEO_CONTENT_LAST_MODIFIED }));
 const pages = [
   ...languages.flatMap((language) => basePages.map((page) => localizePage(page, language))),
-  ...EDITORIAL_PAGES.map(editorial => ({ key: "editorial", basePath: editorial.basePath, path: editorial.path, language: languages.find(language => language.code === editorial.language), title: `${editorial.title} | HLEDEJKURTY`, description: editorial.description, h1: editorial.title, body: editorial.intro, lastModified: EDITORIAL_DATE, editorial }))
+  ...EDITORIAL_PAGES.map(editorial => ({ key: "editorial", basePath: editorial.basePath, path: editorial.path, language: languages.find(language => language.code === editorial.language), title: `${editorial.title} | HLEDEJKURTY`, description: editorial.description, h1: editorial.title, body: editorial.intro, lastModified: EDITORIAL_MODIFIED_DATE, editorial }))
 ];
 
 for (const page of pages) {

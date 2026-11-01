@@ -1392,7 +1392,21 @@ a {
 .newsArticleSection {
   display: grid;
   gap: 12px;
+  scroll-margin-top: 100px;
 }
+
+.articleContents {
+  padding: 20px 24px;
+  border: 1px solid var(--brand-border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.articleContents p { margin: 0 0 10px; font-weight: 700; }
+.articleContents ol, .newsArticleSection ol { margin: 0; padding-left: 24px; line-height: 1.68; }
+.articleContents a { color: var(--blue); text-underline-offset: 3px; }
+.articleContents li + li, .newsArticleSection li + li { margin-top: 8px; }
+.newsArticleSection h2[id] { scroll-margin-top: 100px; }
 
 .newsArticleSection h2 {
   font-size: clamp(1.45rem, 2.5vw, 2rem);
