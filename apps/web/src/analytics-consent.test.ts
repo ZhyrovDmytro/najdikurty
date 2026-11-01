@@ -15,6 +15,18 @@ describe("analytics consent storage", () => {
     expect(readAnalyticsConsent({ getItem: () => "unexpected" })).toBeNull();
   });
 
+  it.each(["granted", "denied"] as const)("restores saved %s after a page reload", (choice) => {
+    const values = new Map<string, string>();
+    writeAnalyticsConsent(choice, { setItem: (key, value) => { values.set(key, value); } }, 1_000);
+    expect(readAnalyticsConsent({ getItem: (key) => values.get(key) ?? null }, 2_000)).toBe(choice);
+  });
+
+  it("rejects consent without a valid timestamp", () => {
+    for (const savedAt of [undefined, "invalid", null]) {
+      expect(readAnalyticsConsent({ getItem: () => JSON.stringify({ choice: "granted", savedAt }) })).toBeNull();
+    }
+  });
+
   it("asks for a new choice after twelve months", () => {
     const stored = JSON.stringify({ choice: "granted", savedAt: 1_000 });
     expect(readAnalyticsConsent({ getItem: () => stored }, 1_000 + ANALYTICS_CONSENT_MAX_AGE_MS)).toBe("granted");

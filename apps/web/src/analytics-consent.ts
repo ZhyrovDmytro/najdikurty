@@ -14,7 +14,7 @@ export function readAnalyticsConsent(
     if (!rawValue) return null;
     const value = JSON.parse(rawValue) as { choice?: unknown; savedAt?: unknown };
     const age = typeof value.savedAt === "number" ? now - value.savedAt : Number.NaN;
-    if (age < 0 || age > ANALYTICS_CONSENT_MAX_AGE_MS) return null;
+    if (!Number.isFinite(age) || age < 0 || age > ANALYTICS_CONSENT_MAX_AGE_MS) return null;
     return value.choice === "granted" || value.choice === "denied" ? value.choice : null;
   } catch {
     return null;
