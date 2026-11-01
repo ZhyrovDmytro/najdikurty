@@ -6,6 +6,8 @@ import { NEWS_ARTICLES, NewsArticlePage, NewsIndexPage } from "./news";
 describe("shared article design", () => {
   it("renders every guide and article with the original article layout", () => {
     const opening = renderToStaticMarkup(<NewsArticlePage article={NEWS_ARTICLES[0]} language="en" onOpenClub={() => undefined} />);
+    expect(opening).toContain("articles/club-opening-1200.webp");
+    expect(opening).toContain("AI-generated illustrative photograph");
     for (const page of EDITORIAL_PAGES) {
       const html = renderToStaticMarkup(<EditorialPage page={page} />);
       for (const className of ["newsArticle", "newsArticleHeader", "newsArticleHeroImage", "newsArticleContent", "newsArticleSection"]) {

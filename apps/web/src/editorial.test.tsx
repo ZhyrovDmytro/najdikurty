@@ -83,3 +83,14 @@ describe("SEO editorial pages", () => {
     expect(nearby.some(item => item.slug === club.slug)).toBe(false);
   });
 });
+
+describe("article photographs", () => {
+  it("uses generated topic images and discloses illustrative scenes in every language", () => {
+    for (const page of EDITORIAL_PAGES) {
+      const html = renderToStaticMarkup(<EditorialPage page={page} />);
+      expect(html).toMatch(/src="\/articles\/[a-z-]+-1200\.webp"/);
+      expect(html).toContain("<figcaption");
+      expect(html).not.toMatch(/alt="(?:One Padel|The Court) –/);
+    }
+  });
+});

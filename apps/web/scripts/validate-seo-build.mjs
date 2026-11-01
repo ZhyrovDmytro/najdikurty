@@ -16,6 +16,7 @@ const titles = new Map();
 const appSource = await readFile(path.join(appDir, "src/main.tsx"), "utf8");
 const catalog = JSON.parse(await readFile(path.join(appDir, "src/club-facts.json"), "utf8"));
 const editorialPages = JSON.parse(await readFile(path.join(appDir, "src/editorial-content.json"), "utf8"));
+const articleImages = JSON.parse(await readFile(path.join(appDir, "src/article-images.json"), "utf8"));
 const sourceClubSlugs = new Set(catalog.map(club => club.slug));
 const sourceClubs = new Map(catalog.map(club => [club.slug, club]));
 const editorialCopy = JSON.parse(await readFile(path.join(appDir, "src/editorial-copy.json"), "utf8"));
@@ -38,6 +39,14 @@ check(
   "The client must preserve noindex on unknown and malformed paths"
 );
 check(!appSource.includes('segments[0] === "news"'), "The removed /news/ alias must not render indexable content on the 404 shell");
+
+for (const image of Object.values(articleImages)) {
+  for (const width of [640, 1200]) {
+    const file = image.file.replace("-1200", `-${width}`);
+    try { await access(path.join(distDir, file)); }
+    catch { errors.push(`Missing generated article photo: ${file}`); }
+  }
+}
 
 for (const location of locations) {
   const url = new URL(location);

@@ -49,7 +49,8 @@
     "indoorCaption": "Areály s krytými kurty; celková kapacita může zahrnovat i venkovní či tréninkové kurty.",
     "sample": "Ověřené ceny standardních kurtů",
     "sampleBody": "Počet ověřených ceníků: {count} z 18. Rozpětí nejnižších hodinových sazeb standardního kurtu: {min}–{max} Kč; medián těchto minim: {median} Kč. Jde o omezený vzorek různých časů a sezón, nikoli průměr trhu ani cenu ve stejnou hodinu. Tabulka je řazena od nejnižší sazby, neověřené ceny zůstávají označené.",
-    "updated": "Aktualizováno"
+    "updated": "Aktualizováno",
+    "imageCaption": "Ilustrační fotografie vytvořená pomocí AI. Nezobrazuje konkrétní klub."
   },
   "en": {
     "nav": "Main navigation",
@@ -101,7 +102,8 @@
     "indoorCaption": "Venues with indoor courts; total capacity may also include outdoor or training courts.",
     "sample": "Verified standard-court prices",
     "sampleBody": "Verified price lists: {count} of 18. Range of lowest standard-court hourly rates: {min}–{max} CZK; median of those minima: {median} CZK. This limited sample mixes times and seasons; it is not a market average or a same-hour comparison. Rows are sorted by the lowest rate; unverified prices remain labelled.",
-    "updated": "Updated"
+    "updated": "Updated",
+    "imageCaption": "AI-generated illustrative photograph. It does not show a specific club."
   },
   "ua": {
     "nav": "Головна навігація",
@@ -153,6 +155,7 @@
     "indoorCaption": "Майданчики з критими кортами; загальна кількість може включати відкриті або тренувальні корти.",
     "sample": "Перевірені ціни стандартних кортів",
     "sampleBody": "Перевірені прайси: {count} з 18. Діапазон найнижчих погодинних ставок стандартного корту: {min}–{max} Kč; медіана цих мінімумів: {median} Kč. Ця обмежена вибірка змішує час і сезони; це не середня ринкова ціна і не порівняння на одну годину. Рядки впорядковано за найнижчою ставкою; неперевірені ціни позначено.",
-    "updated": "Оновлено"
+    "updated": "Оновлено",
+    "imageCaption": "Ілюстративне фото, створене ШІ. Не зображує конкретний клуб."
   }
 }

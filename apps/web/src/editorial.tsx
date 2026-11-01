@@ -1,6 +1,7 @@
 import React from "react";
 import { ArrowRight } from "lucide-react";
 import { ArticleLayout } from "./article-layout";
+import articleImages from "./article-images.json";
 import priceChecksData from "./club-price-checks.json";
 import { lowestPrice } from "./pricing";
 import { czechCourtCount } from "./club-presentation";
@@ -67,7 +68,7 @@ export function EditorialArticleCards({ limit, language = "cz" }: { limit?: numb
   const latest = limit !== undefined;
   const Heading = latest ? "h3" : "h2";
   const cards = EDITORIAL_PAGES.filter(page => page.language === language && page.kind === "article").slice(0, limit).map(page => <article className={latest ? "latestNewsCard" : "newsCard"} key={page.path}>
-        <a className={latest ? "latestNewsImage" : undefined} href={page.path}><img src={editorialImage(page).src} alt={editorialImage(page).alt} width="1200" height="670" loading="lazy" /></a>
+        <a className={latest ? "latestNewsImage" : undefined} href={page.path}><img src={editorialImage(page).src} alt={editorialImage(page).alt} srcSet={editorialImage(page).srcSet} sizes="(max-width: 700px) 100vw, 600px" width="1200" height="670" loading="lazy" /></a>
         <div className={latest ? "latestNewsCardBody" : "newsCardBody"}>
           <div className="newsMeta"><span>{copy[language].articles}</span><time dateTime={EDITORIAL_DATE}>{editorialDate(language)}</time></div>
           <Heading><a href={page.path}>{page.title}</a></Heading><p>{page.description}</p>
@@ -77,15 +78,32 @@ export function EditorialArticleCards({ limit, language = "cz" }: { limit?: numb
   return <>{cards}</>;
 }
 
+export function generatedArticleImage(id: keyof typeof articleImages, language: LanguageCode) {
+  const image = articleImages[id];
+  const base = import.meta.env?.BASE_URL ?? "/";
+  return { src: `${base}${image.file}`, srcSet: `${base}${image.file.replace("-1200", "-640")} 640w, ${base}${image.file} 1200w`, alt: image.alt[language], caption: copy[language].imageCaption };
+}
+
 export function editorialImage(page: Editorial) {
-  if (page.basePath === "/blog/pravidla-padelu/") return { src: `${import.meta.env?.BASE_URL ?? "/"}padel-serve.svg`, alt: page.language === "cz" ? "Schéma podání v padelu: podání diagonálně z pravé strany do protilehlého pole" : page.language === "en" ? "Padel serve diagram: diagonal serve from the right side into the opposite service box" : "Схема подачі у паделі: діагональна подача справа у протилежне поле" };
-  const imageClubs: Record<string, string> = {
-    "/blog/multisport-padel-jak-rezervovat/": "padel-radotin", "/blog/padel-v-zime-praha/": "padel-neride",
-    "/blog/padel-pro-zacatecniky-praha/": "padel-dzus", "/blog/padel-lekce-treneri-praha/": "tenis-a-padel-klub-pisecna",
-    "/blog/padel-turnaje-praha/": "padel-dzus", "/blog/jak-vybrat-padelovy-klub-praha/": "padel-powers-smichov"
+  const images: Record<string, keyof typeof articleImages> = {
+    "/padel-praha/": "choose-club",
+    "/padel-praha-ceny/": "first-game-cost",
+    "/padel-praha-multisport/": "multisport-booking",
+    "/kryty-padel-praha/": "winter-indoor",
+    "/padel-praha-podle-lokalit/": "choose-club",
+    "/blog/kolik-stoji-padel-praha/": "first-game-cost",
+    "/blog/multisport-padel-jak-rezervovat/": "multisport-booking",
+    "/blog/padel-v-zime-praha/": "winter-indoor",
+    "/blog/padel-pro-zacatecniky-praha/": "beginners",
+    "/blog/pravidla-padelu/": "padel-rules",
+    "/blog/padel-tenis-squash/": "padel-tennis-squash",
+    "/blog/spoluhraci-padel-praha/": "find-players",
+    "/blog/jak-vybrat-padelovy-klub-praha/": "choose-club",
+    "/blog/padel-lekce-treneri-praha/": "coaching",
+    "/blog/padel-firmy-teambuilding-praha/": "company-padel",
+    "/blog/padel-turnaje-praha/": "local-tournament"
   };
-  const club = clubs.find(club => club.slug === (imageClubs[page.basePath] ?? page.clubs[0]))!;
-  return { src: `${import.meta.env?.BASE_URL ?? "/"}clubs/optimized/${club.slug}-1200.webp`, alt: `${club.name} – ${courtLabel(club, page.language)}` };
+  return generatedArticleImage(images[page.basePath], page.language);
 }
 
 export function ClubPriceEvidence({ slug, language = "cz" }: { slug: string; language?: LanguageCode }) {
@@ -143,6 +161,7 @@ export function EditorialPage({ page }: { page: Editorial }) {
   return <ArticleLayout title={page.title} description={page.description} image={editorialImage(page)}
     meta={<div className="newsMeta"><span>{text.articles}</span><a href={href("/about/")}>{text.byline}</a><time dateTime={EDITORIAL_DATE}>{text.published} {date}</time></div>}>
       <p className="newsLead">{page.intro}</p>
+      {page.basePath === "/blog/pravidla-padelu/" ? <img className="newsArticleDiagram" src={`${import.meta.env?.BASE_URL ?? "/"}padel-serve.svg`} alt={language === "cz" ? "Schéma diagonálního podání: od hráče 1 do pole 2" : language === "en" ? "Diagonal serve diagram: from player 1 into service box 2" : "Схема діагональної подачі: від гравця 1 у поле 2"} width="1200" height="670" loading="lazy" /> : null}
       {page.sections.map(section => <section className="newsArticleSection" key={section.heading}><h2>{section.heading}</h2><p>{section.body}</p></section>)}
       {page.kind === "prices" ? <div className="editorialTable" tabIndex={0} role="region" aria-label={text.table}><table><caption>{text.caption}</caption><thead><tr><th scope="col">{text.club}</th><th scope="col">{text.courts}</th><th scope="col">{text.price}</th><th scope="col">MultiSport</th><th scope="col">{text.verified}</th></tr></thead><tbody>
         {rows.map(club => <tr key={club.slug}><th scope="row"><a href={href(`/clubs/${club.slug}/`)}>{club.name}</a></th><td>{club.courtCount} {text.total}; {courtLabel(club, language)}</td><td>{language === "cz" ? club.priceInfo : (translatedPrices[language] as Record<string, string>)[club.slug]}</td><td>{multisportLabel(club, language)}</td><td>{priceVerified(club.slug) ? <><time dateTime={priceChecks[club.slug].checkedAt}>{priceChecks[club.slug].checkedAt}</time><br /><a href={priceChecks[club.slug].url}>{text.priceSource}</a></> : text.unverified}</td></tr>)}

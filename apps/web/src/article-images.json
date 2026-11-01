@@ -1,0 +1,98 @@
+{
+  "first-game-cost": {
+    "file": "articles/first-game-cost-1200.webp",
+    "alt": {
+      "cz": "Čtyři padelové rakety a míčky připravené na lavičce u kurtu",
+      "en": "Four padel rackets and balls on a bench beside a court",
+      "ua": "Чотири падел-ракетки та м’ячі на лавці біля корту"
+    }
+  },
+  "multisport-booking": {
+    "file": "articles/multisport-booking-1200.webp",
+    "alt": {
+      "cz": "Hráč s telefonem a raketou na recepci sportovního klubu",
+      "en": "A player with a phone and racket at a sports-club reception",
+      "ua": "Гравець із телефоном і ракеткою на рецепції спортивного клубу"
+    }
+  },
+  "winter-indoor": {
+    "file": "articles/winter-indoor-1200.webp",
+    "alt": {
+      "cz": "Rekreační hráči se připravují na hru v kryté padelové hale",
+      "en": "Recreational players warming up in an indoor padel hall",
+      "ua": "Гравці-аматори готуються до гри у критій падел-залі"
+    }
+  },
+  "beginners": {
+    "file": "articles/beginners-1200.webp",
+    "alt": {
+      "cz": "Začínající hráči se seznamují s držením padelové rakety",
+      "en": "Beginners learning how to hold a padel racket",
+      "ua": "Початківці вчаться тримати падел-ракетку"
+    }
+  },
+  "padel-rules": {
+    "file": "articles/padel-rules-1200.webp",
+    "alt": {
+      "cz": "Rekreační hráč trénuje podání spodem na padelovém kurtu",
+      "en": "A recreational player practicing an underhand padel serve",
+      "ua": "Гравець-аматор тренує нижню подачу на падел-корті"
+    }
+  },
+  "padel-tennis-squash": {
+    "file": "articles/padel-tennis-squash-1200.webp",
+    "alt": {
+      "cz": "Padelová, tenisová a squashová raketa vedle sebe na lavičce",
+      "en": "Padel, tennis and squash rackets side by side on a bench",
+      "ua": "Ракетки для паделу, тенісу та сквошу поруч на лавці"
+    }
+  },
+  "find-players": {
+    "file": "articles/find-players-1200.webp",
+    "alt": {
+      "cz": "Čtyři spoluhráči se domlouvají u vstupu na padelový kurt",
+      "en": "Four friends meeting beside the entrance to a padel court",
+      "ua": "Четверо друзів зустрічаються біля входу на падел-корт"
+    }
+  },
+  "choose-club": {
+    "file": "articles/choose-club-1200.webp",
+    "alt": {
+      "cz": "Běžný padelový areál s kurtem a lavičkami pro hráče",
+      "en": "An everyday padel venue with a court and player benches",
+      "ua": "Звичайний падел-майданчик із кортом і лавками для гравців"
+    }
+  },
+  "coaching": {
+    "file": "articles/coaching-1200.webp",
+    "alt": {
+      "cz": "Trenér vysvětluje dospělému začátečníkovi držení rakety",
+      "en": "A coach explaining the racket grip to an adult beginner",
+      "ua": "Тренер пояснює дорослому початківцю хват ракетки"
+    }
+  },
+  "company-padel": {
+    "file": "articles/company-padel-1200.webp",
+    "alt": {
+      "cz": "Kolegové odpočívají mezi hrami při společném padelu",
+      "en": "Colleagues taking a break between games at a padel outing",
+      "ua": "Колеги відпочивають між іграми під час спільного паделу"
+    }
+  },
+  "local-tournament": {
+    "file": "articles/local-tournament-1200.webp",
+    "alt": {
+      "cz": "Rekreační hráči po zápase na malém klubovém turnaji",
+      "en": "Recreational players after a match at a small club tournament",
+      "ua": "Гравці-аматори після матчу на невеликому клубному турнірі"
+    }
+  },
+  "club-opening": {
+    "file": "articles/club-opening-1200.webp",
+    "alt": {
+      "cz": "Celkový pohled na běžný krytý padelový kurt za denního světla",
+      "en": "A wide view of a typical indoor padel court in daylight",
+      "ua": "Загальний вигляд звичайного критого падел-корту при денному світлі"
+    }
+  }
+}

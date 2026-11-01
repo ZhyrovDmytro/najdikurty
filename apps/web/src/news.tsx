@@ -1,7 +1,7 @@
 import React from "react";
 import { ArticleLayout } from "./article-layout";
 import { ArrowRight, Bot, CalendarDays, ExternalLink, Instagram, Sparkles, Target, Video } from "lucide-react";
-import { EditorialArticleCards, EditorialLinks } from "./editorial";
+import { EditorialArticleCards, EditorialLinks, generatedArticleImage } from "./editorial";
 import type { LanguageCode } from "./i18n";
 
 export const THE_COURT_OPENING_SLUG = "the-court-opening";
@@ -58,7 +58,7 @@ export const NEWS_ARTICLES: NewsArticle[] = [
     slug: THE_COURT_OPENING_SLUG,
     publishedAt: "2026-09-13",
     modifiedAt: "2026-10-31",
-    imageUrl: "clubs/optimized/the-court-1200.webp",
+    imageUrl: "articles/club-opening-1200.webp",
     translations: {
       cz: {
         category: "Nový padelový klub",
@@ -238,7 +238,7 @@ export function NewsIndexPage({ language, onOpenPost }: { language: LanguageCode
           return (
             <article className="newsCard" key={article.slug}>
               <a href={newsPostPath(article.slug, language)} onClick={(event) => { event.preventDefault(); onOpenPost(article.slug); }}>
-                <img src={articleImageUrl(article)} alt={language === "cz" ? "Kryté padelové kurty The Court v Jinočanech" : language === "en" ? "The Court indoor padel club in Jinočany" : "Криті падел-корти The Court у Їночанах"} width="1200" height="670" />
+                <img src={articleImageUrl(article)} alt={generatedArticleImage("club-opening", language).alt} srcSet={generatedArticleImage("club-opening", language).srcSet} sizes="(max-width: 700px) 100vw, 600px" width="1200" height="670" />
               </a>
               <div className="newsCardBody">
                 <div className="newsMeta"><span>{post.category}</span><time dateTime={article.publishedAt}>{formattedDate(article.publishedAt, language)}</time></div>
@@ -284,7 +284,7 @@ export function LatestNewsCards({ language, onOpenPost }: { language: LanguageCo
           return (
             <article className="latestNewsCard" key={article.slug}>
               <a className="latestNewsImage" href={href} onClick={openPost}>
-                <img src={articleImageUrl(article)} alt={language === "cz" ? "Kryté padelové kurty The Court v Jinočanech" : language === "en" ? "The Court indoor padel club in Jinočany" : "Криті падел-корти The Court у Їночанах"} width="1200" height="670" />
+                <img src={articleImageUrl(article)} alt={generatedArticleImage("club-opening", language).alt} srcSet={generatedArticleImage("club-opening", language).srcSet} sizes="(max-width: 700px) 100vw, 600px" width="1200" height="670" />
               </a>
               <div className="latestNewsCardBody">
                 <div className="newsMeta">
@@ -311,7 +311,7 @@ export function NewsArticlePage({ article, language, onOpenClub }: { article: Ne
   return (
     <ArticleLayout title={post.title} description={post.excerpt}
       meta={<div className="newsMeta"><span>{post.category}</span><a href={language === "cz" ? "/about/" : `/${language}/about/`}>Redakce HLEDEJKURTY · Dmytro Zhyrov</a><time dateTime={article.modifiedAt}>{language === "cz" ? "Aktualizováno" : language === "en" ? "Updated" : "Оновлено"} {formattedDate(article.modifiedAt, language)}</time><time dateTime={article.publishedAt}><CalendarDays size={15} /> {copy.published} {formattedDate(article.publishedAt, language)}</time></div>}
-      image={{ src: articleImageUrl(article), alt: language === "cz" ? "Kryté padelové kurty The Court v Jinočanech" : language === "en" ? "The Court indoor padel club in Jinočany" : "Криті падел-корти The Court у Їночанах" }}>
+      image={generatedArticleImage("club-opening", language)}>
         {language === "cz" ? <><p>Kontrola webu klubu 31. 10. 2026: zveřejňuje dva standardní a jeden tréninkový kurt. Popis kamer, teploty a zázemí jsou tvrzení klubu; osobně jsme je netestovali. Dostupnost míčového automatu zdarma není potvrzena.</p><p>Klub může vyhovovat hráčům ze západního okolí Prahy i dvojicím hledajícím trénink 1vs1. Pro čtyřhru vyberte standardní kurt a jeho odpovídající tarif.</p></> : language === "en" ? <><p>Club website checked on 31 October 2026: it lists two standard courts and one training court. Cameras, temperature and facilities are described by the club; we have not tested them ourselves. A free ball machine has not been confirmed.</p><p>The club may suit players from Prague's western surroundings and pairs looking for 1vs1 practice. For doubles, choose a standard court and its corresponding tariff.</p></> : <><p>Сайт клубу перевірено 31 жовтня 2026 року: він вказує два стандартні та один тренувальний корт. Камери, температура й зручності описані за твердженнями клубу; особисто ми їх не тестували. Безкоштовну машину для м’ячів не підтверджено.</p><p>Клуб може підійти гравцям із західних околиць Праги та парам, які шукають тренування 1vs1. Для парної гри обирайте стандартний корт і відповідний тариф.</p></>}
         <EditorialLinks language={language} />
         <p className="newsLead">{post.intro}</p>

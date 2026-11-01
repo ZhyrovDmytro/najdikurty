@@ -3949,3 +3949,8 @@ a.detailInfoRow:hover {
   .allClubsPage .pageHeaderControls { display: grid; grid-template-columns: minmax(0, 1fr); width: 100%; }
   .allClubsPage .pageHeaderControls > * { grid-column: 1; }
 }
+
+.newsArticleFigure { margin: 0; min-width: 0; }
+.newsArticleImageCaption { margin-top: 10px; color: var(--text-muted); font-size: 12px; line-height: 1.5; }
+
+.newsArticleDiagram { display: block; width: 100%; height: auto; margin-block: 24px; }
