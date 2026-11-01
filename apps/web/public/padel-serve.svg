@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="670" viewBox="0 0 1200 670">
+  <rect width="1200" height="670" fill="#edf3ef"/>
+  <rect x="220" y="75" width="760" height="520" rx="4" fill="#226655" stroke="#123d32" stroke-width="10"/>
+  <path d="M600 75v520M365 75v520M835 75v520M365 335h470" fill="none" stroke="white" stroke-width="4"/>
+  <rect x="365" y="75" width="235" height="260" fill="#c5e66e" opacity=".25"/>
+  <path d="M835 460L470 190" stroke="#d9ef86" stroke-width="12" stroke-dasharray="18 12"/>
+  <path d="M470 190l15 60m-15-60l63 2" fill="none" stroke="#d9ef86" stroke-width="12"/>
+  <circle cx="855" cy="475" r="21" fill="#f5f8f0" stroke="#123d32" stroke-width="5"/>
+  <circle cx="470" cy="190" r="16" fill="#d9ef86"/>
+  <text x="600" y="640" text-anchor="middle" font-family="sans-serif" font-size="23" fill="#123d32">HLEDEJKURTY · 1 → 2</text>
+  <text x="890" y="495" font-family="sans-serif" font-size="38" fill="white">1</text>
+  <text x="420" y="178" font-family="sans-serif" font-size="38" fill="white">2</text>
+</svg>

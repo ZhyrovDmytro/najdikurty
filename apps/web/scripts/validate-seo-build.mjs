@@ -16,6 +16,7 @@ const titles = new Map();
 const appSource = await readFile(path.join(appDir, "src/main.tsx"), "utf8");
 const catalog = JSON.parse(await readFile(path.join(appDir, "src/club-facts.json"), "utf8"));
 const editorialPages = JSON.parse(await readFile(path.join(appDir, "src/editorial-content.json"), "utf8"));
+const articleImages = JSON.parse(await readFile(path.join(appDir, "src/article-images.json"), "utf8"));
 const sourceClubSlugs = new Set(catalog.map(club => club.slug));
 const sourceClubs = new Map(catalog.map(club => [club.slug, club]));
 const editorialCopy = JSON.parse(await readFile(path.join(appDir, "src/editorial-copy.json"), "utf8"));
@@ -38,6 +39,14 @@ check(
   "The client must preserve noindex on unknown and malformed paths"
 );
 check(!appSource.includes('segments[0] === "news"'), "The removed /news/ alias must not render indexable content on the 404 shell");
+
+for (const image of Object.values(articleImages)) {
+  for (const width of [640, 1200]) {
+    const file = image.file.replace("-1200", `-${width}`);
+    try { await access(path.join(distDir, file)); }
+    catch { errors.push(`Missing generated article photo: ${file}`); }
+  }
+}
 
 for (const location of locations) {
   const url = new URL(location);
@@ -149,6 +158,19 @@ for (const location of locations) {
       check(locations.includes(new URL(href, SITE_ORIGIN).toString()), `${location} links to an unbuilt page: ${href}`);
     }
   }
+  if (["/", "/clubs/", "/blog/", "/about/"].includes(basePath)) {
+    for (const guide of editorialPages.filter(page => page.kind !== "article")) {
+      const prefix = languagePrefix === "cs" ? "" : `/${languagePrefix}`;
+      check(initialContent.includes(`href="${prefix}${guide.path}"`), `${location} hides guide ${guide.path}`);
+    }
+  }
+  if (basePath === "/blog/") {
+    for (const post of editorialPages.filter(page => page.kind === "article")) {
+      check(html.includes(post.path), `${location} omits article ${post.path}`);
+    }
+    check(html.includes("the-court-opening/"), `${location} omits the original news article`);
+  }
+  if (basePath === "/padel-praha/") check(!initialContent.includes("<table>"), `${location} duplicates the price table`);
   const editorial = editorialPages.find(page => page.path === basePath);
   if (editorial) {
     for (const className of ["newsArticleHeader", "newsArticleHeroImage", "newsArticleContent"]) {
@@ -161,6 +183,9 @@ for (const location of locations) {
   if (basePath.startsWith("/clubs/") && basePath !== "/clubs/") {
     const club = sourceClubs.get(basePath.split("/")[2]);
     check(html.includes(club.priceInfo.replaceAll("&", "&amp;").replaceAll('"', "&quot;")), `${location} is missing the shared catalog price`);
+    check(title.includes(club.locality), `${location} club title omits its location`);
+    check(initialContent.includes('class="breadcrumbs"'), `${location} has no visible breadcrumbs`);
+    if (languagePrefix === "cs") check(!/\b(?:indoor courts?|outdoor courts?|single court)\b/.test(initialContent), `${location} leaks English court labels`);
     check(!html.includes("Aktuální zveřejněné ceny najdete v přehledu klubu"), `${location} still uses a placeholder price`);
   }
   const image = metaContent(html, "property", "og:image");

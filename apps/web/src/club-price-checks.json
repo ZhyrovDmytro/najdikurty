@@ -1,0 +1,67 @@
+{
+  "tk-sparta-praha": {
+    "checkedAt": "2026-10-31",
+    "url": "https://tkspartapraha.cz/padel-pickleball",
+    "standardMinimum": 520
+  },
+  "tenis-a-padel-klub-pisecna": {
+    "checkedAt": "2026-10-31",
+    "url": "https://tenis-pisecna.cz/cenik/",
+    "standardMinimum": 540
+  },
+  "sk-slavia-praha-padel": {
+    "checkedAt": "2026-10-31",
+    "url": "https://www.padelslavia.cz/cs/cenik.html",
+    "standardMinimum": 550
+  },
+  "padel-radotin": {
+    "checkedAt": "2026-10-31",
+    "url": "https://www.padelradotin.cz/",
+    "standardMinimum": 600
+  },
+  "cisarska-louka-padel": {
+    "checkedAt": "2026-10-31",
+    "url": "https://cisarska-louka.cz/padel/",
+    "standardMinimum": 490
+  },
+  "sk-satalice": {
+    "checkedAt": "2026-10-31",
+    "url": "https://www.tenissatalice.cz/padel/",
+    "standardMinimum": 540
+  },
+  "padel-powers-smichov": {
+    "checkedAt": "2026-10-31",
+    "url": "https://www.padelpowers.com/praha-smichov/",
+    "standardMinimum": 800
+  },
+  "the-court": {
+    "checkedAt": "2026-10-31",
+    "url": "https://thecourt.cz/r-prices-cz",
+    "standardMinimum": 800
+  },
+  "padel-neride": {
+    "checkedAt": "2026-10-31",
+    "url": "https://padelneride.cz/",
+    "standardMinimum": 690
+  },
+  "head-tenis-centrum-vestec": {
+    "checkedAt": "2026-10-31",
+    "url": "https://teniscentrum.com/padel",
+    "standardMinimum": 800
+  },
+  "padel-dzus": {
+    "checkedAt": "2026-10-31",
+    "url": "https://padeldzus.cz/cenik",
+    "standardMinimum": 800
+  },
+  "ltc-modrany-2005": {
+    "checkedAt": "2026-10-31",
+    "url": "https://www.ltc2005.cz/padel/cenik-sluzeb-2/",
+    "standardMinimum": 560
+  },
+  "plechovka-dubec": {
+    "checkedAt": "2026-10-31",
+    "url": "https://www.plechovka-dubec.cz/cenik/",
+    "standardMinimum": 840
+  }
+}

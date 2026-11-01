@@ -14,7 +14,8 @@
     "oneTournaments":"One Padel – current tournaments",
     "powersEvents":"Padel Powers – tournaments",
     "dzusEvents":"Padel Džus – current events on the club website",
-    "cpf":"Czech Padel Federation – current competitions"
+    "cpf":"Czech Padel Federation – current competitions",
+    "dzusPrices":"Padel Džus – court and racket prices"
   },
   "ua": {
     "powers":"Padel Powers — ціни та послуги",
@@ -31,6 +32,7 @@
     "oneTournaments":"One Padel — актуальні турніри",
     "powersEvents":"Padel Powers — турніри",
     "dzusEvents":"Padel Džus — актуальні події на сайті клубу",
-    "cpf":"Чеська федерація паделу — актуальні змагання"
+    "cpf":"Чеська федерація паделу — актуальні змагання",
+    "dzusPrices":"Padel Džus — ціни кортів та ракеток"
   }
 }

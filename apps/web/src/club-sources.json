@@ -1,16 +1,33 @@
 {
   "padel-powers-smichov": {
     "checkedAt": "2026-10-31",
-    "sources": [{"label": "Padel Powers – ceník a služby", "url": "https://www.padelpowers.com/praha-smichov/"}],
+    "sources": [
+      {
+        "label": "Padel Powers – ceník a služby",
+        "url": "https://www.padelpowers.com/praha-smichov/"
+      }
+    ],
     "verified": "Cena, 8 krytých kurtů, půjčovna a lekce. Česká a anglická část webu uvádějí různé provozní hodiny; před cestou je potvrďte. Podmínky Multisport nebyly ověřeny.",
     "description": "Smíchovský klub nabízí osm krytých kurtů, půjčovnu, bar a bistro. Hodí se pro skupiny, které hledají více kurtů na jednom místě, i pro první hru s půjčeným vybavením.",
     "rental": "Raketa 50 Kč podle ceníku klubu; délku zapůjčení potvrďte na recepci.",
-    "lessons": "Klub zveřejňuje individuální i úvodní lekce; cenu konkrétního formátu ověřte při přihlášení.",
-    "transport": "MHD a podmínky parkování neověřeny; použijte mapu a pokyny klubu."
+    "lessons": "Klub zveřejňuje individuální i úvodní lekce; cenu konkrétního formátu ověřte při přihlášení."
   },
   "one-padel": {
     "checkedAt": "2026-10-31",
-    "sources": [{"label": "One Padel – klub", "url": "https://onepadel.cz/"}, {"label": "Zázemí a služby", "url": "https://onepadel.cz/about"}, {"label": "Multisport od 1. 10. 2026", "url": "https://onepadel.cz/articles/nove-podminky-multisport-v-one-padel-od-1-10"}],
+    "sources": [
+      {
+        "label": "One Padel – klub",
+        "url": "https://onepadel.cz/"
+      },
+      {
+        "label": "Zázemí a služby",
+        "url": "https://onepadel.cz/about"
+      },
+      {
+        "label": "Multisport od 1. 10. 2026",
+        "url": "https://onepadel.cz/articles/nove-podminky-multisport-v-one-padel-od-1-10"
+      }
+    ],
     "verified": "9 halových kurtů, půjčovna, lekce a parkování podle webu klubu. Hodinovou cenu ověřte v rezervaci.",
     "description": "One Padel na Zličíně má devět halových kurtů a nabízí otevřené hry v klubovém systému. Vedle hry ve vlastní čtveřici tu lze hledat spoluhráče nebo rezervovat lekci.",
     "rental": "Klub nabízí zapůjčení raket a míčků; aktuální cenu ověřte před návštěvou.",
@@ -20,16 +37,27 @@
   },
   "the-court": {
     "checkedAt": "2026-10-31",
-    "sources": [{"label": "The Court – web klubu", "url": "https://thecourt.cz/"}, {"label": "The Court – ceník", "url": "https://thecourt.cz/r-prices-cz"}],
+    "sources": [
+      {
+        "label": "The Court – web klubu",
+        "url": "https://thecourt.cz/"
+      },
+      {
+        "label": "The Court – ceník",
+        "url": "https://thecourt.cz/r-prices-cz"
+      }
+    ],
     "verified": "Dva standardní kurty a jeden tréninkový kurt, ceník a otevírací doba podle webu klubu. Dostupnost míčového automatu zdarma nebyla potvrzena.",
-    "description": "The Court v Jinočanech kombinuje dva standardní kryté kurty s jedním tréninkovým kurtem pro 1vs1. Podle klubu jsou k dispozici sprchy, bar a dětský koutek; vyhovuje tak i hráčům, kteří chtějí po hře zůstat v zázemí.",
-    "rental": "Cena a dostupnost zapůjčení rakety neověřena.",
-    "lessons": "Aktuální nabídku a cenu lekcí ověřte přímo u klubu.",
-    "transport": "Mezi Stromy 507, Jinočany. Konkrétní spojení MHD a parkování neověřeny."
+    "description": "The Court v Jinočanech kombinuje dva standardní kryté kurty s jedním tréninkovým kurtem pro 1vs1. Podle klubu jsou k dispozici sprchy, bar a dětský koutek; vyhovuje tak i hráčům, kteří chtějí po hře zůstat v zázemí."
   },
   "padel-neride": {
     "checkedAt": "2026-10-31",
-    "sources": [{"label": "Neride – zimní ceník a služby", "url": "https://padelneride.cz/"}],
+    "sources": [
+      {
+        "label": "Neride – zimní ceník a služby",
+        "url": "https://padelneride.cz/"
+      }
+    ],
     "verified": "Zimní ceník platný 1.10.2026–30.4.2027, vytápěná hala, půjčovna a lekce. Web uvádí nonstop provoz. Počet kurtů je z katalogu, nově neověřen.",
     "description": "Neride v Praze 15 zveřejňuje samostatný zimní a letní tarif. Vyhřívaná hala a nabídka lekcí jsou vhodné pro pravidelné hraní během chladných měsíců.",
     "rental": "Zapůjčení vybavení je v nabídce klubu; samostatná cena nebyla ověřena.",
@@ -39,11 +67,134 @@
   },
   "padel-dzus": {
     "checkedAt": "2026-10-31",
-    "sources": [{"label": "Padel Džus – web klubu", "url": "https://padeldzus.cz/"}],
-    "verified": "Čtyři indoor kurty, lekce, kavárna a rezervace Bookaball podle webu. Cena a podmínky Multisport nově neověřeny.",
+    "sources": [
+      {
+        "label": "Padel Džus – web klubu",
+        "url": "https://padeldzus.cz/"
+      },
+      {
+        "label": "Padel Džus – ceník",
+        "url": "https://padeldzus.cz/cenik"
+      }
+    ],
+    "verified": "Čtyři kryté kurty, ceník 800/900 Kč ve všední den a 850 Kč o víkendu, půjčovna a lekce. Podrobné podmínky MultiSport jsou v obrázcích a nebyly potvrzeny.",
     "description": "Padel Džus v Hostivaři nabízí čtyři vnitřní kurty a kavárnu. Klub uvádí skupinové i individuální lekce a v systému Bookaball také otevřené hry.",
-    "rental": "Konkrétní nabídka a cena půjčovny neověřeny.",
     "lessons": "Skupinové i individuální lekce podle webu klubu; ceny a volná místa ověřte u pořadatele.",
-    "transport": "MHD a parkování neověřeny; trasu naplánujte podle adresy klubu."
+    "rental": "Raketa 50 Kč za jednu hru podle ceníku."
+  },
+  "head-tenis-centrum-vestec": {
+    "checkedAt": "2026-10-31",
+    "sources": [
+      {
+        "label": "HEAD Vestec – padel a zimní ceník",
+        "url": "https://teniscentrum.com/padel"
+      }
+    ],
+    "verified": "Zimní ceník 2026/27 a pět krytých kurtů podle webu klubu. Vyhledávač zatím sleduje čtyři kurty v podporovaném kalendáři.",
+    "description": "HEAD ve Vestci uvádí pět krytých kurtů s osvětlením, šatny a sprchy. Zimní sazby jsou rozdělené do šesti všedních časových pásem; pro víkendy a svátky je uvedena jednotná cena.",
+    "rental": "Základní raketa 50 Kč, prémiová 150 Kč podle ceníku.",
+    "lessons": "Tréninky po dohodě se smluvními trenéry klubu."
+  },
+  "tk-sparta-praha": {
+    "checkedAt": "2026-10-31",
+    "sources": [
+      {
+        "label": "TK Sparta – padel a ceník",
+        "url": "https://tkspartapraha.cz/padel-pickleball"
+      }
+    ],
+    "description": "TK Sparta v Bubenči zveřejňuje od 1. dubna 2026 rozdílný všední a víkendový tarif. Přes týden rozlišuje hranici v 16 hodin; víkend má jednotnou sazbu.",
+    "verified": "Ověřen ceník padelu 2026; nejde o ceník pickleballu ani potvrzení podmínek MultiSport."
+  },
+  "tenis-a-padel-klub-pisecna": {
+    "checkedAt": "2026-10-31",
+    "sources": [
+      {
+        "label": "Písečná – ceník 2026",
+        "url": "https://tenis-pisecna.cz/cenik/"
+      }
+    ],
+    "description": "Písečná v Troji zveřejňuje vlastní padelový tarif odděleně od tenisu, beachvolejbalu a dalších sportů. Členství a klubový kredit mají samostatné podmínky; veřejnou hodinovou sazbu proto nelze zaměňovat za členský příspěvek.",
+    "verified": "Ověřen veřejný ceník padelu 2026. Nové ověření ceny nepotvrzuje podporu MultiSport."
+  },
+  "sk-slavia-praha-padel": {
+    "checkedAt": "2026-10-31",
+    "sources": [
+      {
+        "label": "Slavia – ceník pro veřejnost",
+        "url": "https://www.padelslavia.cz/cs/cenik.html"
+      }
+    ],
+    "description": "Slavia ve Vršovicích zveřejňuje odlišný tarif pro veřejnost a členy. V přehledu používáme veřejnou cenu; levnější sazba členů vyžaduje členství. Před příchodem si ověřte také vstup do areálu z ulice Pod Altánem.",
+    "verified": "Ověřen veřejný ceník 2026 od 8 do 22 hodin, půjčovna raket a uvedená cena trenéra.",
+    "rental": "Raketa 50 Kč za hodinu podle veřejného ceníku.",
+    "lessons": "Ceník uvádí trenéra za 700 Kč za hodinu; zahrnutí kurtu potvrďte předem."
+  },
+  "padel-radotin": {
+    "checkedAt": "2026-10-31",
+    "sources": [
+      {
+        "label": "Padel Radotín – ceník a podmínky",
+        "url": "https://www.padelradotin.cz/"
+      }
+    ],
+    "description": "Padel Radotín má podle klubu tři venkovní panoramatické kurty. Všední tarif mění cenu v 15 hodin. MultiSport funguje přes kredit na účet toho, kdo rezervaci zaplatil; u delší hry se příspěvek počítá pouze z první hodiny.",
+    "verified": "Ověřeny tři venkovní kurty, sazby 600/680 Kč ve všední den, 640 Kč o víkendu, půjčovna a podmínky MultiSport.",
+    "rental": "Raketa 50 Kč podle webu; míčky na hru klub uvádí zdarma."
+  },
+  "ltc-modrany-2005": {
+    "checkedAt": "2026-10-31",
+    "sources": [
+      {
+        "label": "LTC Modřany – ceník a MultiSport",
+        "url": "https://www.ltc2005.cz/padel/cenik-sluzeb-2/"
+      },
+      {
+        "label": "LTC Modřany – obrázek ceníku",
+        "url": "https://www.ltc2005.cz/wp-content/uploads/2026/08/Padel-cenik_03.jpg"
+      }
+    ],
+    "description": "LTC Modřany zveřejňuje ceník pro tři padelové kurty a samostatně vysvětluje MultiSport. Kredit se připisuje rezervujícímu do 24 hodin a při dalším placení musí pokrýt celou rezervaci; kombinovat část kreditu a platbu kartou podle klubu nelze.",
+    "verified": "Ověřen ceník v obrázku Padel-cenik_03.jpg: 560/640 Kč ve všední den a 560 Kč o víkendu. Tarif pro 14–15 hodin není v obrázku uveden.",
+    "rental": "Raketa 50 Kč za hodinu podle ceníku."
+  },
+  "plechovka-dubec": {
+    "checkedAt": "2026-10-31",
+    "sources": [
+      {
+        "label": "Plechovka – ceník",
+        "url": "https://www.plechovka-dubec.cz/cenik/"
+      },
+      {
+        "label": "Plechovka – areál a počet kurtů",
+        "url": "https://www.plechovka-dubec.cz/"
+      }
+    ],
+    "description": "Plechovka má v Dubči podle webu tři standardní a dva dětské padelové kurty. Náš katalog a hledání počítají jen tři standardní. U MultiSport ceník kromě podílu 25 % kurtu uvádí doplatek 25 Kč na hráče.",
+    "verified": "Ověřen ceník 840 Kč za hodinu padelu, půjčovna a uvedené podmínky MultiSport. Počet kurtů podle hlavní stránky klubu.",
+    "rental": "Ceník uvádí půjčení rakety za 50 Kč; délku zapůjčení potvrďte."
+  },
+  "cisarska-louka-padel": {
+    "checkedAt": "2026-10-31",
+    "sources": [
+      {
+        "label": "Císařská louka – padel",
+        "url": "https://cisarska-louka.cz/padel/"
+      }
+    ],
+    "description": "Císařská louka nabízí tři osvětlené venkovní kurty. Aktuální web zveřejňuje od 1. listopadu 2026 zkrácené denní hraní 10–19:30 za 490 Kč za kurt a hodinu. Kartu MultiSport je třeba uplatnit na místě před hrou; nelze ji zpětně přiřadit k online platbě.",
+    "verified": "Ověřen tarif s účinností od 1.11.2026 a podmínky MultiSport. Cenu do 31.10.2026 aktuální stránka nepotvrzuje."
+  },
+  "sk-satalice": {
+    "checkedAt": "2026-10-31",
+    "sources": [
+      {
+        "label": "Satalice – padel a ceník",
+        "url": "https://www.tenissatalice.cz/padel/"
+      }
+    ],
+    "description": "Satalice zveřejňují všední a víkendový tarif a možnost online rezervace. Pro uplatnění MultiSport však výslovně požadují telefonickou rezervaci. Veřejná kontaktní adresa klubu je U Arborky 397.",
+    "verified": "Ověřen ceník 590 Kč ve všední den a 540 Kč o víkendu, adresa, půjčovna a telefonická rezervace s MultiSport.",
+    "rental": "Raketa Wilson 100 Kč za hodinu podle ceníku."
   }
 }
