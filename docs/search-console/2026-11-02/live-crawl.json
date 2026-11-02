@@ -1,0 +1,2018 @@
+[
+  {
+    "url": "https://hledejkurty.cz/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/",
+    "canonical": "https://hledejkurty.cz/",
+    "title": "Volné padelové kurty Praha na jednom místě | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/",
+      "en": "https://hledejkurty.cz/en/",
+      "uk": "https://hledejkurty.cz/ua/",
+      "x-default": "https://hledejkurty.cz/"
+    },
+    "bytes": 11443
+  },
+  {
+    "url": "https://hledejkurty.cz/clubs/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/clubs/",
+    "canonical": "https://hledejkurty.cz/clubs/",
+    "title": "Padelové kluby v Praze | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/",
+      "en": "https://hledejkurty.cz/en/clubs/",
+      "uk": "https://hledejkurty.cz/ua/clubs/",
+      "x-default": "https://hledejkurty.cz/clubs/"
+    },
+    "bytes": 10198
+  },
+  {
+    "url": "https://hledejkurty.cz/blog/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/blog/",
+    "canonical": "https://hledejkurty.cz/blog/",
+    "title": "Články o padelu: tipy a kluby v Praze | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/",
+      "en": "https://hledejkurty.cz/en/blog/",
+      "uk": "https://hledejkurty.cz/ua/blog/",
+      "x-default": "https://hledejkurty.cz/blog/"
+    },
+    "bytes": 22048
+  },
+  {
+    "url": "https://hledejkurty.cz/blog/the-court-opening/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/blog/the-court-opening/",
+    "canonical": "https://hledejkurty.cz/blog/the-court-opening/",
+    "title": "The Court v Jinočanech: kurty, ceny a první návštěva | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/the-court-opening/",
+      "en": "https://hledejkurty.cz/en/blog/the-court-opening/",
+      "uk": "https://hledejkurty.cz/ua/blog/the-court-opening/",
+      "x-default": "https://hledejkurty.cz/blog/the-court-opening/"
+    },
+    "bytes": 17977
+  },
+  {
+    "url": "https://hledejkurty.cz/about/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/about/",
+    "canonical": "https://hledejkurty.cz/about/",
+    "title": "O vyhledávači padelových kurtů | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/about/",
+      "en": "https://hledejkurty.cz/en/about/",
+      "uk": "https://hledejkurty.cz/ua/about/",
+      "x-default": "https://hledejkurty.cz/about/"
+    },
+    "bytes": 8440
+  },
+  {
+    "url": "https://hledejkurty.cz/privacy-policy/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/privacy-policy/",
+    "canonical": "https://hledejkurty.cz/privacy-policy/",
+    "title": "Ochrana osobních údajů | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/privacy-policy/",
+      "en": "https://hledejkurty.cz/en/privacy-policy/",
+      "uk": "https://hledejkurty.cz/ua/privacy-policy/",
+      "x-default": "https://hledejkurty.cz/privacy-policy/"
+    },
+    "bytes": 7585
+  },
+  {
+    "url": "https://hledejkurty.cz/terms-of-use/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/terms-of-use/",
+    "canonical": "https://hledejkurty.cz/terms-of-use/",
+    "title": "Podmínky používání | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/terms-of-use/",
+      "en": "https://hledejkurty.cz/en/terms-of-use/",
+      "uk": "https://hledejkurty.cz/ua/terms-of-use/",
+      "x-default": "https://hledejkurty.cz/terms-of-use/"
+    },
+    "bytes": 7478
+  },
+  {
+    "url": "https://hledejkurty.cz/cookie-policy/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/cookie-policy/",
+    "canonical": "https://hledejkurty.cz/cookie-policy/",
+    "title": "Zásady cookies | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/cookie-policy/",
+      "en": "https://hledejkurty.cz/en/cookie-policy/",
+      "uk": "https://hledejkurty.cz/ua/cookie-policy/",
+      "x-default": "https://hledejkurty.cz/cookie-policy/"
+    },
+    "bytes": 7495
+  },
+  {
+    "url": "https://hledejkurty.cz/clubs/tk-sparta-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/clubs/tk-sparta-praha/",
+    "canonical": "https://hledejkurty.cz/clubs/tk-sparta-praha/",
+    "title": "TK Sparta Prague – Praha 7 – Bubeneč: ceník a rezervace | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/tk-sparta-praha/",
+      "en": "https://hledejkurty.cz/en/clubs/tk-sparta-praha/",
+      "uk": "https://hledejkurty.cz/ua/clubs/tk-sparta-praha/",
+      "x-default": "https://hledejkurty.cz/clubs/tk-sparta-praha/"
+    },
+    "bytes": 12136
+  },
+  {
+    "url": "https://hledejkurty.cz/clubs/padel-prosek/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/clubs/padel-prosek/",
+    "canonical": "https://hledejkurty.cz/clubs/padel-prosek/",
+    "title": "Padel Prosek – Praha 9 – Střížkov: ceník a rezervace | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/padel-prosek/",
+      "en": "https://hledejkurty.cz/en/clubs/padel-prosek/",
+      "uk": "https://hledejkurty.cz/ua/clubs/padel-prosek/",
+      "x-default": "https://hledejkurty.cz/clubs/padel-prosek/"
+    },
+    "bytes": 11364
+  },
+  {
+    "url": "https://hledejkurty.cz/clubs/padel-club-spoje/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/clubs/padel-club-spoje/",
+    "canonical": "https://hledejkurty.cz/clubs/padel-club-spoje/",
+    "title": "Padel Club Spoje – Praha – Balkán: ceník a rezervace | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/padel-club-spoje/",
+      "en": "https://hledejkurty.cz/en/clubs/padel-club-spoje/",
+      "uk": "https://hledejkurty.cz/ua/clubs/padel-club-spoje/",
+      "x-default": "https://hledejkurty.cz/clubs/padel-club-spoje/"
+    },
+    "bytes": 11471
+  },
+  {
+    "url": "https://hledejkurty.cz/clubs/tenis-a-padel-klub-pisecna/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/clubs/tenis-a-padel-klub-pisecna/",
+    "canonical": "https://hledejkurty.cz/clubs/tenis-a-padel-klub-pisecna/",
+    "title": "Tenis &amp; Padel klub Písečná – Praha 8 – Troja: ceník a rezervace | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/tenis-a-padel-klub-pisecna/",
+      "en": "https://hledejkurty.cz/en/clubs/tenis-a-padel-klub-pisecna/",
+      "uk": "https://hledejkurty.cz/ua/clubs/tenis-a-padel-klub-pisecna/",
+      "x-default": "https://hledejkurty.cz/clubs/tenis-a-padel-klub-pisecna/"
+    },
+    "bytes": 12623
+  },
+  {
+    "url": "https://hledejkurty.cz/clubs/sk-slavia-praha-padel/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/clubs/sk-slavia-praha-padel/",
+    "canonical": "https://hledejkurty.cz/clubs/sk-slavia-praha-padel/",
+    "title": "SK Slavia Praha Padel – Praha 10 – Vršovice: ceník a rezervace | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/sk-slavia-praha-padel/",
+      "en": "https://hledejkurty.cz/en/clubs/sk-slavia-praha-padel/",
+      "uk": "https://hledejkurty.cz/ua/clubs/sk-slavia-praha-padel/",
+      "x-default": "https://hledejkurty.cz/clubs/sk-slavia-praha-padel/"
+    },
+    "bytes": 12407
+  },
+  {
+    "url": "https://hledejkurty.cz/clubs/head-tenis-centrum-vestec/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/clubs/head-tenis-centrum-vestec/",
+    "canonical": "https://hledejkurty.cz/clubs/head-tenis-centrum-vestec/",
+    "title": "Head Tenis Centrum, Vestec – Vestec u Prahy: ceník a rezervace | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/head-tenis-centrum-vestec/",
+      "en": "https://hledejkurty.cz/en/clubs/head-tenis-centrum-vestec/",
+      "uk": "https://hledejkurty.cz/ua/clubs/head-tenis-centrum-vestec/",
+      "x-default": "https://hledejkurty.cz/clubs/head-tenis-centrum-vestec/"
+    },
+    "bytes": 12710
+  },
+  {
+    "url": "https://hledejkurty.cz/clubs/plechovka-dubec/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/clubs/plechovka-dubec/",
+    "canonical": "https://hledejkurty.cz/clubs/plechovka-dubec/",
+    "title": "Plechovka Dubeč – Praha – Dubeč: ceník a rezervace | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/plechovka-dubec/",
+      "en": "https://hledejkurty.cz/en/clubs/plechovka-dubec/",
+      "uk": "https://hledejkurty.cz/ua/clubs/plechovka-dubec/",
+      "x-default": "https://hledejkurty.cz/clubs/plechovka-dubec/"
+    },
+    "bytes": 12230
+  },
+  {
+    "url": "https://hledejkurty.cz/clubs/padel-radotin/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/clubs/padel-radotin/",
+    "canonical": "https://hledejkurty.cz/clubs/padel-radotin/",
+    "title": "Padel Radotín – Praha 16 – Radotín: ceník a rezervace | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/padel-radotin/",
+      "en": "https://hledejkurty.cz/en/clubs/padel-radotin/",
+      "uk": "https://hledejkurty.cz/ua/clubs/padel-radotin/",
+      "x-default": "https://hledejkurty.cz/clubs/padel-radotin/"
+    },
+    "bytes": 12094
+  },
+  {
+    "url": "https://hledejkurty.cz/clubs/padel-hall-radotin/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/clubs/padel-hall-radotin/",
+    "canonical": "https://hledejkurty.cz/clubs/padel-hall-radotin/",
+    "title": "Padel Hall Olympia Radotín – Praha 16 – Radotín: ceník a rezervace | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/padel-hall-radotin/",
+      "en": "https://hledejkurty.cz/en/clubs/padel-hall-radotin/",
+      "uk": "https://hledejkurty.cz/ua/clubs/padel-hall-radotin/",
+      "x-default": "https://hledejkurty.cz/clubs/padel-hall-radotin/"
+    },
+    "bytes": 11815
+  },
+  {
+    "url": "https://hledejkurty.cz/clubs/padel-cakovice/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/clubs/padel-cakovice/",
+    "canonical": "https://hledejkurty.cz/clubs/padel-cakovice/",
+    "title": "Padel Čakovice – Praha – Čakovice: ceník a rezervace | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/padel-cakovice/",
+      "en": "https://hledejkurty.cz/en/clubs/padel-cakovice/",
+      "uk": "https://hledejkurty.cz/ua/clubs/padel-cakovice/",
+      "x-default": "https://hledejkurty.cz/clubs/padel-cakovice/"
+    },
+    "bytes": 11333
+  },
+  {
+    "url": "https://hledejkurty.cz/clubs/the-court/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/clubs/the-court/",
+    "canonical": "https://hledejkurty.cz/clubs/the-court/",
+    "title": "The Court – Jinočany: ceník a rezervace | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/the-court/",
+      "en": "https://hledejkurty.cz/en/clubs/the-court/",
+      "uk": "https://hledejkurty.cz/ua/clubs/the-court/",
+      "x-default": "https://hledejkurty.cz/clubs/the-court/"
+    },
+    "bytes": 12285
+  },
+  {
+    "url": "https://hledejkurty.cz/clubs/ltc-modrany-2005/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/clubs/ltc-modrany-2005/",
+    "canonical": "https://hledejkurty.cz/clubs/ltc-modrany-2005/",
+    "title": "LTC Modřany – Praha 4 – Modřany: ceník a rezervace | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/ltc-modrany-2005/",
+      "en": "https://hledejkurty.cz/en/clubs/ltc-modrany-2005/",
+      "uk": "https://hledejkurty.cz/ua/clubs/ltc-modrany-2005/",
+      "x-default": "https://hledejkurty.cz/clubs/ltc-modrany-2005/"
+    },
+    "bytes": 12381
+  },
+  {
+    "url": "https://hledejkurty.cz/clubs/padel-neride/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/clubs/padel-neride/",
+    "canonical": "https://hledejkurty.cz/clubs/padel-neride/",
+    "title": "Padel Neride – Praha 15 – Hostivař: ceník a rezervace | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/padel-neride/",
+      "en": "https://hledejkurty.cz/en/clubs/padel-neride/",
+      "uk": "https://hledejkurty.cz/ua/clubs/padel-neride/",
+      "x-default": "https://hledejkurty.cz/clubs/padel-neride/"
+    },
+    "bytes": 12444
+  },
+  {
+    "url": "https://hledejkurty.cz/clubs/padel-dzus/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/clubs/padel-dzus/",
+    "canonical": "https://hledejkurty.cz/clubs/padel-dzus/",
+    "title": "Padel Džus – Praha 15 – Hostivař: ceník a rezervace | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/padel-dzus/",
+      "en": "https://hledejkurty.cz/en/clubs/padel-dzus/",
+      "uk": "https://hledejkurty.cz/ua/clubs/padel-dzus/",
+      "x-default": "https://hledejkurty.cz/clubs/padel-dzus/"
+    },
+    "bytes": 12160
+  },
+  {
+    "url": "https://hledejkurty.cz/clubs/padel-powers-smichov/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/clubs/padel-powers-smichov/",
+    "canonical": "https://hledejkurty.cz/clubs/padel-powers-smichov/",
+    "title": "Padel Powers Smíchov – Praha 5 – Smíchov: ceník a rezervace | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/padel-powers-smichov/",
+      "en": "https://hledejkurty.cz/en/clubs/padel-powers-smichov/",
+      "uk": "https://hledejkurty.cz/ua/clubs/padel-powers-smichov/",
+      "x-default": "https://hledejkurty.cz/clubs/padel-powers-smichov/"
+    },
+    "bytes": 12567
+  },
+  {
+    "url": "https://hledejkurty.cz/clubs/one-padel/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/clubs/one-padel/",
+    "canonical": "https://hledejkurty.cz/clubs/one-padel/",
+    "title": "One Padel – Praha – Zličín: ceník a rezervace | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/one-padel/",
+      "en": "https://hledejkurty.cz/en/clubs/one-padel/",
+      "uk": "https://hledejkurty.cz/ua/clubs/one-padel/",
+      "x-default": "https://hledejkurty.cz/clubs/one-padel/"
+    },
+    "bytes": 12689
+  },
+  {
+    "url": "https://hledejkurty.cz/clubs/cisarska-louka-padel/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/clubs/cisarska-louka-padel/",
+    "canonical": "https://hledejkurty.cz/clubs/cisarska-louka-padel/",
+    "title": "Císařská louka Padel – Praha 5 – Smíchov: ceník a rezervace | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/cisarska-louka-padel/",
+      "en": "https://hledejkurty.cz/en/clubs/cisarska-louka-padel/",
+      "uk": "https://hledejkurty.cz/ua/clubs/cisarska-louka-padel/",
+      "x-default": "https://hledejkurty.cz/clubs/cisarska-louka-padel/"
+    },
+    "bytes": 12488
+  },
+  {
+    "url": "https://hledejkurty.cz/clubs/sk-satalice/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/clubs/sk-satalice/",
+    "canonical": "https://hledejkurty.cz/clubs/sk-satalice/",
+    "title": "SK Satalice – Praha – Satalice: ceník a rezervace | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/sk-satalice/",
+      "en": "https://hledejkurty.cz/en/clubs/sk-satalice/",
+      "uk": "https://hledejkurty.cz/ua/clubs/sk-satalice/",
+      "x-default": "https://hledejkurty.cz/clubs/sk-satalice/"
+    },
+    "bytes": 11869
+  },
+  {
+    "url": "https://hledejkurty.cz/en/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/",
+    "canonical": "https://hledejkurty.cz/en/",
+    "title": "Free padel courts in Prague in one place | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/",
+      "en": "https://hledejkurty.cz/en/",
+      "uk": "https://hledejkurty.cz/ua/",
+      "x-default": "https://hledejkurty.cz/"
+    },
+    "bytes": 11455
+  },
+  {
+    "url": "https://hledejkurty.cz/en/clubs/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/clubs/",
+    "canonical": "https://hledejkurty.cz/en/clubs/",
+    "title": "Padel clubs in Prague | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/",
+      "en": "https://hledejkurty.cz/en/clubs/",
+      "uk": "https://hledejkurty.cz/ua/clubs/",
+      "x-default": "https://hledejkurty.cz/clubs/"
+    },
+    "bytes": 10311
+  },
+  {
+    "url": "https://hledejkurty.cz/en/blog/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/blog/",
+    "canonical": "https://hledejkurty.cz/en/blog/",
+    "title": "Padel blog: guides and clubs in Prague | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/",
+      "en": "https://hledejkurty.cz/en/blog/",
+      "uk": "https://hledejkurty.cz/ua/blog/",
+      "x-default": "https://hledejkurty.cz/blog/"
+    },
+    "bytes": 21779
+  },
+  {
+    "url": "https://hledejkurty.cz/en/blog/the-court-opening/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/blog/the-court-opening/",
+    "canonical": "https://hledejkurty.cz/en/blog/the-court-opening/",
+    "title": "The Court in Jinočany: courts, prices and your first visit | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/the-court-opening/",
+      "en": "https://hledejkurty.cz/en/blog/the-court-opening/",
+      "uk": "https://hledejkurty.cz/ua/blog/the-court-opening/",
+      "x-default": "https://hledejkurty.cz/blog/the-court-opening/"
+    },
+    "bytes": 17984
+  },
+  {
+    "url": "https://hledejkurty.cz/en/about/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/about/",
+    "canonical": "https://hledejkurty.cz/en/about/",
+    "title": "About the Prague padel court finder | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/about/",
+      "en": "https://hledejkurty.cz/en/about/",
+      "uk": "https://hledejkurty.cz/ua/about/",
+      "x-default": "https://hledejkurty.cz/about/"
+    },
+    "bytes": 8061
+  },
+  {
+    "url": "https://hledejkurty.cz/en/privacy-policy/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/privacy-policy/",
+    "canonical": "https://hledejkurty.cz/en/privacy-policy/",
+    "title": "Privacy Policy | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/privacy-policy/",
+      "en": "https://hledejkurty.cz/en/privacy-policy/",
+      "uk": "https://hledejkurty.cz/ua/privacy-policy/",
+      "x-default": "https://hledejkurty.cz/privacy-policy/"
+    },
+    "bytes": 7479
+  },
+  {
+    "url": "https://hledejkurty.cz/en/terms-of-use/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/terms-of-use/",
+    "canonical": "https://hledejkurty.cz/en/terms-of-use/",
+    "title": "Terms of Use | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/terms-of-use/",
+      "en": "https://hledejkurty.cz/en/terms-of-use/",
+      "uk": "https://hledejkurty.cz/ua/terms-of-use/",
+      "x-default": "https://hledejkurty.cz/terms-of-use/"
+    },
+    "bytes": 7396
+  },
+  {
+    "url": "https://hledejkurty.cz/en/cookie-policy/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/cookie-policy/",
+    "canonical": "https://hledejkurty.cz/en/cookie-policy/",
+    "title": "Cookie Policy | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/cookie-policy/",
+      "en": "https://hledejkurty.cz/en/cookie-policy/",
+      "uk": "https://hledejkurty.cz/ua/cookie-policy/",
+      "x-default": "https://hledejkurty.cz/cookie-policy/"
+    },
+    "bytes": 7398
+  },
+  {
+    "url": "https://hledejkurty.cz/en/clubs/tk-sparta-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/clubs/tk-sparta-praha/",
+    "canonical": "https://hledejkurty.cz/en/clubs/tk-sparta-praha/",
+    "title": "TK Sparta Prague – Praha 7 – Bubeneč: padel | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/tk-sparta-praha/",
+      "en": "https://hledejkurty.cz/en/clubs/tk-sparta-praha/",
+      "uk": "https://hledejkurty.cz/ua/clubs/tk-sparta-praha/",
+      "x-default": "https://hledejkurty.cz/clubs/tk-sparta-praha/"
+    },
+    "bytes": 10218
+  },
+  {
+    "url": "https://hledejkurty.cz/en/clubs/padel-prosek/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/clubs/padel-prosek/",
+    "canonical": "https://hledejkurty.cz/en/clubs/padel-prosek/",
+    "title": "Padel Prosek – Praha 9 – Střížkov: padel | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/padel-prosek/",
+      "en": "https://hledejkurty.cz/en/clubs/padel-prosek/",
+      "uk": "https://hledejkurty.cz/ua/clubs/padel-prosek/",
+      "x-default": "https://hledejkurty.cz/clubs/padel-prosek/"
+    },
+    "bytes": 9903
+  },
+  {
+    "url": "https://hledejkurty.cz/en/clubs/padel-club-spoje/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/clubs/padel-club-spoje/",
+    "canonical": "https://hledejkurty.cz/en/clubs/padel-club-spoje/",
+    "title": "Padel Club Spoje – Praha – Balkán: padel | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/padel-club-spoje/",
+      "en": "https://hledejkurty.cz/en/clubs/padel-club-spoje/",
+      "uk": "https://hledejkurty.cz/ua/clubs/padel-club-spoje/",
+      "x-default": "https://hledejkurty.cz/clubs/padel-club-spoje/"
+    },
+    "bytes": 9991
+  },
+  {
+    "url": "https://hledejkurty.cz/en/clubs/tenis-a-padel-klub-pisecna/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/clubs/tenis-a-padel-klub-pisecna/",
+    "canonical": "https://hledejkurty.cz/en/clubs/tenis-a-padel-klub-pisecna/",
+    "title": "Tenis &amp; Padel klub Písečná – Praha 8 – Troja: padel | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/tenis-a-padel-klub-pisecna/",
+      "en": "https://hledejkurty.cz/en/clubs/tenis-a-padel-klub-pisecna/",
+      "uk": "https://hledejkurty.cz/ua/clubs/tenis-a-padel-klub-pisecna/",
+      "x-default": "https://hledejkurty.cz/clubs/tenis-a-padel-klub-pisecna/"
+    },
+    "bytes": 10546
+  },
+  {
+    "url": "https://hledejkurty.cz/en/clubs/sk-slavia-praha-padel/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/clubs/sk-slavia-praha-padel/",
+    "canonical": "https://hledejkurty.cz/en/clubs/sk-slavia-praha-padel/",
+    "title": "SK Slavia Praha Padel – Praha 10 – Vršovice: padel | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/sk-slavia-praha-padel/",
+      "en": "https://hledejkurty.cz/en/clubs/sk-slavia-praha-padel/",
+      "uk": "https://hledejkurty.cz/ua/clubs/sk-slavia-praha-padel/",
+      "x-default": "https://hledejkurty.cz/clubs/sk-slavia-praha-padel/"
+    },
+    "bytes": 10225
+  },
+  {
+    "url": "https://hledejkurty.cz/en/clubs/head-tenis-centrum-vestec/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/clubs/head-tenis-centrum-vestec/",
+    "canonical": "https://hledejkurty.cz/en/clubs/head-tenis-centrum-vestec/",
+    "title": "Head Tenis Centrum, Vestec – Vestec u Prahy: padel | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/head-tenis-centrum-vestec/",
+      "en": "https://hledejkurty.cz/en/clubs/head-tenis-centrum-vestec/",
+      "uk": "https://hledejkurty.cz/ua/clubs/head-tenis-centrum-vestec/",
+      "x-default": "https://hledejkurty.cz/clubs/head-tenis-centrum-vestec/"
+    },
+    "bytes": 10427
+  },
+  {
+    "url": "https://hledejkurty.cz/en/clubs/plechovka-dubec/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/clubs/plechovka-dubec/",
+    "canonical": "https://hledejkurty.cz/en/clubs/plechovka-dubec/",
+    "title": "Plechovka Dubeč – Praha – Dubeč: padel | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/plechovka-dubec/",
+      "en": "https://hledejkurty.cz/en/clubs/plechovka-dubec/",
+      "uk": "https://hledejkurty.cz/ua/clubs/plechovka-dubec/",
+      "x-default": "https://hledejkurty.cz/clubs/plechovka-dubec/"
+    },
+    "bytes": 10094
+  },
+  {
+    "url": "https://hledejkurty.cz/en/clubs/padel-radotin/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/clubs/padel-radotin/",
+    "canonical": "https://hledejkurty.cz/en/clubs/padel-radotin/",
+    "title": "Padel Radotín – Praha 16 – Radotín: padel | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/padel-radotin/",
+      "en": "https://hledejkurty.cz/en/clubs/padel-radotin/",
+      "uk": "https://hledejkurty.cz/ua/clubs/padel-radotin/",
+      "x-default": "https://hledejkurty.cz/clubs/padel-radotin/"
+    },
+    "bytes": 9988
+  },
+  {
+    "url": "https://hledejkurty.cz/en/clubs/padel-hall-radotin/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/clubs/padel-hall-radotin/",
+    "canonical": "https://hledejkurty.cz/en/clubs/padel-hall-radotin/",
+    "title": "Padel Hall Olympia Radotín – Praha 16 – Radotín: padel | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/padel-hall-radotin/",
+      "en": "https://hledejkurty.cz/en/clubs/padel-hall-radotin/",
+      "uk": "https://hledejkurty.cz/ua/clubs/padel-hall-radotin/",
+      "x-default": "https://hledejkurty.cz/clubs/padel-hall-radotin/"
+    },
+    "bytes": 10236
+  },
+  {
+    "url": "https://hledejkurty.cz/en/clubs/padel-cakovice/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/clubs/padel-cakovice/",
+    "canonical": "https://hledejkurty.cz/en/clubs/padel-cakovice/",
+    "title": "Padel Čakovice – Praha – Čakovice: padel | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/padel-cakovice/",
+      "en": "https://hledejkurty.cz/en/clubs/padel-cakovice/",
+      "uk": "https://hledejkurty.cz/ua/clubs/padel-cakovice/",
+      "x-default": "https://hledejkurty.cz/clubs/padel-cakovice/"
+    },
+    "bytes": 9926
+  },
+  {
+    "url": "https://hledejkurty.cz/en/clubs/the-court/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/clubs/the-court/",
+    "canonical": "https://hledejkurty.cz/en/clubs/the-court/",
+    "title": "The Court – Jinočany: padel | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/the-court/",
+      "en": "https://hledejkurty.cz/en/clubs/the-court/",
+      "uk": "https://hledejkurty.cz/ua/clubs/the-court/",
+      "x-default": "https://hledejkurty.cz/clubs/the-court/"
+    },
+    "bytes": 10100
+  },
+  {
+    "url": "https://hledejkurty.cz/en/clubs/ltc-modrany-2005/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/clubs/ltc-modrany-2005/",
+    "canonical": "https://hledejkurty.cz/en/clubs/ltc-modrany-2005/",
+    "title": "LTC Modřany – Praha 4 – Modřany: padel | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/ltc-modrany-2005/",
+      "en": "https://hledejkurty.cz/en/clubs/ltc-modrany-2005/",
+      "uk": "https://hledejkurty.cz/ua/clubs/ltc-modrany-2005/",
+      "x-default": "https://hledejkurty.cz/clubs/ltc-modrany-2005/"
+    },
+    "bytes": 10108
+  },
+  {
+    "url": "https://hledejkurty.cz/en/clubs/padel-neride/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/clubs/padel-neride/",
+    "canonical": "https://hledejkurty.cz/en/clubs/padel-neride/",
+    "title": "Padel Neride – Praha 15 – Hostivař: padel | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/padel-neride/",
+      "en": "https://hledejkurty.cz/en/clubs/padel-neride/",
+      "uk": "https://hledejkurty.cz/ua/clubs/padel-neride/",
+      "x-default": "https://hledejkurty.cz/clubs/padel-neride/"
+    },
+    "bytes": 9979
+  },
+  {
+    "url": "https://hledejkurty.cz/en/clubs/padel-dzus/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/clubs/padel-dzus/",
+    "canonical": "https://hledejkurty.cz/en/clubs/padel-dzus/",
+    "title": "Padel Džus – Praha 15 – Hostivař: padel | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/padel-dzus/",
+      "en": "https://hledejkurty.cz/en/clubs/padel-dzus/",
+      "uk": "https://hledejkurty.cz/ua/clubs/padel-dzus/",
+      "x-default": "https://hledejkurty.cz/clubs/padel-dzus/"
+    },
+    "bytes": 9981
+  },
+  {
+    "url": "https://hledejkurty.cz/en/clubs/padel-powers-smichov/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/clubs/padel-powers-smichov/",
+    "canonical": "https://hledejkurty.cz/en/clubs/padel-powers-smichov/",
+    "title": "Padel Powers Smíchov – Praha 5 – Smíchov: padel | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/padel-powers-smichov/",
+      "en": "https://hledejkurty.cz/en/clubs/padel-powers-smichov/",
+      "uk": "https://hledejkurty.cz/ua/clubs/padel-powers-smichov/",
+      "x-default": "https://hledejkurty.cz/clubs/padel-powers-smichov/"
+    },
+    "bytes": 10271
+  },
+  {
+    "url": "https://hledejkurty.cz/en/clubs/one-padel/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/clubs/one-padel/",
+    "canonical": "https://hledejkurty.cz/en/clubs/one-padel/",
+    "title": "One Padel – Praha – Zličín: padel | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/one-padel/",
+      "en": "https://hledejkurty.cz/en/clubs/one-padel/",
+      "uk": "https://hledejkurty.cz/ua/clubs/one-padel/",
+      "x-default": "https://hledejkurty.cz/clubs/one-padel/"
+    },
+    "bytes": 9801
+  },
+  {
+    "url": "https://hledejkurty.cz/en/clubs/cisarska-louka-padel/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/clubs/cisarska-louka-padel/",
+    "canonical": "https://hledejkurty.cz/en/clubs/cisarska-louka-padel/",
+    "title": "Císařská louka Padel – Praha 5 – Smíchov: padel | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/cisarska-louka-padel/",
+      "en": "https://hledejkurty.cz/en/clubs/cisarska-louka-padel/",
+      "uk": "https://hledejkurty.cz/ua/clubs/cisarska-louka-padel/",
+      "x-default": "https://hledejkurty.cz/clubs/cisarska-louka-padel/"
+    },
+    "bytes": 10352
+  },
+  {
+    "url": "https://hledejkurty.cz/en/clubs/sk-satalice/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/clubs/sk-satalice/",
+    "canonical": "https://hledejkurty.cz/en/clubs/sk-satalice/",
+    "title": "SK Satalice – Praha – Satalice: padel | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/sk-satalice/",
+      "en": "https://hledejkurty.cz/en/clubs/sk-satalice/",
+      "uk": "https://hledejkurty.cz/ua/clubs/sk-satalice/",
+      "x-default": "https://hledejkurty.cz/clubs/sk-satalice/"
+    },
+    "bytes": 9875
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/",
+    "canonical": "https://hledejkurty.cz/ua/",
+    "title": "Вільні падел-корти Праги в одному місці | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/",
+      "en": "https://hledejkurty.cz/en/",
+      "uk": "https://hledejkurty.cz/ua/",
+      "x-default": "https://hledejkurty.cz/"
+    },
+    "bytes": 13550
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/clubs/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/clubs/",
+    "canonical": "https://hledejkurty.cz/ua/clubs/",
+    "title": "Падел-клуби у Празі | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/",
+      "en": "https://hledejkurty.cz/en/clubs/",
+      "uk": "https://hledejkurty.cz/ua/clubs/",
+      "x-default": "https://hledejkurty.cz/clubs/"
+    },
+    "bytes": 11518
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/blog/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/blog/",
+    "canonical": "https://hledejkurty.cz/ua/blog/",
+    "title": "Статті про падел: поради та клуби Праги | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/",
+      "en": "https://hledejkurty.cz/en/blog/",
+      "uk": "https://hledejkurty.cz/ua/blog/",
+      "x-default": "https://hledejkurty.cz/blog/"
+    },
+    "bytes": 25315
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/blog/the-court-opening/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/blog/the-court-opening/",
+    "canonical": "https://hledejkurty.cz/ua/blog/the-court-opening/",
+    "title": "The Court у Їночанах: корти, ціни та перший візит | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/the-court-opening/",
+      "en": "https://hledejkurty.cz/en/blog/the-court-opening/",
+      "uk": "https://hledejkurty.cz/ua/blog/the-court-opening/",
+      "x-default": "https://hledejkurty.cz/blog/the-court-opening/"
+    },
+    "bytes": 21860
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/about/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/about/",
+    "canonical": "https://hledejkurty.cz/ua/about/",
+    "title": "Про пошук падел-кортів | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/about/",
+      "en": "https://hledejkurty.cz/en/about/",
+      "uk": "https://hledejkurty.cz/ua/about/",
+      "x-default": "https://hledejkurty.cz/about/"
+    },
+    "bytes": 9142
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/privacy-policy/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/privacy-policy/",
+    "canonical": "https://hledejkurty.cz/ua/privacy-policy/",
+    "title": "Політика конфіденційності | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/privacy-policy/",
+      "en": "https://hledejkurty.cz/en/privacy-policy/",
+      "uk": "https://hledejkurty.cz/ua/privacy-policy/",
+      "x-default": "https://hledejkurty.cz/privacy-policy/"
+    },
+    "bytes": 8625
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/terms-of-use/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/terms-of-use/",
+    "canonical": "https://hledejkurty.cz/ua/terms-of-use/",
+    "title": "Умови використання | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/terms-of-use/",
+      "en": "https://hledejkurty.cz/en/terms-of-use/",
+      "uk": "https://hledejkurty.cz/ua/terms-of-use/",
+      "x-default": "https://hledejkurty.cz/terms-of-use/"
+    },
+    "bytes": 8444
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/cookie-policy/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/cookie-policy/",
+    "canonical": "https://hledejkurty.cz/ua/cookie-policy/",
+    "title": "Політика cookies | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/cookie-policy/",
+      "en": "https://hledejkurty.cz/en/cookie-policy/",
+      "uk": "https://hledejkurty.cz/ua/cookie-policy/",
+      "x-default": "https://hledejkurty.cz/cookie-policy/"
+    },
+    "bytes": 8402
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/clubs/tk-sparta-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/clubs/tk-sparta-praha/",
+    "canonical": "https://hledejkurty.cz/ua/clubs/tk-sparta-praha/",
+    "title": "TK Sparta Prague – Praha 7 – Bubeneč: падел | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/tk-sparta-praha/",
+      "en": "https://hledejkurty.cz/en/clubs/tk-sparta-praha/",
+      "uk": "https://hledejkurty.cz/ua/clubs/tk-sparta-praha/",
+      "x-default": "https://hledejkurty.cz/clubs/tk-sparta-praha/"
+    },
+    "bytes": 11491
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/clubs/padel-prosek/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/clubs/padel-prosek/",
+    "canonical": "https://hledejkurty.cz/ua/clubs/padel-prosek/",
+    "title": "Padel Prosek – Praha 9 – Střížkov: падел | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/padel-prosek/",
+      "en": "https://hledejkurty.cz/en/clubs/padel-prosek/",
+      "uk": "https://hledejkurty.cz/ua/clubs/padel-prosek/",
+      "x-default": "https://hledejkurty.cz/clubs/padel-prosek/"
+    },
+    "bytes": 11199
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/clubs/padel-club-spoje/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/clubs/padel-club-spoje/",
+    "canonical": "https://hledejkurty.cz/ua/clubs/padel-club-spoje/",
+    "title": "Padel Club Spoje – Praha – Balkán: падел | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/padel-club-spoje/",
+      "en": "https://hledejkurty.cz/en/clubs/padel-club-spoje/",
+      "uk": "https://hledejkurty.cz/ua/clubs/padel-club-spoje/",
+      "x-default": "https://hledejkurty.cz/clubs/padel-club-spoje/"
+    },
+    "bytes": 11296
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/clubs/tenis-a-padel-klub-pisecna/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/clubs/tenis-a-padel-klub-pisecna/",
+    "canonical": "https://hledejkurty.cz/ua/clubs/tenis-a-padel-klub-pisecna/",
+    "title": "Tenis &amp; Padel klub Písečná – Praha 8 – Troja: падел | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/tenis-a-padel-klub-pisecna/",
+      "en": "https://hledejkurty.cz/en/clubs/tenis-a-padel-klub-pisecna/",
+      "uk": "https://hledejkurty.cz/ua/clubs/tenis-a-padel-klub-pisecna/",
+      "x-default": "https://hledejkurty.cz/clubs/tenis-a-padel-klub-pisecna/"
+    },
+    "bytes": 11833
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/clubs/sk-slavia-praha-padel/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/clubs/sk-slavia-praha-padel/",
+    "canonical": "https://hledejkurty.cz/ua/clubs/sk-slavia-praha-padel/",
+    "title": "SK Slavia Praha Padel – Praha 10 – Vršovice: падел | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/sk-slavia-praha-padel/",
+      "en": "https://hledejkurty.cz/en/clubs/sk-slavia-praha-padel/",
+      "uk": "https://hledejkurty.cz/ua/clubs/sk-slavia-praha-padel/",
+      "x-default": "https://hledejkurty.cz/clubs/sk-slavia-praha-padel/"
+    },
+    "bytes": 11508
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/clubs/head-tenis-centrum-vestec/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/clubs/head-tenis-centrum-vestec/",
+    "canonical": "https://hledejkurty.cz/ua/clubs/head-tenis-centrum-vestec/",
+    "title": "Head Tenis Centrum, Vestec – Vestec u Prahy: падел | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/head-tenis-centrum-vestec/",
+      "en": "https://hledejkurty.cz/en/clubs/head-tenis-centrum-vestec/",
+      "uk": "https://hledejkurty.cz/ua/clubs/head-tenis-centrum-vestec/",
+      "x-default": "https://hledejkurty.cz/clubs/head-tenis-centrum-vestec/"
+    },
+    "bytes": 11695
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/clubs/plechovka-dubec/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/clubs/plechovka-dubec/",
+    "canonical": "https://hledejkurty.cz/ua/clubs/plechovka-dubec/",
+    "title": "Plechovka Dubeč – Praha – Dubeč: падел | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/plechovka-dubec/",
+      "en": "https://hledejkurty.cz/en/clubs/plechovka-dubec/",
+      "uk": "https://hledejkurty.cz/ua/clubs/plechovka-dubec/",
+      "x-default": "https://hledejkurty.cz/clubs/plechovka-dubec/"
+    },
+    "bytes": 11361
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/clubs/padel-radotin/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/clubs/padel-radotin/",
+    "canonical": "https://hledejkurty.cz/ua/clubs/padel-radotin/",
+    "title": "Padel Radotín – Praha 16 – Radotín: падел | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/padel-radotin/",
+      "en": "https://hledejkurty.cz/en/clubs/padel-radotin/",
+      "uk": "https://hledejkurty.cz/ua/clubs/padel-radotin/",
+      "x-default": "https://hledejkurty.cz/clubs/padel-radotin/"
+    },
+    "bytes": 11261
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/clubs/padel-hall-radotin/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/clubs/padel-hall-radotin/",
+    "canonical": "https://hledejkurty.cz/ua/clubs/padel-hall-radotin/",
+    "title": "Padel Hall Olympia Radotín – Praha 16 – Radotín: падел | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/padel-hall-radotin/",
+      "en": "https://hledejkurty.cz/en/clubs/padel-hall-radotin/",
+      "uk": "https://hledejkurty.cz/ua/clubs/padel-hall-radotin/",
+      "x-default": "https://hledejkurty.cz/clubs/padel-hall-radotin/"
+    },
+    "bytes": 11542
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/clubs/padel-cakovice/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/clubs/padel-cakovice/",
+    "canonical": "https://hledejkurty.cz/ua/clubs/padel-cakovice/",
+    "title": "Padel Čakovice – Praha – Čakovice: падел | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/padel-cakovice/",
+      "en": "https://hledejkurty.cz/en/clubs/padel-cakovice/",
+      "uk": "https://hledejkurty.cz/ua/clubs/padel-cakovice/",
+      "x-default": "https://hledejkurty.cz/clubs/padel-cakovice/"
+    },
+    "bytes": 11227
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/clubs/the-court/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/clubs/the-court/",
+    "canonical": "https://hledejkurty.cz/ua/clubs/the-court/",
+    "title": "The Court – Jinočany: падел | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/the-court/",
+      "en": "https://hledejkurty.cz/en/clubs/the-court/",
+      "uk": "https://hledejkurty.cz/ua/clubs/the-court/",
+      "x-default": "https://hledejkurty.cz/clubs/the-court/"
+    },
+    "bytes": 11397
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/clubs/ltc-modrany-2005/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/clubs/ltc-modrany-2005/",
+    "canonical": "https://hledejkurty.cz/ua/clubs/ltc-modrany-2005/",
+    "title": "LTC Modřany – Praha 4 – Modřany: падел | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/ltc-modrany-2005/",
+      "en": "https://hledejkurty.cz/en/clubs/ltc-modrany-2005/",
+      "uk": "https://hledejkurty.cz/ua/clubs/ltc-modrany-2005/",
+      "x-default": "https://hledejkurty.cz/clubs/ltc-modrany-2005/"
+    },
+    "bytes": 11381
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/clubs/padel-neride/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/clubs/padel-neride/",
+    "canonical": "https://hledejkurty.cz/ua/clubs/padel-neride/",
+    "title": "Padel Neride – Praha 15 – Hostivař: падел | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/padel-neride/",
+      "en": "https://hledejkurty.cz/en/clubs/padel-neride/",
+      "uk": "https://hledejkurty.cz/ua/clubs/padel-neride/",
+      "x-default": "https://hledejkurty.cz/clubs/padel-neride/"
+    },
+    "bytes": 11247
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/clubs/padel-dzus/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/clubs/padel-dzus/",
+    "canonical": "https://hledejkurty.cz/ua/clubs/padel-dzus/",
+    "title": "Padel Džus – Praha 15 – Hostivař: падел | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/padel-dzus/",
+      "en": "https://hledejkurty.cz/en/clubs/padel-dzus/",
+      "uk": "https://hledejkurty.cz/ua/clubs/padel-dzus/",
+      "x-default": "https://hledejkurty.cz/clubs/padel-dzus/"
+    },
+    "bytes": 11249
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/clubs/padel-powers-smichov/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/clubs/padel-powers-smichov/",
+    "canonical": "https://hledejkurty.cz/ua/clubs/padel-powers-smichov/",
+    "title": "Padel Powers Smíchov – Praha 5 – Smíchov: падел | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/padel-powers-smichov/",
+      "en": "https://hledejkurty.cz/en/clubs/padel-powers-smichov/",
+      "uk": "https://hledejkurty.cz/ua/clubs/padel-powers-smichov/",
+      "x-default": "https://hledejkurty.cz/clubs/padel-powers-smichov/"
+    },
+    "bytes": 11539
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/clubs/one-padel/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/clubs/one-padel/",
+    "canonical": "https://hledejkurty.cz/ua/clubs/one-padel/",
+    "title": "One Padel – Praha – Zličín: падел | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/one-padel/",
+      "en": "https://hledejkurty.cz/en/clubs/one-padel/",
+      "uk": "https://hledejkurty.cz/ua/clubs/one-padel/",
+      "x-default": "https://hledejkurty.cz/clubs/one-padel/"
+    },
+    "bytes": 11092
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/clubs/cisarska-louka-padel/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/clubs/cisarska-louka-padel/",
+    "canonical": "https://hledejkurty.cz/ua/clubs/cisarska-louka-padel/",
+    "title": "Císařská louka Padel – Praha 5 – Smíchov: падел | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/cisarska-louka-padel/",
+      "en": "https://hledejkurty.cz/en/clubs/cisarska-louka-padel/",
+      "uk": "https://hledejkurty.cz/ua/clubs/cisarska-louka-padel/",
+      "x-default": "https://hledejkurty.cz/clubs/cisarska-louka-padel/"
+    },
+    "bytes": 11620
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/clubs/sk-satalice/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/clubs/sk-satalice/",
+    "canonical": "https://hledejkurty.cz/ua/clubs/sk-satalice/",
+    "title": "SK Satalice – Praha – Satalice: падел | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/clubs/sk-satalice/",
+      "en": "https://hledejkurty.cz/en/clubs/sk-satalice/",
+      "uk": "https://hledejkurty.cz/ua/clubs/sk-satalice/",
+      "x-default": "https://hledejkurty.cz/clubs/sk-satalice/"
+    },
+    "bytes": 11148
+  },
+  {
+    "url": "https://hledejkurty.cz/padel-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/padel-praha/",
+    "canonical": "https://hledejkurty.cz/padel-praha/",
+    "title": "Padel v Praze: kluby, ceny a rezervace | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/padel-praha/",
+      "en": "https://hledejkurty.cz/en/padel-praha/",
+      "uk": "https://hledejkurty.cz/ua/padel-praha/",
+      "x-default": "https://hledejkurty.cz/padel-praha/"
+    },
+    "bytes": 25664
+  },
+  {
+    "url": "https://hledejkurty.cz/padel-praha-ceny/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/padel-praha-ceny/",
+    "canonical": "https://hledejkurty.cz/padel-praha-ceny/",
+    "title": "Ceník padelu v Praze 2026: srovnání klubů | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/padel-praha-ceny/",
+      "en": "https://hledejkurty.cz/en/padel-praha-ceny/",
+      "uk": "https://hledejkurty.cz/ua/padel-praha-ceny/",
+      "x-default": "https://hledejkurty.cz/padel-praha-ceny/"
+    },
+    "bytes": 21976
+  },
+  {
+    "url": "https://hledejkurty.cz/padel-praha-multisport/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/padel-praha-multisport/",
+    "canonical": "https://hledejkurty.cz/padel-praha-multisport/",
+    "title": "Padel s Multisport v Praze: kluby a podmínky | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/padel-praha-multisport/",
+      "en": "https://hledejkurty.cz/en/padel-praha-multisport/",
+      "uk": "https://hledejkurty.cz/ua/padel-praha-multisport/",
+      "x-default": "https://hledejkurty.cz/padel-praha-multisport/"
+    },
+    "bytes": 17193
+  },
+  {
+    "url": "https://hledejkurty.cz/kryty-padel-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/kryty-padel-praha/",
+    "canonical": "https://hledejkurty.cz/kryty-padel-praha/",
+    "title": "Krytý padel v Praze: haly pro zimní hraní | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/kryty-padel-praha/",
+      "en": "https://hledejkurty.cz/en/kryty-padel-praha/",
+      "uk": "https://hledejkurty.cz/ua/kryty-padel-praha/",
+      "x-default": "https://hledejkurty.cz/kryty-padel-praha/"
+    },
+    "bytes": 15039
+  },
+  {
+    "url": "https://hledejkurty.cz/padel-praha-podle-lokalit/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/padel-praha-podle-lokalit/",
+    "canonical": "https://hledejkurty.cz/padel-praha-podle-lokalit/",
+    "title": "Kde hrát padel v Praze podle lokality | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/padel-praha-podle-lokalit/",
+      "en": "https://hledejkurty.cz/en/padel-praha-podle-lokalit/",
+      "uk": "https://hledejkurty.cz/ua/padel-praha-podle-lokalit/",
+      "x-default": "https://hledejkurty.cz/padel-praha-podle-lokalit/"
+    },
+    "bytes": 16507
+  },
+  {
+    "url": "https://hledejkurty.cz/blog/kolik-stoji-padel-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/blog/kolik-stoji-padel-praha/",
+    "canonical": "https://hledejkurty.cz/blog/kolik-stoji-padel-praha/",
+    "title": "Kolik stojí první hra padelu v Praze | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/kolik-stoji-padel-praha/",
+      "en": "https://hledejkurty.cz/en/blog/kolik-stoji-padel-praha/",
+      "uk": "https://hledejkurty.cz/ua/blog/kolik-stoji-padel-praha/",
+      "x-default": "https://hledejkurty.cz/blog/kolik-stoji-padel-praha/"
+    },
+    "bytes": 15216
+  },
+  {
+    "url": "https://hledejkurty.cz/blog/multisport-padel-jak-rezervovat/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/blog/multisport-padel-jak-rezervovat/",
+    "canonical": "https://hledejkurty.cz/blog/multisport-padel-jak-rezervovat/",
+    "title": "Padel a MultiSport: co vyřešit před rezervací | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/multisport-padel-jak-rezervovat/",
+      "en": "https://hledejkurty.cz/en/blog/multisport-padel-jak-rezervovat/",
+      "uk": "https://hledejkurty.cz/ua/blog/multisport-padel-jak-rezervovat/",
+      "x-default": "https://hledejkurty.cz/blog/multisport-padel-jak-rezervovat/"
+    },
+    "bytes": 13130
+  },
+  {
+    "url": "https://hledejkurty.cz/blog/padel-v-zime-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/blog/padel-v-zime-praha/",
+    "canonical": "https://hledejkurty.cz/blog/padel-v-zime-praha/",
+    "title": "Padel v zimě v Praze: jak vybrat halu a termín | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/padel-v-zime-praha/",
+      "en": "https://hledejkurty.cz/en/blog/padel-v-zime-praha/",
+      "uk": "https://hledejkurty.cz/ua/blog/padel-v-zime-praha/",
+      "x-default": "https://hledejkurty.cz/blog/padel-v-zime-praha/"
+    },
+    "bytes": 13280
+  },
+  {
+    "url": "https://hledejkurty.cz/blog/padel-pro-zacatecniky-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/blog/padel-pro-zacatecniky-praha/",
+    "canonical": "https://hledejkurty.cz/blog/padel-pro-zacatecniky-praha/",
+    "title": "Padel pro začátečníky v Praze: první hra | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/padel-pro-zacatecniky-praha/",
+      "en": "https://hledejkurty.cz/en/blog/padel-pro-zacatecniky-praha/",
+      "uk": "https://hledejkurty.cz/ua/blog/padel-pro-zacatecniky-praha/",
+      "x-default": "https://hledejkurty.cz/blog/padel-pro-zacatecniky-praha/"
+    },
+    "bytes": 13484
+  },
+  {
+    "url": "https://hledejkurty.cz/blog/pravidla-padelu/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/blog/pravidla-padelu/",
+    "canonical": "https://hledejkurty.cz/blog/pravidla-padelu/",
+    "title": "Pravidla padelu jednoduše: podání a skóre | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/pravidla-padelu/",
+      "en": "https://hledejkurty.cz/en/blog/pravidla-padelu/",
+      "uk": "https://hledejkurty.cz/ua/blog/pravidla-padelu/",
+      "x-default": "https://hledejkurty.cz/blog/pravidla-padelu/"
+    },
+    "bytes": 14942
+  },
+  {
+    "url": "https://hledejkurty.cz/blog/padel-tenis-squash/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/blog/padel-tenis-squash/",
+    "canonical": "https://hledejkurty.cz/blog/padel-tenis-squash/",
+    "title": "Padel, tenis a squash: co zkusit jako první | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/padel-tenis-squash/",
+      "en": "https://hledejkurty.cz/en/blog/padel-tenis-squash/",
+      "uk": "https://hledejkurty.cz/ua/blog/padel-tenis-squash/",
+      "x-default": "https://hledejkurty.cz/blog/padel-tenis-squash/"
+    },
+    "bytes": 13449
+  },
+  {
+    "url": "https://hledejkurty.cz/blog/spoluhraci-padel-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/blog/spoluhraci-padel-praha/",
+    "canonical": "https://hledejkurty.cz/blog/spoluhraci-padel-praha/",
+    "title": "Jak najít čtvrtého hráče na padel v Praze | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/spoluhraci-padel-praha/",
+      "en": "https://hledejkurty.cz/en/blog/spoluhraci-padel-praha/",
+      "uk": "https://hledejkurty.cz/ua/blog/spoluhraci-padel-praha/",
+      "x-default": "https://hledejkurty.cz/blog/spoluhraci-padel-praha/"
+    },
+    "bytes": 13129
+  },
+  {
+    "url": "https://hledejkurty.cz/blog/jak-vybrat-padelovy-klub-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/blog/jak-vybrat-padelovy-klub-praha/",
+    "canonical": "https://hledejkurty.cz/blog/jak-vybrat-padelovy-klub-praha/",
+    "title": "Jak vybrat padelový klub v Praze pro vaši hru | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/jak-vybrat-padelovy-klub-praha/",
+      "en": "https://hledejkurty.cz/en/blog/jak-vybrat-padelovy-klub-praha/",
+      "uk": "https://hledejkurty.cz/ua/blog/jak-vybrat-padelovy-klub-praha/",
+      "x-default": "https://hledejkurty.cz/blog/jak-vybrat-padelovy-klub-praha/"
+    },
+    "bytes": 13595
+  },
+  {
+    "url": "https://hledejkurty.cz/blog/padel-lekce-treneri-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/blog/padel-lekce-treneri-praha/",
+    "canonical": "https://hledejkurty.cz/blog/padel-lekce-treneri-praha/",
+    "title": "Padel lekce a trenéři v Praze: jak vybírat | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/padel-lekce-treneri-praha/",
+      "en": "https://hledejkurty.cz/en/blog/padel-lekce-treneri-praha/",
+      "uk": "https://hledejkurty.cz/ua/blog/padel-lekce-treneri-praha/",
+      "x-default": "https://hledejkurty.cz/blog/padel-lekce-treneri-praha/"
+    },
+    "bytes": 13501
+  },
+  {
+    "url": "https://hledejkurty.cz/blog/padel-firmy-teambuilding-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/blog/padel-firmy-teambuilding-praha/",
+    "canonical": "https://hledejkurty.cz/blog/padel-firmy-teambuilding-praha/",
+    "title": "Padel pro firmy v Praze: příprava teambuildingu | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/padel-firmy-teambuilding-praha/",
+      "en": "https://hledejkurty.cz/en/blog/padel-firmy-teambuilding-praha/",
+      "uk": "https://hledejkurty.cz/ua/blog/padel-firmy-teambuilding-praha/",
+      "x-default": "https://hledejkurty.cz/blog/padel-firmy-teambuilding-praha/"
+    },
+    "bytes": 13498
+  },
+  {
+    "url": "https://hledejkurty.cz/blog/padel-turnaje-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/blog/padel-turnaje-praha/",
+    "canonical": "https://hledejkurty.cz/blog/padel-turnaje-praha/",
+    "title": "Padelové turnaje v Praze: kde hledat termíny | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/padel-turnaje-praha/",
+      "en": "https://hledejkurty.cz/en/blog/padel-turnaje-praha/",
+      "uk": "https://hledejkurty.cz/ua/blog/padel-turnaje-praha/",
+      "x-default": "https://hledejkurty.cz/blog/padel-turnaje-praha/"
+    },
+    "bytes": 13551
+  },
+  {
+    "url": "https://hledejkurty.cz/en/padel-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/padel-praha/",
+    "canonical": "https://hledejkurty.cz/en/padel-praha/",
+    "title": "Padel in Prague: clubs, prices and booking | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/padel-praha/",
+      "en": "https://hledejkurty.cz/en/padel-praha/",
+      "uk": "https://hledejkurty.cz/ua/padel-praha/",
+      "x-default": "https://hledejkurty.cz/padel-praha/"
+    },
+    "bytes": 25498
+  },
+  {
+    "url": "https://hledejkurty.cz/en/padel-praha-ceny/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/padel-praha-ceny/",
+    "canonical": "https://hledejkurty.cz/en/padel-praha-ceny/",
+    "title": "Prague padel prices 2026: club comparison | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/padel-praha-ceny/",
+      "en": "https://hledejkurty.cz/en/padel-praha-ceny/",
+      "uk": "https://hledejkurty.cz/ua/padel-praha-ceny/",
+      "x-default": "https://hledejkurty.cz/padel-praha-ceny/"
+    },
+    "bytes": 22213
+  },
+  {
+    "url": "https://hledejkurty.cz/en/padel-praha-multisport/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/padel-praha-multisport/",
+    "canonical": "https://hledejkurty.cz/en/padel-praha-multisport/",
+    "title": "Padel with MultiSport in Prague: clubs and terms | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/padel-praha-multisport/",
+      "en": "https://hledejkurty.cz/en/padel-praha-multisport/",
+      "uk": "https://hledejkurty.cz/ua/padel-praha-multisport/",
+      "x-default": "https://hledejkurty.cz/padel-praha-multisport/"
+    },
+    "bytes": 17334
+  },
+  {
+    "url": "https://hledejkurty.cz/en/kryty-padel-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/kryty-padel-praha/",
+    "canonical": "https://hledejkurty.cz/en/kryty-padel-praha/",
+    "title": "Indoor padel in Prague: courts for winter play | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/kryty-padel-praha/",
+      "en": "https://hledejkurty.cz/en/kryty-padel-praha/",
+      "uk": "https://hledejkurty.cz/ua/kryty-padel-praha/",
+      "x-default": "https://hledejkurty.cz/kryty-padel-praha/"
+    },
+    "bytes": 15154
+  },
+  {
+    "url": "https://hledejkurty.cz/en/padel-praha-podle-lokalit/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/padel-praha-podle-lokalit/",
+    "canonical": "https://hledejkurty.cz/en/padel-praha-podle-lokalit/",
+    "title": "Where to play padel in Prague by location | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/padel-praha-podle-lokalit/",
+      "en": "https://hledejkurty.cz/en/padel-praha-podle-lokalit/",
+      "uk": "https://hledejkurty.cz/ua/padel-praha-podle-lokalit/",
+      "x-default": "https://hledejkurty.cz/padel-praha-podle-lokalit/"
+    },
+    "bytes": 16707
+  },
+  {
+    "url": "https://hledejkurty.cz/en/blog/kolik-stoji-padel-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/blog/kolik-stoji-padel-praha/",
+    "canonical": "https://hledejkurty.cz/en/blog/kolik-stoji-padel-praha/",
+    "title": "How much does your first padel game in Prague cost? | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/kolik-stoji-padel-praha/",
+      "en": "https://hledejkurty.cz/en/blog/kolik-stoji-padel-praha/",
+      "uk": "https://hledejkurty.cz/ua/blog/kolik-stoji-padel-praha/",
+      "x-default": "https://hledejkurty.cz/blog/kolik-stoji-padel-praha/"
+    },
+    "bytes": 15245
+  },
+  {
+    "url": "https://hledejkurty.cz/en/blog/multisport-padel-jak-rezervovat/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/blog/multisport-padel-jak-rezervovat/",
+    "canonical": "https://hledejkurty.cz/en/blog/multisport-padel-jak-rezervovat/",
+    "title": "Padel and MultiSport: what to check before booking | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/multisport-padel-jak-rezervovat/",
+      "en": "https://hledejkurty.cz/en/blog/multisport-padel-jak-rezervovat/",
+      "uk": "https://hledejkurty.cz/ua/blog/multisport-padel-jak-rezervovat/",
+      "x-default": "https://hledejkurty.cz/blog/multisport-padel-jak-rezervovat/"
+    },
+    "bytes": 13138
+  },
+  {
+    "url": "https://hledejkurty.cz/en/blog/padel-v-zime-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/blog/padel-v-zime-praha/",
+    "canonical": "https://hledejkurty.cz/en/blog/padel-v-zime-praha/",
+    "title": "Winter padel in Prague: choosing a hall and time | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/padel-v-zime-praha/",
+      "en": "https://hledejkurty.cz/en/blog/padel-v-zime-praha/",
+      "uk": "https://hledejkurty.cz/ua/blog/padel-v-zime-praha/",
+      "x-default": "https://hledejkurty.cz/blog/padel-v-zime-praha/"
+    },
+    "bytes": 13248
+  },
+  {
+    "url": "https://hledejkurty.cz/en/blog/padel-pro-zacatecniky-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/blog/padel-pro-zacatecniky-praha/",
+    "canonical": "https://hledejkurty.cz/en/blog/padel-pro-zacatecniky-praha/",
+    "title": "Padel for beginners in Prague: your first game | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/padel-pro-zacatecniky-praha/",
+      "en": "https://hledejkurty.cz/en/blog/padel-pro-zacatecniky-praha/",
+      "uk": "https://hledejkurty.cz/ua/blog/padel-pro-zacatecniky-praha/",
+      "x-default": "https://hledejkurty.cz/blog/padel-pro-zacatecniky-praha/"
+    },
+    "bytes": 13433
+  },
+  {
+    "url": "https://hledejkurty.cz/en/blog/pravidla-padelu/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/blog/pravidla-padelu/",
+    "canonical": "https://hledejkurty.cz/en/blog/pravidla-padelu/",
+    "title": "Padel rules made simple: serving and scoring | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/pravidla-padelu/",
+      "en": "https://hledejkurty.cz/en/blog/pravidla-padelu/",
+      "uk": "https://hledejkurty.cz/ua/blog/pravidla-padelu/",
+      "x-default": "https://hledejkurty.cz/blog/pravidla-padelu/"
+    },
+    "bytes": 14857
+  },
+  {
+    "url": "https://hledejkurty.cz/en/blog/padel-tenis-squash/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/blog/padel-tenis-squash/",
+    "canonical": "https://hledejkurty.cz/en/blog/padel-tenis-squash/",
+    "title": "Padel, tennis and squash: which should you try first? | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/padel-tenis-squash/",
+      "en": "https://hledejkurty.cz/en/blog/padel-tenis-squash/",
+      "uk": "https://hledejkurty.cz/ua/blog/padel-tenis-squash/",
+      "x-default": "https://hledejkurty.cz/blog/padel-tenis-squash/"
+    },
+    "bytes": 13358
+  },
+  {
+    "url": "https://hledejkurty.cz/en/blog/spoluhraci-padel-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/blog/spoluhraci-padel-praha/",
+    "canonical": "https://hledejkurty.cz/en/blog/spoluhraci-padel-praha/",
+    "title": "How to find a fourth padel player in Prague | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/spoluhraci-padel-praha/",
+      "en": "https://hledejkurty.cz/en/blog/spoluhraci-padel-praha/",
+      "uk": "https://hledejkurty.cz/ua/blog/spoluhraci-padel-praha/",
+      "x-default": "https://hledejkurty.cz/blog/spoluhraci-padel-praha/"
+    },
+    "bytes": 13089
+  },
+  {
+    "url": "https://hledejkurty.cz/en/blog/jak-vybrat-padelovy-klub-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/blog/jak-vybrat-padelovy-klub-praha/",
+    "canonical": "https://hledejkurty.cz/en/blog/jak-vybrat-padelovy-klub-praha/",
+    "title": "How to choose a padel club in Prague for your game | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/jak-vybrat-padelovy-klub-praha/",
+      "en": "https://hledejkurty.cz/en/blog/jak-vybrat-padelovy-klub-praha/",
+      "uk": "https://hledejkurty.cz/ua/blog/jak-vybrat-padelovy-klub-praha/",
+      "x-default": "https://hledejkurty.cz/blog/jak-vybrat-padelovy-klub-praha/"
+    },
+    "bytes": 13583
+  },
+  {
+    "url": "https://hledejkurty.cz/en/blog/padel-lekce-treneri-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/blog/padel-lekce-treneri-praha/",
+    "canonical": "https://hledejkurty.cz/en/blog/padel-lekce-treneri-praha/",
+    "title": "Padel lessons and coaches in Prague: how to choose | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/padel-lekce-treneri-praha/",
+      "en": "https://hledejkurty.cz/en/blog/padel-lekce-treneri-praha/",
+      "uk": "https://hledejkurty.cz/ua/blog/padel-lekce-treneri-praha/",
+      "x-default": "https://hledejkurty.cz/blog/padel-lekce-treneri-praha/"
+    },
+    "bytes": 13530
+  },
+  {
+    "url": "https://hledejkurty.cz/en/blog/padel-firmy-teambuilding-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/blog/padel-firmy-teambuilding-praha/",
+    "canonical": "https://hledejkurty.cz/en/blog/padel-firmy-teambuilding-praha/",
+    "title": "Corporate padel in Prague: planning a team event | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/padel-firmy-teambuilding-praha/",
+      "en": "https://hledejkurty.cz/en/blog/padel-firmy-teambuilding-praha/",
+      "uk": "https://hledejkurty.cz/ua/blog/padel-firmy-teambuilding-praha/",
+      "x-default": "https://hledejkurty.cz/blog/padel-firmy-teambuilding-praha/"
+    },
+    "bytes": 13459
+  },
+  {
+    "url": "https://hledejkurty.cz/en/blog/padel-turnaje-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/en/blog/padel-turnaje-praha/",
+    "canonical": "https://hledejkurty.cz/en/blog/padel-turnaje-praha/",
+    "title": "Padel tournaments in Prague: where to find dates | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/padel-turnaje-praha/",
+      "en": "https://hledejkurty.cz/en/blog/padel-turnaje-praha/",
+      "uk": "https://hledejkurty.cz/ua/blog/padel-turnaje-praha/",
+      "x-default": "https://hledejkurty.cz/blog/padel-turnaje-praha/"
+    },
+    "bytes": 13503
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/padel-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/padel-praha/",
+    "canonical": "https://hledejkurty.cz/ua/padel-praha/",
+    "title": "Падел у Празі: клуби, ціни та бронювання | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/padel-praha/",
+      "en": "https://hledejkurty.cz/en/padel-praha/",
+      "uk": "https://hledejkurty.cz/ua/padel-praha/",
+      "x-default": "https://hledejkurty.cz/padel-praha/"
+    },
+    "bytes": 30908
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/padel-praha-ceny/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/padel-praha-ceny/",
+    "canonical": "https://hledejkurty.cz/ua/padel-praha-ceny/",
+    "title": "Ціни на падел у Празі 2026: порівняння клубів | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/padel-praha-ceny/",
+      "en": "https://hledejkurty.cz/en/padel-praha-ceny/",
+      "uk": "https://hledejkurty.cz/ua/padel-praha-ceny/",
+      "x-default": "https://hledejkurty.cz/padel-praha-ceny/"
+    },
+    "bytes": 27247
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/padel-praha-multisport/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/padel-praha-multisport/",
+    "canonical": "https://hledejkurty.cz/ua/padel-praha-multisport/",
+    "title": "Падел із MultiSport у Празі: клуби та умови | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/padel-praha-multisport/",
+      "en": "https://hledejkurty.cz/en/padel-praha-multisport/",
+      "uk": "https://hledejkurty.cz/ua/padel-praha-multisport/",
+      "x-default": "https://hledejkurty.cz/padel-praha-multisport/"
+    },
+    "bytes": 21407
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/kryty-padel-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/kryty-padel-praha/",
+    "canonical": "https://hledejkurty.cz/ua/kryty-padel-praha/",
+    "title": "Критий падел у Празі: корти для зимової гри | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/kryty-padel-praha/",
+      "en": "https://hledejkurty.cz/en/kryty-padel-praha/",
+      "uk": "https://hledejkurty.cz/ua/kryty-padel-praha/",
+      "x-default": "https://hledejkurty.cz/kryty-padel-praha/"
+    },
+    "bytes": 18391
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/padel-praha-podle-lokalit/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/padel-praha-podle-lokalit/",
+    "canonical": "https://hledejkurty.cz/ua/padel-praha-podle-lokalit/",
+    "title": "Де грати в падел у Празі за розташуванням | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/padel-praha-podle-lokalit/",
+      "en": "https://hledejkurty.cz/en/padel-praha-podle-lokalit/",
+      "uk": "https://hledejkurty.cz/ua/padel-praha-podle-lokalit/",
+      "x-default": "https://hledejkurty.cz/padel-praha-podle-lokalit/"
+    },
+    "bytes": 19533
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/blog/kolik-stoji-padel-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/blog/kolik-stoji-padel-praha/",
+    "canonical": "https://hledejkurty.cz/ua/blog/kolik-stoji-padel-praha/",
+    "title": "Скільки коштує перша гра в падел у Празі | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/kolik-stoji-padel-praha/",
+      "en": "https://hledejkurty.cz/en/blog/kolik-stoji-padel-praha/",
+      "uk": "https://hledejkurty.cz/ua/blog/kolik-stoji-padel-praha/",
+      "x-default": "https://hledejkurty.cz/blog/kolik-stoji-padel-praha/"
+    },
+    "bytes": 18993
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/blog/multisport-padel-jak-rezervovat/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/blog/multisport-padel-jak-rezervovat/",
+    "canonical": "https://hledejkurty.cz/ua/blog/multisport-padel-jak-rezervovat/",
+    "title": "Падел і MultiSport: що з’ясувати до бронювання | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/multisport-padel-jak-rezervovat/",
+      "en": "https://hledejkurty.cz/en/blog/multisport-padel-jak-rezervovat/",
+      "uk": "https://hledejkurty.cz/ua/blog/multisport-padel-jak-rezervovat/",
+      "x-default": "https://hledejkurty.cz/blog/multisport-padel-jak-rezervovat/"
+    },
+    "bytes": 16143
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/blog/padel-v-zime-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/blog/padel-v-zime-praha/",
+    "canonical": "https://hledejkurty.cz/ua/blog/padel-v-zime-praha/",
+    "title": "Падел узимку в Празі: як обрати зал і час | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/padel-v-zime-praha/",
+      "en": "https://hledejkurty.cz/en/blog/padel-v-zime-praha/",
+      "uk": "https://hledejkurty.cz/ua/blog/padel-v-zime-praha/",
+      "x-default": "https://hledejkurty.cz/blog/padel-v-zime-praha/"
+    },
+    "bytes": 16112
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/blog/padel-pro-zacatecniky-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/blog/padel-pro-zacatecniky-praha/",
+    "canonical": "https://hledejkurty.cz/ua/blog/padel-pro-zacatecniky-praha/",
+    "title": "Падел для початківців у Празі: перша гра | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/padel-pro-zacatecniky-praha/",
+      "en": "https://hledejkurty.cz/en/blog/padel-pro-zacatecniky-praha/",
+      "uk": "https://hledejkurty.cz/ua/blog/padel-pro-zacatecniky-praha/",
+      "x-default": "https://hledejkurty.cz/blog/padel-pro-zacatecniky-praha/"
+    },
+    "bytes": 16525
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/blog/pravidla-padelu/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/blog/pravidla-padelu/",
+    "canonical": "https://hledejkurty.cz/ua/blog/pravidla-padelu/",
+    "title": "Прості правила паделу: подача та рахунок | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/pravidla-padelu/",
+      "en": "https://hledejkurty.cz/en/blog/pravidla-padelu/",
+      "uk": "https://hledejkurty.cz/ua/blog/pravidla-padelu/",
+      "x-default": "https://hledejkurty.cz/blog/pravidla-padelu/"
+    },
+    "bytes": 18809
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/blog/padel-tenis-squash/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/blog/padel-tenis-squash/",
+    "canonical": "https://hledejkurty.cz/ua/blog/padel-tenis-squash/",
+    "title": "Падел, теніс і сквош: що спробувати спочатку | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/padel-tenis-squash/",
+      "en": "https://hledejkurty.cz/en/blog/padel-tenis-squash/",
+      "uk": "https://hledejkurty.cz/ua/blog/padel-tenis-squash/",
+      "x-default": "https://hledejkurty.cz/blog/padel-tenis-squash/"
+    },
+    "bytes": 16661
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/blog/spoluhraci-padel-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/blog/spoluhraci-padel-praha/",
+    "canonical": "https://hledejkurty.cz/ua/blog/spoluhraci-padel-praha/",
+    "title": "Як знайти четвертого гравця в падел у Празі | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/spoluhraci-padel-praha/",
+      "en": "https://hledejkurty.cz/en/blog/spoluhraci-padel-praha/",
+      "uk": "https://hledejkurty.cz/ua/blog/spoluhraci-padel-praha/",
+      "x-default": "https://hledejkurty.cz/blog/spoluhraci-padel-praha/"
+    },
+    "bytes": 16111
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/blog/jak-vybrat-padelovy-klub-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/blog/jak-vybrat-padelovy-klub-praha/",
+    "canonical": "https://hledejkurty.cz/ua/blog/jak-vybrat-padelovy-klub-praha/",
+    "title": "Як обрати падел-клуб у Празі для вашої гри | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/jak-vybrat-padelovy-klub-praha/",
+      "en": "https://hledejkurty.cz/en/blog/jak-vybrat-padelovy-klub-praha/",
+      "uk": "https://hledejkurty.cz/ua/blog/jak-vybrat-padelovy-klub-praha/",
+      "x-default": "https://hledejkurty.cz/blog/jak-vybrat-padelovy-klub-praha/"
+    },
+    "bytes": 16623
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/blog/padel-lekce-treneri-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/blog/padel-lekce-treneri-praha/",
+    "canonical": "https://hledejkurty.cz/ua/blog/padel-lekce-treneri-praha/",
+    "title": "Уроки паделу та тренери в Празі: як обирати | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/padel-lekce-treneri-praha/",
+      "en": "https://hledejkurty.cz/en/blog/padel-lekce-treneri-praha/",
+      "uk": "https://hledejkurty.cz/ua/blog/padel-lekce-treneri-praha/",
+      "x-default": "https://hledejkurty.cz/blog/padel-lekce-treneri-praha/"
+    },
+    "bytes": 16565
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/blog/padel-firmy-teambuilding-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/blog/padel-firmy-teambuilding-praha/",
+    "canonical": "https://hledejkurty.cz/ua/blog/padel-firmy-teambuilding-praha/",
+    "title": "Падел для компаній у Празі: планування тімбілдингу | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/padel-firmy-teambuilding-praha/",
+      "en": "https://hledejkurty.cz/en/blog/padel-firmy-teambuilding-praha/",
+      "uk": "https://hledejkurty.cz/ua/blog/padel-firmy-teambuilding-praha/",
+      "x-default": "https://hledejkurty.cz/blog/padel-firmy-teambuilding-praha/"
+    },
+    "bytes": 16932
+  },
+  {
+    "url": "https://hledejkurty.cz/ua/blog/padel-turnaje-praha/",
+    "status": 200,
+    "final_url": "https://hledejkurty.cz/ua/blog/padel-turnaje-praha/",
+    "canonical": "https://hledejkurty.cz/ua/blog/padel-turnaje-praha/",
+    "title": "Турніри з паделу в Празі: де шукати дати | HLEDEJKURTY",
+    "indexable": true,
+    "h1_count": 1,
+    "alternates": {
+      "cs": "https://hledejkurty.cz/blog/padel-turnaje-praha/",
+      "en": "https://hledejkurty.cz/en/blog/padel-turnaje-praha/",
+      "uk": "https://hledejkurty.cz/ua/blog/padel-turnaje-praha/",
+      "x-default": "https://hledejkurty.cz/blog/padel-turnaje-praha/"
+    },
+    "bytes": 16633
+  }
+]
