@@ -1,0 +1,28 @@
+priority,url,reported_reason,prepared_action,status_as_of
+1,https://hledejkurty.cz/clubs/head-tenis-centrum-vestec/,Discovered - currently not indexed,Inspect index record; test live; request indexing if live passes and unindexed,2026-10-23; Vestec index/live checked 2026-11-02
+1,https://hledejkurty.cz/clubs/padel-dzus/,Discovered - currently not indexed,Inspect index record; test live; request indexing if live passes and unindexed,2026-10-23; Vestec index/live checked 2026-11-02
+1,https://hledejkurty.cz/clubs/padel-neride/,Discovered - currently not indexed,Inspect index record; test live; request indexing if live passes and unindexed,2026-10-23; Vestec index/live checked 2026-11-02
+1,https://hledejkurty.cz/clubs/cisarska-louka-padel/,Discovered - currently not indexed,Inspect index record; test live; request indexing if live passes and unindexed,2026-10-23; Vestec index/live checked 2026-11-02
+1,https://hledejkurty.cz/clubs/ltc-modrany-2005/,Discovered - currently not indexed,Inspect index record; test live; request indexing if live passes and unindexed,2026-10-23; Vestec index/live checked 2026-11-02
+1,https://hledejkurty.cz/clubs/plechovka-dubec/,Discovered - currently not indexed,Inspect index record; test live; request indexing if live passes and unindexed,2026-10-23; Vestec index/live checked 2026-11-02
+1,https://hledejkurty.cz/clubs/sk-satalice/,Discovered - currently not indexed,Inspect index record; test live; request indexing if live passes and unindexed,2026-10-23; Vestec index/live checked 2026-11-02
+1,https://hledejkurty.cz/clubs/the-court/,Discovered - currently not indexed,Inspect index record; test live; request indexing if live passes and unindexed,2026-10-23; Vestec index/live checked 2026-11-02
+2,https://hledejkurty.cz/en/blog/the-court-opening/,Discovered - currently not indexed,Inspect after Czech commercial pages; preserve translated self-canonical,2026-10-23
+2,https://hledejkurty.cz/en/clubs/ltc-modrany-2005/,Discovered - currently not indexed,Inspect after Czech commercial pages; preserve translated self-canonical,2026-10-23
+2,https://hledejkurty.cz/en/clubs/plechovka-dubec/,Discovered - currently not indexed,Inspect after Czech commercial pages; preserve translated self-canonical,2026-10-23
+2,https://hledejkurty.cz/en/clubs/sk-satalice/,Discovered - currently not indexed,Inspect after Czech commercial pages; preserve translated self-canonical,2026-10-23
+3,https://hledejkurty.cz/en/cookie-policy/,Discovered - currently not indexed,Inspect after Czech commercial pages; preserve translated self-canonical,2026-10-23
+2,https://hledejkurty.cz/ua/blog/,Discovered - currently not indexed,Inspect after Czech commercial pages; preserve translated self-canonical,2026-10-23
+2,https://hledejkurty.cz/ua/clubs/ltc-modrany-2005/,Discovered - currently not indexed,Inspect after Czech commercial pages; preserve translated self-canonical,2026-10-23
+2,https://hledejkurty.cz/ua/clubs/plechovka-dubec/,Discovered - currently not indexed,Inspect after Czech commercial pages; preserve translated self-canonical,2026-10-23
+2,https://hledejkurty.cz/ua/clubs/the-court/,Discovered - currently not indexed,Inspect after Czech commercial pages; preserve translated self-canonical,2026-10-23
+4,https://hledejkurty.cz/?club=one-padel,Crawled - currently not indexed,Keep clean canonical; no indexing request for duplicate,2026-10-23
+4,https://hledejkurty.cz/?club=padel-neride,Crawled - currently not indexed,Keep clean canonical; no indexing request for duplicate,2026-10-23
+4,https://hledejkurty.cz/?club=head-tenis-centrum-vestec,Crawled - currently not indexed,Keep clean canonical; no indexing request for duplicate,2026-10-23
+4,https://hledejkurty.cz/?club=padel-prosek,Crawled - currently not indexed,Keep clean canonical; no indexing request for duplicate,2026-10-23
+4,https://hledejkurty.cz/?page=about,Crawled - currently not indexed,Keep clean canonical; no indexing request for duplicate,2026-10-23
+4,https://hledejkurty.cz/?page=all-clubs,Alternate page with proper canonical,Expected exclusion; do not request duplicate indexing,2026-10-23
+4,https://hledejkurty.cz/?club=sk-slavia-praha-padel,Alternate page with proper canonical,Expected exclusion; do not request duplicate indexing,2026-10-23
+4,http://hledejkurty.cz/,Page with redirect,Keep redirect to HTTPS apex,2026-10-23
+4,https://www.hledejkurty.cz/,Page with redirect,Keep redirect to HTTPS apex,2026-10-23
+2,https://hledejkurty.cz/clubs/one-padel,Redirect error,Current one-hop 301 then 200; inspect canonical and allow reprocessing,2026-10-23; HTTP checked 2026-11-02
