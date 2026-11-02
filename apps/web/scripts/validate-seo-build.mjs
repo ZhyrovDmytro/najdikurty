@@ -12,6 +12,12 @@ const notFound = await readFile(path.join(distDir, "404.html"), "utf8");
 const locations = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
 const sitemapDates = [...sitemap.matchAll(/<lastmod>([^<]+)<\/lastmod>/g)].map((match) => match[1]);
 const errors = [];
+try {
+  const favicon = await readFile(path.join(distDir, "favicon.ico"));
+  check(favicon.readUInt16LE(0) === 0 && favicon.readUInt16LE(2) === 1 && favicon.readUInt16LE(4) > 0, "Root favicon must be a valid ICO file");
+} catch {
+  errors.push("Missing or unreadable /favicon.ico fallback");
+}
 const titles = new Map();
 const appSource = await readFile(path.join(appDir, "src/main.tsx"), "utf8");
 const catalog = JSON.parse(await readFile(path.join(appDir, "src/club-facts.json"), "utf8"));
@@ -87,6 +93,7 @@ for (const location of locations) {
   const isAuditedContentPage = /^(?:\/(?:en|ua))?\/$/.test(url.pathname) || /^(?:\/(?:en|ua))?\/clubs\/$/.test(url.pathname) || /^(?:\/(?:en|ua))?\/clubs\/[^/]+\/$/.test(url.pathname);
 
   check(Boolean(title), `${location} has no title`);
+  check(html.includes('sizes="96x96" href="/favicon.ico"'), `${location} does not link the root favicon`);
   check(Boolean(description), `${location} has no meta description`);
   check(description.length >= 70 && description.length <= 180, `${location} description length is ${description.length}`);
   check(canonical === location, `${location} canonical is ${canonical || "missing"}`);
