@@ -85,9 +85,13 @@ import {
   type NewsArticle
 } from "./news";
 import { ClubEditorial, ClubPriceEvidence, DataMethodology, EditorialPage, EditorialLinks, editorialClubs, EDITORIAL_PAGES, EDITORIAL_DATE, EDITORIAL_MODIFIED_DATE, editorialImage, editorialPath, type Editorial } from "./editorial";
-import { czechCourtCount, formatOpeningHours, matchesDirectoryFilters } from "./club-presentation";
+import { czechCourtCount, formatOpeningHours, matchesDirectoryFilters, courtTypeForSelectedClubs } from "./club-presentation";
 import { lowestPrice } from "./pricing";
 import clubFactsData from "./club-facts.json";
+import { AdvancedSearch } from "./advanced-search";
+import { normalizeSearchPreferences, searchDates, type SearchPreferences } from "./search-preferences";
+import { readSavedSearches } from "./saved-searches";
+import { SavedSearchesPanel } from "./saved-searches-panel";
 import "./styles.css";
 
 const MAX_SEARCH_DAYS_AHEAD = 7;
@@ -211,6 +215,9 @@ const CLUBS: Club[] = (clubFactsData as Omit<Club, "imageUrl" | "bookingUrl">[])
 }));
 
 const FETCHABLE_CLUBS = CLUBS.filter((club) => club.availabilityEnabled !== false);
+const defaultSearch = { date: initialCurrentDate, endDate: initialCurrentDate, clubSlugs: FETCHABLE_CLUBS.map(club => club.slug), duration: 60, courtsNeeded: 1, courtType: "all" as const, multisportOnly: false, startTime: null, endTime: null };
+const initialSavedSearches = readSavedSearches({ getItem: key => window.localStorage.getItem(key) }, defaultSearch, i18n.t("savedSearches.legacyName"));
+const savedSearch = normalizeSearchPreferences(initialSavedSearches[0]?.params ?? defaultSearch, defaultSearch, addDaysToDateInput(initialCurrentDate, MAX_SEARCH_DAYS_AHEAD));
 const HOME_FEATURED_CLUB_SLUGS = [
   "padel-prosek",
   "padel-club-spoje",
@@ -242,6 +249,7 @@ const CLUB_IMAGE_DIMENSIONS: Record<string, { height: number; width: number }> =
 };
 type AvailabilityByClub = Record<string, AvailabilityResult>;
 type FailedClub = {
+  date?: string;
   club: Club;
   reason: string;
 };
@@ -259,6 +267,9 @@ interface AvailabilityLoadOptions {
   customEndTime?: string | null;
   customStartTime?: string | null;
   date?: string;
+  endDate?: string;
+  clubSlugs?: string[];
+  multisportOnly?: boolean;
   duration?: number;
   selectedClubSlug?: string | null;
   courtTypeFilter?: CourtTypeFilter;
@@ -348,12 +359,21 @@ async function runWithConcurrency<T>(
 function App() {
   const { t } = useTranslation();
   const [page, setPage] = useState<Page>(initialPage);
-  const [date, setDate] = useState(today);
-  const [courtsNeeded, setCourtsNeeded] = useState(1);
-  const [duration, setDuration] = useState(60);
-  const [courtTypeFilter, setCourtTypeFilter] = useState<CourtTypeFilter>("all");
-  const [customStartTime, setCustomStartTime] = useState<string | null>(null);
-  const [customEndTime, setCustomEndTime] = useState<string | null>(null);
+  const [date, setDate] = useState(initialParams.has("date") ? today : savedSearch.date);
+  const [endDate, setEndDate] = useState(initialParams.has("date") && today !== savedSearch.date ? today : savedSearch.endDate);
+  const [searchClubSlugs, setSearchClubSlugs] = useState(FETCHABLE_CLUBS.filter(club => savedSearch.clubSlugs.includes(club.slug) && clubMatchesCourtType(club, savedSearch.courtType) && (!savedSearch.multisportOnly || club.acceptsMultisport === true)).map(club => club.slug));
+  const [searchMultisportOnly, setSearchMultisportOnly] = useState(savedSearch.multisportOnly);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [savedSearchesOpen, setSavedSearchesOpen] = useState(false);
+  const [saveSearchOpen, setSaveSearchOpen] = useState(false);
+  const [searchMessage, setSearchMessage] = useState<string | null>(null);
+  const [availabilityByDate, setAvailabilityByDate] = useState<Record<string, AvailabilityByClub>>({});
+  const [searchedDates, setSearchedDates] = useState<string[]>([]);
+  const [courtsNeeded, setCourtsNeeded] = useState(savedSearch.courtsNeeded);
+  const [duration, setDuration] = useState(savedSearch.duration);
+  const [courtTypeFilter, setCourtTypeFilter] = useState<CourtTypeFilter>(savedSearch.courtType);
+  const [customStartTime, setCustomStartTime] = useState<string | null>(savedSearch.startTime);
+  const [customEndTime, setCustomEndTime] = useState<string | null>(savedSearch.endTime);
   const [now, setNow] = useState(() => new Date());
   const [availabilityByClub, setAvailabilityByClub] = useState<AvailabilityByClub>({});
   const [selectedClubSlug, setSelectedClubSlug] = useState<string | null>(initialPage === "clubs" ? initialRoute.clubSlug : null);
@@ -393,11 +413,18 @@ function App() {
   const manualRefreshSequenceRef = useRef(0);
   const currentPragueDate = pragueDateInputValue(now);
   const maximumSelectableDate = addDaysToDateInput(currentPragueDate, MAX_SEARCH_DAYS_AHEAD);
+  const currentSearchPreferences: SearchPreferences = {
+    date, endDate: endDate < date ? date : endDate, clubSlugs: searchClubSlugs,
+    duration, courtsNeeded, courtType: courtTypeFilter, multisportOnly: searchMultisportOnly,
+    startTime: customStartTime, endTime: customEndTime
+  };
   const trackedClubs = useMemo(() => sortTrackedClubs(buildTrackedClubs(CLUBS), allClubsSort), [allClubsSort]);
 
   function clearAvailabilityResults() {
     loadSequenceRef.current += 1;
     setAvailabilityByClub({});
+    setAvailabilityByDate({});
+    setSearchedDates([]);
     setFailedClubs([]);
     setLoadError(null);
     setIsLoading(false);
@@ -414,134 +441,87 @@ function App() {
     const searchSelectedClubSlug = hasOption("selectedClubSlug") ? options.selectedClubSlug ?? null : selectedClubSlug;
     const searchCourtTypeFilter = options.courtTypeFilter ?? courtTypeFilter;
     const searchDuration = options.duration ?? duration;
-    const searchWindow = effectiveTimeWindowForDate(searchDate, searchStartTime, searchEndTime, now);
-    const targetClubs = (searchSelectedClubSlug
-      ? CLUBS.filter(
-          (club) =>
-            club.slug === searchSelectedClubSlug &&
-            club.availabilityEnabled !== false &&
-            clubMatchesCourtType(club, searchCourtTypeFilter)
-        )
-      : FETCHABLE_CLUBS.filter((club) => clubMatchesCourtType(club, searchCourtTypeFilter))
-    ).filter((club) => clubCanMatchSearchWindow(club, searchDate, searchDuration, searchWindow, now));
-    const loadId = loadSequenceRef.current + 1;
-    loadSequenceRef.current = loadId;
-
-    setIsLoading(true);
-    setAvailabilityByClub((currentAvailability) => {
-      if (!searchSelectedClubSlug) return {};
-      const nextAvailability = { ...currentAvailability };
-      delete nextAvailability[searchSelectedClubSlug];
-      return nextAvailability;
+    const searchEndDate = options.endDate ?? (options.date ? searchDate : endDate);
+    const searchClubs = options.clubSlugs ?? searchClubSlugs;
+    const searchMultisport = options.multisportOnly ?? searchMultisportOnly;
+    const dates = searchSelectedClubSlug ? [searchDate] : searchDates(searchDate, searchEndDate < searchDate ? searchDate : searchEndDate);
+    const targetClubs = FETCHABLE_CLUBS.filter(club =>
+      (searchSelectedClubSlug ? club.slug === searchSelectedClubSlug : searchClubs.includes(club.slug)) &&
+      clubMatchesCourtType(club, searchCourtTypeFilter) &&
+      (searchSelectedClubSlug || !searchMultisport || club.acceptsMultisport === true)
+    );
+    const jobs = dates.flatMap(day => {
+      const window = effectiveTimeWindowForDate(day, searchStartTime, searchEndTime, now);
+      return targetClubs.filter(club => clubCanMatchSearchWindow(club, day, searchDuration, window, now))
+        .map(club => ({ club, day, window }));
     });
+    const loadId = ++loadSequenceRef.current;
+    setIsLoading(true);
+    setAvailabilityByClub({});
+    setAvailabilityByDate({});
+    setSearchedDates(dates);
     setFailedClubs([]);
     setLoadError(null);
-    setLoadProgress({ completed: 0, total: targetClubs.length });
+    setLoadProgress({ completed: 0, total: jobs.length });
     setCheckedClubSlugs(new Set());
     setAvailabilityCheckClubs(targetClubs);
 
-    if (targetClubs.length === 0) {
-      setIsLoading(false);
-      return;
+    function storeDay(day: string, availability: AvailabilityByClub) {
+      if (loadSequenceRef.current !== loadId) return;
+      setAvailabilityByDate(current => ({ ...current, [day]: { ...current[day], ...availability } }));
+      if (day === searchDate) setAvailabilityByClub(current => ({ ...current, ...availability }));
     }
-
-    if (USE_DATABASE_SEARCH) {
-      const params = new URLSearchParams({
-        date: searchDate,
-        from: searchWindow.start,
-        to: searchWindow.end,
-        duration: String(searchDuration),
-        clubs: targetClubs.map((club) => club.slug).join(",")
-      });
-      if (searchCourtTypeFilter !== "all") {
-        params.set("indoor", String(searchCourtTypeFilter === "indoor"));
-      }
-
-      try {
-        await databaseBackendWarmup;
-        const response = await fetchDatabaseSearchWithRetry(
-          `${API_BASE_URL}/api/search?${params}`,
-          (url) => fetchAvailabilityRequest(url, DATABASE_SEARCH_REQUEST_TIMEOUT_MS),
-          {
-            attempts: DATABASE_SEARCH_REQUEST_MAX_ATTEMPTS,
-            delay,
-            retryDelayMs: AVAILABILITY_REQUEST_RETRY_DELAY_MS
-          }
-        );
-        if (loadSequenceRef.current !== loadId) return;
-        const dayRangeByClub = Object.fromEntries(targetClubs.map((club) => [
-          club.slug,
-          club.openingHours?.[weekdayForDate(searchDate)] ?? TIME_PICKER_RANGE
-        ]));
-        const databaseAvailability = databaseSearchToAvailabilityByClub(response, {
-          date: searchDate,
-          durationMinutes: searchDuration,
-          dayRangeByClub
-        });
-        setAvailabilityByClub((currentAvailability) =>
-          searchSelectedClubSlug
-            ? { ...currentAvailability, ...databaseAvailability }
-            : databaseAvailability
-        );
-        setCheckedClubSlugs(new Set(targetClubs.map((club) => club.slug)));
-        setLoadProgress({ completed: targetClubs.length, total: targetClubs.length });
-      } catch (error) {
-        if (loadSequenceRef.current !== loadId) return;
-        const reason = error instanceof Error ? error.message : t("availability.failedLoad");
-        setLoadError(reason);
-        setFailedClubs(targetClubs.map((club) => ({ club, reason })));
-      } finally {
-        if (loadSequenceRef.current === loadId) setIsLoading(false);
-      }
-      return;
+    const completedByClub = new Map<string, number>();
+    function complete(clubs: Club[]) {
+      if (loadSequenceRef.current !== loadId) return;
+      for (const club of clubs) completedByClub.set(club.slug, (completedByClub.get(club.slug) ?? 0) + 1);
+      setCheckedClubSlugs(new Set(targetClubs.filter(club =>
+        (completedByClub.get(club.slug) ?? 0) >= jobs.filter(job => job.club.slug === club.slug).length
+      ).map(club => club.slug)));
+      setLoadProgress(current => ({ ...current, completed: current.completed + clubs.length }));
     }
-
+    function fail(clubs: Club[], day: string, error: unknown) {
+      if (loadSequenceRef.current !== loadId) return;
+      const reason = `${day}: ${error instanceof Error ? error.message : t("availability.failedLoad")}`;
+      setFailedClubs(current => [...current, ...clubs.map(club => ({ club, reason, date: day }))]);
+    }
     try {
-      await runWithConcurrency(
-        targetClubs,
-        AVAILABILITY_REQUEST_CONCURRENCY,
-        async (club) => {
-          const params = new URLSearchParams({ club: club.slug, sport: club.sport, date: searchDate });
+      if (USE_DATABASE_SEARCH) {
+        await databaseBackendWarmup;
+        await runWithConcurrency(dates, 2, async day => {
+          const dayJobs = jobs.filter(job => job.day === day);
+          const clubs = dayJobs.map(job => job.club);
+          if (clubs.length === 0 || loadSequenceRef.current !== loadId) return;
+          const window = dayJobs[0].window;
+          const params = new URLSearchParams({ date: day, from: window.start, to: window.end,
+            duration: String(searchDuration), clubs: clubs.map(club => club.slug).join(",") });
+          if (searchCourtTypeFilter !== "all") params.set("indoor", String(searchCourtTypeFilter === "indoor"));
+          try {
+            const response = await fetchDatabaseSearchWithRetry(`${API_BASE_URL}/api/search?${params}`,
+              url => fetchAvailabilityRequest(url, DATABASE_SEARCH_REQUEST_TIMEOUT_MS),
+              { attempts: DATABASE_SEARCH_REQUEST_MAX_ATTEMPTS, delay, retryDelayMs: AVAILABILITY_REQUEST_RETRY_DELAY_MS });
+            storeDay(day, databaseSearchToAvailabilityByClub(response, {
+              date: day, durationMinutes: searchDuration,
+              dayRangeByClub: Object.fromEntries(clubs.map(club => [club.slug, club.openingHours?.[weekdayForDate(day)] ?? TIME_PICKER_RANGE]))
+            }));
+          } catch (error) { fail(clubs, day, error); }
+          finally { complete(clubs); }
+        });
+      } else {
+        await runWithConcurrency(jobs, AVAILABILITY_REQUEST_CONCURRENCY, async ({ club, day }) => {
+          if (loadSequenceRef.current !== loadId) return;
+          const params = new URLSearchParams({ club: club.slug, sport: club.sport, date: day });
           try {
             const payload = await fetchAvailabilityWithRetry(`${API_BASE_URL}/api/availability?${params}`, club.name);
-
-            if (loadSequenceRef.current !== loadId) return;
-            setAvailabilityByClub((currentAvailability) => ({
-              ...currentAvailability,
-              [club.slug]: payload
-            }));
-          } catch (error) {
-            if (loadSequenceRef.current !== loadId) return;
-            setFailedClubs((currentFailedClubs) => [
-              ...currentFailedClubs,
-              {
-                club,
-                reason: error instanceof Error ? error.message : t("availability.unknownCheckFailure")
-              }
-            ]);
-          } finally {
-            if (loadSequenceRef.current === loadId) {
-              setCheckedClubSlugs((currentSlugs) => {
-                const nextSlugs = new Set(currentSlugs);
-                nextSlugs.add(club.slug);
-                return nextSlugs;
-              });
-              setLoadProgress((currentProgress) => ({
-                ...currentProgress,
-                completed: Math.min(currentProgress.completed + 1, currentProgress.total)
-              }));
-            }
-          }
-        }
-      );
-    } catch (loadError) {
-      if (loadSequenceRef.current === loadId) {
-        setLoadError(loadError instanceof Error ? loadError.message : t("availability.failedLoad"));
+            storeDay(day, { [club.slug]: payload });
+          } catch (error) { fail([club], day, error); }
+          finally { complete([club]); }
+        });
       }
+    } catch (error) {
+      if (loadSequenceRef.current === loadId) setLoadError(error instanceof Error ? error.message : t("availability.failedLoad"));
     } finally {
-      if (loadSequenceRef.current === loadId) {
-        setIsLoading(false);
-      }
+      if (loadSequenceRef.current === loadId) setIsLoading(false);
     }
   }
 
@@ -565,11 +545,12 @@ function App() {
     }
   }
 
+
   useEffect(() => {
     if (page !== "clubs") return;
     if (!selectedClubSlug) return;
     void loadAvailability();
-  }, [courtTypeFilter, date, page, selectedClubSlug]);
+  }, [courtTypeFilter, date, duration, customStartTime, customEndTime, page, selectedClubSlug]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 30_000);
@@ -679,7 +660,7 @@ function App() {
       : options;
   }, [availabilityByClub]);
   const timeOptions = useMemo(() => buildTimeOptions(TIME_PICKER_RANGE), []);
-  const minimumStartTime = useMemo(() => defaultStartTimeForDate(date, now), [date, now]);
+  const minimumStartTime = useMemo(() => !selectedClub && endDate > date ? TIME_PICKER_RANGE.start : defaultStartTimeForDate(date, now), [date, endDate, now, selectedClub]);
   const timeWindow = useMemo<TimeRange>(
     () => ({
       start: latestTime(customStartTime ?? minimumStartTime, minimumStartTime),
@@ -736,6 +717,15 @@ function App() {
     });
   }, [availabilityByClub, duration, courtsNeeded, timeWindow, now]);
 
+  const dailyResults = searchedDates.map(day => ({ day, results: sortClubResults(
+    CLUBS.flatMap(club => {
+      const availability = availabilityByDate[day]?.[club.slug];
+      if (!availability || !clubMatchesCourtType(club, courtTypeFilter)) return [];
+      const bookableSlots = buildBookableSlots(availability, duration, courtsNeeded, effectiveTimeWindowForDate(day, customStartTime, customEndTime, now), now);
+      return bookableSlots.length ? [{ club, availability, bookableSlots }] : [];
+    }), findCourtSort
+  ) }));
+  const isRangeSearch = !selectedClub && searchedDates.length > 1;
   const visibleClubResults = sortClubResults(
     clubResults.filter((result) => result.bookableSlots.length > 0 && clubMatchesCourtType(result.club, courtTypeFilter)),
     findCourtSort
@@ -749,7 +739,7 @@ function App() {
       : [];
   const shareableSlots: ShareableSlot[] = selectedClub
     ? selectedSlots.map((slot) => toShareableSlot(selectedClub, selectedAvailability?.date ?? date, slot, language, courtsNeeded))
-    : visibleClubResults.flatMap(({ club, availability, bookableSlots }) =>
+    : (isRangeSearch ? dailyResults.flatMap(day => day.results) : visibleClubResults).flatMap(({ club, availability, bookableSlots }) =>
         bookableSlots.map((slot) => toShareableSlot(club, availability?.date ?? date, slot, language))
       );
   const selectedShareSlots = shareableSlots.filter((slot) => selectedShareSlotIds.has(slot.id));
@@ -759,9 +749,10 @@ function App() {
         ...Object.values(availabilityByClub).map((availability) => availability.courts.length),
         USE_DATABASE_SEARCH ? Math.max(...FETCHABLE_CLUBS.map((club) => club.courtCount)) : 2
       );
+  const searchTimeError = duration > toMinutes(timeWindow.end) - toMinutes(timeWindow.start);
   const startTimeOptions = timeOptions.filter((time) => time >= minimumStartTime && time < timeWindow.end);
   const endTimeOptions = timeOptions.filter((time) => time > timeWindow.start);
-  const visibleClubSlugs = useMemo(() => visibleClubResults.map((result) => result.club.slug), [visibleClubResults]);
+  const visibleClubSlugs = [...new Set((isRangeSearch ? dailyResults.flatMap(day => day.results) : visibleClubResults).map(result => result.club.slug))];
   const areAllCompactRowsExpanded =
     visibleClubSlugs.length > 0 && visibleClubSlugs.every((clubSlug) => expandedCompactClubSlugs.has(clubSlug));
   const shouldShowMainResults = Boolean(selectedClub) || hasSearchedAvailability;
@@ -818,7 +809,7 @@ function App() {
   }
 
   async function requestManualRefresh() {
-    const clubSlugs = selectedClubSlug ? [selectedClubSlug] : FETCHABLE_CLUBS.map((club) => club.slug);
+    const clubSlugs = selectedClubSlug ? [selectedClubSlug] : searchClubSlugs;
     const refreshSequence = manualRefreshSequenceRef.current + 1;
     const requestedAtFallback = new Date().toISOString();
     manualRefreshSequenceRef.current = refreshSequence;
@@ -924,15 +915,15 @@ function App() {
         void requestManualRefresh();
       }}
       size="icon"
-      title={t("actions.refreshAvailability")}
+      title={isRangeSearch ? t("advanced.refreshHint") : t("actions.refreshAvailability")}
       variant="secondary"
-      disabled={isLoading || isManualRefreshRequesting || isManualRefreshWaiting}
+      disabled={isLoading || isManualRefreshRequesting || isManualRefreshWaiting || isRangeSearch}
     />
   );
   const searchAvailabilityButton = (
     <Button
       className="searchSubmitButton"
-      disabled={isLoading}
+      disabled={isLoading || searchClubSlugs.length === 0 || searchTimeError}
       icon={isLoading ? <RefreshCw className="refreshSpinner" size={18} /> : <SearchCheck size={18} />}
       onClick={() => {
         captureEvent("availability_searched", {
@@ -995,7 +986,7 @@ function App() {
           <option value="outdoor">{t("sort.outdoorFirst")}</option>
         </Select>
       </div>
-      {visibleClubResults.length > 0 ? (
+      {visibleClubSlugs.length > 0 ? (
         <Button
           aria-pressed={isSlotSelectionMode}
           className="slotSelectModeButton"
@@ -1144,7 +1135,9 @@ function App() {
           userCoordinates={userCoordinates}
         />
       ) : (
-        <>
+        <div className={selectedClub ? "" : "searchWorkspace"}>
+        <div className="searchMain">
+          {!selectedClub && hasSearchedAvailability ? <h1 className="visuallyHidden">{t("home.title")}</h1> : null}
           {!selectedClub && !hasSearchedAvailability ? (
             <section className="searchIntro" aria-labelledby="search-title">
               <h1 id="search-title">{t("home.title")}</h1>
@@ -1157,16 +1150,22 @@ function App() {
             <span className="uiFieldIcon">
               <CalendarDays size={16} />
             </span>
-            {t("club.date")}
+            {!selectedClub ? t("advanced.startDate") : t("club.date")}
           </span>
           <DateCalendarPicker
             value={date}
+            label={t("club.date")}
             minDate={currentPragueDate}
             maxDate={maximumSelectableDate}
             language={language}
             onChange={updateDate}
           />
         </div>
+        {!selectedClub ? <div className="uiField searchField searchField-throughDate">
+          <span className="uiFieldLabel"><span className="uiFieldIcon"><CalendarDays size={16} /></span>{t("advanced.endDate")}</span>
+          <DateCalendarPicker label={t("advanced.endDate")} value={endDate < date ? date : endDate} minDate={date} maxDate={maximumSelectableDate} language={language}
+            onChange={value => { setEndDate(value); setHasSearchedAvailability(false); clearAvailabilityResults(); }} />
+        </div> : null}
         <Field icon={<UsersRound size={16} />} label={t("club.needed")} className="searchField">
           <Select
             value={courtsNeeded}
@@ -1178,6 +1177,7 @@ function App() {
                 filter: "courts_needed",
                 value: nextCourtsNeeded
               });
+              invalidateSearch();
               setCourtsNeeded(nextCourtsNeeded);
             }}
           >
@@ -1199,6 +1199,7 @@ function App() {
                 filter: "duration",
                 value: nextDuration
               });
+              invalidateSearch();
               setDuration(nextDuration);
             }}
           >
@@ -1221,6 +1222,7 @@ function App() {
                 value: nextCourtType
               });
               if (!selectedClubSlug) {
+                setSearchClubSlugs(FETCHABLE_CLUBS.filter(club => clubMatchesCourtType(club, nextCourtType) && (!searchMultisportOnly || club.acceptsMultisport === true)).map(club => club.slug));
                 setHasSearchedAvailability(false);
                 clearAvailabilityResults();
               }
@@ -1251,7 +1253,26 @@ function App() {
           </Select>
         </Field>
         {!selectedClub ? <div className="searchField searchField-submit">{searchAvailabilityButton}</div> : null}
+        {searchTimeError ? <p className="searchTimeError" role="alert">{t("savedSearches.timeWindowError")}</p> : null}
+        {!selectedClub ? <AdvancedSearch
+          clubs={FETCHABLE_CLUBS.filter(club => !searchMultisportOnly || club.acceptsMultisport === true)}
+          selected={searchClubSlugs}
+          multisportOnly={searchMultisportOnly}
+          onMultisportChange={enabled => {
+            setSearchMultisportOnly(enabled);
+            updateSearchClubs(searchClubSlugs.filter(slug => !enabled || FETCHABLE_CLUBS.find(club => club.slug === slug)?.acceptsMultisport === true));
+          }}
+          dayCount={searchDates(date, endDate < date ? date : endDate).length}
+          onChange={updateSearchClubs}
+          open={advancedOpen}
+          onOpenChange={setAdvancedOpen}
+          onSave={() => setSaveSearchOpen(true)}
+          onOpenSaved={() => setSavedSearchesOpen(true)}
+          canSave={searchClubSlugs.length > 0 && !searchTimeError}
+          searchButton={searchAvailabilityButton}
+        /> : null}
           </Card>
+          {searchMessage && !selectedClub ? <p className="searchFeedback" role="status">{searchMessage}</p> : null}
 
           {!selectedClub ? (
             <section className="quickSearches" aria-label={t("quickSearch.label")}>
@@ -1277,7 +1298,7 @@ function App() {
         <div>
           <Search size={18} />
           <strong>
-            {selectedClub ? t("club.slots", { count: selectedSlots.length }) : t("club.matchingClubs", { count: visibleClubResults.length })}
+            {selectedClub ? t("club.slots", { count: selectedSlots.length }) : t("club.matchingClubs", { count: isRangeSearch ? new Set(dailyResults.flatMap(day => day.results.map(result => result.club.slug))).size : visibleClubResults.length })}
           </strong>
         </div>
         {selectedClub ? (
@@ -1349,23 +1370,28 @@ function App() {
               userCoordinates={userCoordinates}
             />
           ) : shouldShowMainResults ? (
-            <ClubList
-              results={visibleClubResults}
-              isLoading={isLoading}
-              loadProgress={loadProgress}
-              checkedClubSlugs={checkedClubSlugs}
-              failedClubs={failedClubs}
-              availabilityCheckClubs={availabilityCheckClubs}
-              actions={clubResultActions}
-              compact={isShortInfoMode}
-              expandedClubSlugs={expandedCompactClubSlugs}
-              onExpandedClubSlugsChange={setExpandedCompactClubSlugs}
-              onSelectClub={(club) => updateSelectedClub(club.slug)}
-              isSelectionMode={isSlotSelectionMode}
-              selectedSlotIds={selectedShareSlotIds}
-              onToggleSlot={toggleShareSlot}
-              userCoordinates={userCoordinates}
-            />
+            <div className="dailySearchResults">
+              {(isRangeSearch ? dailyResults : [{ day: date, results: visibleClubResults }]).map(({ day, results }, index) => <section key={day} aria-label={day}>
+                {isRangeSearch ? <h2 className="searchDayHeading"><CalendarDays size={20} />{new Intl.DateTimeFormat(localeByLanguage[language], { weekday: "long", day: "numeric", month: "long" }).format(new Date(`${day}T12:00:00`))}</h2> : null}
+                <ClubList
+                  results={results}
+                  isLoading={isLoading}
+                  loadProgress={loadProgress}
+                  checkedClubSlugs={checkedClubSlugs}
+                  failedClubs={failedClubs.filter(failure => !failure.date || failure.date === day)}
+                  availabilityCheckClubs={availabilityCheckClubs}
+                  actions={index === 0 ? clubResultActions : null}
+                  compact={isShortInfoMode}
+                  expandedClubSlugs={expandedCompactClubSlugs}
+                  onExpandedClubSlugsChange={setExpandedCompactClubSlugs}
+                  onSelectClub={(club) => updateSelectedClub(club.slug, day)}
+                  isSelectionMode={isSlotSelectionMode}
+                  selectedSlotIds={selectedShareSlotIds}
+                  onToggleSlot={toggleShareSlot}
+                  userCoordinates={userCoordinates}
+                />
+              </section>)}
+            </div>
           ) : (
             <HomeDiscovery
               clubs={trackedClubs}
@@ -1376,7 +1402,15 @@ function App() {
               userCoordinates={userCoordinates}
             />
           )}
-        </>
+        </div>
+        {!selectedClub ? <SavedSearchesPanel
+          params={currentSearchPreferences} defaults={{ ...defaultSearch, date: currentPragueDate }} maximumDate={maximumSelectableDate}
+          clubs={FETCHABLE_CLUBS} language={language}
+          open={savedSearchesOpen} onOpenChange={setSavedSearchesOpen}
+          saveOpen={saveSearchOpen} onSaveOpenChange={setSaveSearchOpen}
+          onApply={applySavedSearch} onMessage={setSearchMessage}
+        /> : null}
+        </div>
       )}
       <SiteFooter
         currentPage={page}
@@ -1416,6 +1450,48 @@ function App() {
     </main>
   );
 
+  function applySavedSearch(preferences: SearchPreferences) {
+    setDate(preferences.date);
+    setEndDate(preferences.endDate);
+    setSearchClubSlugs(FETCHABLE_CLUBS.filter(club => preferences.clubSlugs.includes(club.slug) && clubMatchesCourtType(club, preferences.courtType) && (!preferences.multisportOnly || club.acceptsMultisport === true)).map(club => club.slug));
+    setSearchMultisportOnly(preferences.multisportOnly);
+    setCourtsNeeded(preferences.courtsNeeded);
+    setDuration(preferences.duration);
+    setCourtTypeFilter(preferences.courtType);
+    setCustomStartTime(preferences.startTime);
+    setCustomEndTime(preferences.endTime);
+    setHasSearchedAvailability(true);
+    clearAvailabilityResults();
+    writeUrl({ date: preferences.date, clubSlug: null, mode: "replace" });
+    void requestLocationForDistances();
+    void loadAvailability({
+      date: preferences.date,
+      endDate: preferences.endDate,
+      clubSlugs: preferences.clubSlugs,
+      multisportOnly: preferences.multisportOnly,
+      duration: preferences.duration,
+      courtTypeFilter: preferences.courtType,
+      customStartTime: preferences.startTime,
+      customEndTime: preferences.endTime,
+      selectedClubSlug: null
+    });
+    requestAnimationFrame(() => document.querySelector<HTMLButtonElement>(".searchField-date .datePickerButton")?.focus());
+  }
+
+  function invalidateSearch() {
+    if (selectedClubSlug) return;
+    setHasSearchedAvailability(false);
+    setSearchMessage(null);
+    clearAvailabilityResults();
+  }
+
+  function updateSearchClubs(slugs: string[]) {
+    setSearchClubSlugs(slugs);
+    setCourtTypeFilter(courtTypeForSelectedClubs(FETCHABLE_CLUBS.filter(club => slugs.includes(club.slug)), courtTypeFilter));
+    setHasSearchedAvailability(false);
+    clearAvailabilityResults();
+  }
+
   function updateDate(nextDate: string) {
     const nextSelectableDate = selectableDate(nextDate, currentPragueDate);
     captureEvent("filters_changed", {
@@ -1424,6 +1500,7 @@ function App() {
       value: nextSelectableDate
     });
     setDate(nextSelectableDate);
+    if (endDate < nextSelectableDate) setEndDate(nextSelectableDate);
     if (page === "clubs" && !selectedClubSlug) {
       setHasSearchedAvailability(false);
       clearAvailabilityResults();
@@ -1442,6 +1519,7 @@ function App() {
       start_time: nextStartTime
     });
     setDate(nextSelectableDate);
+    setEndDate(nextSelectableDate);
     setCourtsNeeded(1);
     setDuration(90);
     setCustomStartTime(nextStartTime);
@@ -1459,6 +1537,7 @@ function App() {
   }
 
   function updateStartTime(nextStartTime: string) {
+    invalidateSearch();
     captureEvent("filters_changed", {
       club_slug: selectedClubSlug,
       date,
@@ -1472,6 +1551,7 @@ function App() {
   }
 
   function updateEndTime(nextEndTime: string) {
+    invalidateSearch();
     captureEvent("filters_changed", {
       club_slug: selectedClubSlug,
       date,
@@ -1484,7 +1564,8 @@ function App() {
     }
   }
 
-  function updateSelectedClub(nextClubSlug: string | null) {
+  function updateSelectedClub(nextClubSlug: string | null, nextDate = date) {
+    setDate(nextDate);
     if (nextClubSlug) {
       void requestLocationForDistances();
       captureEvent("club_selected", {
@@ -1498,7 +1579,7 @@ function App() {
     setSelectedClubSlug(nextClubSlug);
     setHasSearchedAvailability(Boolean(nextClubSlug));
     setFailedClubs([]);
-    writeUrl({ date, clubSlug: nextClubSlug, mode: "push" });
+    writeUrl({ date: nextDate, clubSlug: nextClubSlug, mode: "push" });
     window.scrollTo({ top: 0 });
   }
 
@@ -1781,8 +1862,6 @@ function HomeDiscovery({
           <span>{t("home.allClubsCta")}</span>
         </a>
       </div>
-
-      <EditorialLinks language={language} />
 
       <div className="homeStats" aria-label={t("home.statsLabel")}>
         <Card className="homeStat">
@@ -2261,13 +2340,13 @@ function FailedClubAlert({ failedClubs, date, title }: { failedClubs: FailedClub
     <Alert aria-label={t("availability.uncheckedClubs", { count: failedClubs.length })} icon={<AlertCircle size={18} />} title={title ?? t("availability.uncheckedClubs", { count: failedClubs.length })}>
       <p>{t("availability.suggestion")}</p>
       <div className="failedLinks">
-        {failedClubs.map(({ club }) => (
+        {failedClubs.map(({ club, reason, date: failedDate }) => (
           <a
-            href={club.bookingUrl(date)}
-            key={club.slug}
+            href={club.bookingUrl(failedDate ?? date)}
+            key={`${club.slug}-${reason}`}
             target="_blank"
             rel="noreferrer"
-            onClick={() => captureBookingSystemOpened(club, "availability_error", date)}
+            onClick={() => captureBookingSystemOpened(club, "availability_error", failedDate ?? date)}
           >
             {club.name}
           </a>
@@ -2774,8 +2853,10 @@ function DateCalendarPicker({
   minDate,
   maxDate,
   language,
+  label,
   onChange
 }: {
+  label?: string;
   value: string;
   minDate: string;
   maxDate: string;
@@ -2807,19 +2888,29 @@ function DateCalendarPicker({
     }
 
     document.addEventListener("pointerdown", handlePointerDown);
+    (pickerRef.current?.querySelector<HTMLButtonElement>(".datePickerDay-selected:not(:disabled)") ?? pickerRef.current?.querySelector<HTMLButtonElement>(".datePickerDay:not(:disabled)"))?.focus();
     return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, [isOpen]);
 
   return (
-    <div className="datePicker" ref={pickerRef}>
+    <div className="datePicker" ref={pickerRef} onBlur={event => {
+      if (!event.currentTarget.contains(event.relatedTarget)) setIsOpen(false);
+    }} onKeyDown={event => {
+      if (event.key === "Escape" && isOpen) {
+        event.stopPropagation();
+        setIsOpen(false);
+        pickerRef.current?.querySelector<HTMLButtonElement>(".datePickerButton")?.focus();
+      }
+    }}>
       <button
         aria-expanded={isOpen}
         aria-haspopup="dialog"
+        aria-label={label ? `${label}: ${formatSelectedDateLabel(value, pragueDateInputValue(new Date()), language)}` : undefined}
         className="uiControl datePickerButton"
         type="button"
         onClick={() => setIsOpen((currentValue) => !currentValue)}
       >
-        <span>{formatSelectedDateLabel(value, minDate, language)}</span>
+        <span>{formatSelectedDateLabel(value, pragueDateInputValue(new Date()), language)}</span>
         <ChevronDown size={17} aria-hidden="true" />
       </button>
       {isOpen ? (
@@ -2854,7 +2945,7 @@ function DateCalendarPicker({
             {calendarDays.map((day, index) =>
               day ? (
                 <button
-                  aria-current={day === minDate ? "date" : undefined}
+                  aria-current={day === pragueDateInputValue(new Date()) ? "date" : undefined}
                   aria-pressed={day === value}
                   className={day === value ? "datePickerDay datePickerDay-selected" : "datePickerDay"}
                   disabled={day < minDate || day > maxDate}
@@ -2863,6 +2954,7 @@ function DateCalendarPicker({
                   onClick={() => {
                     onChange(day);
                     setIsOpen(false);
+                    pickerRef.current?.querySelector<HTMLButtonElement>(".datePickerButton")?.focus();
                   }}
                 >
                   {Number(day.slice(-2))}

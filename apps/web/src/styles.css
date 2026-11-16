@@ -3968,3 +3968,208 @@ a.detailInfoRow:hover {
 .newsArticleImageCaption { margin-top: 10px; color: var(--text-muted); font-size: 12px; line-height: 1.5; }
 
 .newsArticleDiagram { display: block; width: 100%; height: auto; margin-block: 24px; }
+
+.advancedSearch {
+  grid-column: 1 / -1;
+  min-width: 0;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.advancedSearchBar, .advancedClubActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.advancedSummary, .advancedClubActions > span, .advancedDateRange p {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+.advancedSearchBar .uiButton > span:last-child { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.advancedChevronOpen { transform: rotate(180deg); }
+.advancedSearchOptions {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.7fr) minmax(0, 3fr);
+  gap: 24px;
+  padding: 20px 0 4px;
+}
+.advancedDateRange p { line-height: 1.6; margin: 12px 0 0; }
+.advancedClubs { border: 0; padding: 0; margin: 0; min-width: 0; }
+.advancedClubs legend { padding: 0; font-weight: 600; font-size: 0.9rem; }
+.advancedClubActions { margin: 4px 0 12px; }
+.advancedClubActions > div { display: flex; gap: 4px; }
+.advancedClubGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.advancedClubOption {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  min-height: 64px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+.advancedClubOption:has(input:checked) { background: var(--brand-soft); border-color: var(--brand-border); }
+.advancedClubOption:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+.advancedClubOption input { accent-color: var(--brand); width: 16px; height: 16px; flex: 0 0 auto; margin: 2px 0 0; }
+.advancedClubOption small { display: block; color: var(--text-muted); margin-top: 4px; }
+.advancedValidation { color: var(--danger); font-size: 0.875rem; }
+.dailySearchResults { display: grid; gap: 32px; }
+.searchDayHeading { display: flex; align-items: center; gap: 8px; font-size: 1.125rem; margin: 8px 0 16px; }
+@media (max-width: 1080px) {
+  .advancedClubGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .advancedSearchOptions { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .advancedDateRange .datePickerButton { width: 100%; }
+  .advancedClubGrid { grid-template-columns: minmax(0, 1fr); }
+}
+.advancedSearch .uiButton-secondary { background: var(--surface); color: var(--text); }
+.advancedSearch .uiButton-ghost { background: transparent; color: var(--text-muted); }
+.advancedSearch .uiButton:hover { background: var(--surface-muted); }
+
+.advancedMultisportFilter {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 20px;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  cursor: pointer;
+}
+.advancedMultisportFilter input { accent-color: var(--brand); width: 16px; height: 16px; flex: 0 0 auto; margin: 2px 0 0; }
+.advancedMultisportFilter:focus-within { outline: 2px solid var(--focus); outline-offset: 4px; }
+
+/* Search workspace: schedules and results carry the accent; controls stay neutral. */
+body:has(.searchWorkspace) { background: var(--app-bg); }
+.appShell:has(.searchWorkspace) { max-width: 1480px; }
+.searchWorkspace { display: grid; grid-template-columns: minmax(0, 1fr) 280px; align-items: start; gap: 24px; }
+.searchMain { min-width: 0; }
+.searchWorkspace .searchIntro { margin-top: 0; }
+.searchWorkspace .searchIntro h1 { max-width: 24ch; font-size: 32px; line-height: 1.2; font-weight: 600; }
+.searchWorkspace .searchIntro p { max-width: 64ch; font-size: 16px; }
+.searchWorkspace .searchPanel-withSubmit { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; padding: 20px; }
+.searchWorkspace .searchPanel .uiControl, .searchWorkspace .searchSubmitButton { min-height: 40px; font-size: 14px; }
+.searchWorkspace .searchField { grid-column: auto; grid-row: auto; }
+.searchWorkspace .uiButton { font-weight: 500; }
+.searchWorkspace .advancedClubs legend { font-weight: 500; }
+.searchWorkspace .advancedSearchOptions { grid-template-columns: minmax(0, 1fr); padding-top: 16px; gap: 16px; }
+.searchWorkspace .advancedDateRange { display: flex; align-items: start; justify-content: space-between; gap: 24px; }
+.searchWorkspace .advancedDateRange p { margin: 0; max-width: 48ch; font-size: 13px; }
+.searchWorkspace .advancedMultisportFilter { margin: 0; max-width: 28ch; flex: 0 0 auto; }
+.searchWorkspace .advancedClubGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.searchWorkspace .advancedClubOption { gap: 12px; background: var(--surface); border-color: var(--border); }
+.searchWorkspace .advancedClubOption:has(input:checked) { background: var(--surface-subtle); border-color: var(--border-strong); }
+.searchWorkspace .advancedClubOption:hover { background: var(--surface-muted); }
+.searchWorkspace .advancedClubOption small { font-size: 12px; }
+.advancedSearchActions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.advancedSearchActions .savedSearchesTrigger { display: none; }
+.searchFeedback { margin: 12px 0; padding: 12px 16px; font-size: 14px; color: var(--text-muted); background: var(--surface-muted); border-radius: 8px; }
+.savedSearchSidebar { position: sticky; top: 24px; min-width: 0; max-height: calc(100dvh - 48px); overflow-y: auto; padding: 20px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+.savedSearchHeading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.savedSearchHeading h2 { margin: 0; font-size: 18px; font-weight: 500; }
+.savedSearchHeading h2 > span { margin-left: 8px; font-size: 14px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.savedSearchHelp { margin: 8px 0 20px; color: var(--text-muted); font-size: 13px; line-height: 1.5; }
+.savedSearchSidebar .savedSearchClose { display: none; }
+.savedSearchList { display: grid; gap: 16px; list-style: none; padding: 0; margin: 0; }
+.savedSearchItem { min-width: 0; border-top: 1px solid var(--border); padding-top: 16px; }
+.savedSearchItem-active { border-top-color: var(--brand); }
+.savedSearchItemHeading { display: flex; align-items: flex-start; gap: 8px; }
+.savedSearchUse { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex: 1; min-width: 0; min-height: 36px; padding: 4px 0; border: 0; text-align: left; background: transparent; color: var(--text); cursor: pointer; font-weight: 500; }
+.savedSearchUse span { overflow-wrap: anywhere; }
+.savedSearchUse svg { flex: 0 0 auto; color: var(--text-muted); }
+.savedSearchUse:hover { color: var(--brand-strong); }
+.savedSearchUse:focus-visible, .savedSearchUndo button:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; border-radius: 4px; }
+.savedSearchItemHeading .uiButton { flex: 0 0 auto; width: 32px; height: 36px; background: transparent; box-shadow: none; border-color: transparent; color: var(--text-muted); }
+.savedSearchItemHeading .uiButton:hover { background: var(--danger-soft); color: var(--danger); }
+.savedSearchParameters { display: grid; gap: 8px; margin: 12px 0 0; font-size: 12px; line-height: 1.5; }
+.savedSearchParameters > div { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 8px; }
+.savedSearchParameters dt { color: var(--text-muted); }
+.savedSearchParameters dd { margin: 0; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.savedSearchParameters summary { cursor: pointer; }
+.savedSearchParameters details p { margin: 8px 0 0; color: var(--text-muted); }
+.savedSearchDateNote { margin: 12px 0 0; color: var(--warning); font-size: 12px; line-height: 1.5; }
+.savedSearchLoaded { margin-top: 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--text-muted); }
+.savedSearchEmpty { border-top: 1px solid var(--border); padding-top: 20px; color: var(--text-muted); }
+.savedSearchEmpty h3 { color: var(--text); font-size: 14px; font-weight: 500; line-height: 1.5; margin: 12px 0 8px; }
+.savedSearchEmpty p { margin: 0; font-size: 13px; line-height: 1.6; }
+.savedSearchUndo { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 16px; padding: 12px; background: var(--surface-muted); border-radius: 8px; font-size: 13px; }
+.savedSearchUndo span { overflow-wrap: anywhere; }
+.savedSearchUndo button { border: 0; background: transparent; color: var(--brand-strong); padding: 4px; cursor: pointer; }
+.saveSearchDialog, .savedSearchSheet { color: var(--text); background: var(--surface); border: 1px solid var(--border-strong); border-radius: 12px; padding: 24px; box-shadow: var(--shadow-card); }
+.saveSearchDialog { width: min(460px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); }
+.saveSearchDialog::backdrop, .savedSearchSheet::backdrop { background: rgb(16 24 40 / 45%); }
+.saveSearchDialog .savedSearchParameters { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 13px; }
+.saveSearchDialog .savedSearchParameters > div { grid-template-columns: 88px minmax(0, 1fr); }
+.saveSearchDialog .uiControl { width: 100%; min-height: 44px; }
+.saveSearchDialogActions { margin-top: 24px; display: flex; justify-content: flex-end; gap: 8px; }
+.saveSearchDialog .uiButton, .savedSearchSheet .uiButton { font-weight: 500; }
+.savedSearchSheet { margin: 0 0 0 auto; width: min(360px, 100vw); max-width: 100vw; height: 100dvh; max-height: 100dvh; border-radius: 0; padding: 24px; }
+/* Hidden tooltip content must not extend the mobile results page. */
+.nextCheckBadge::after { display: none; }
+.nextCheckBadge:hover::after, .nextCheckBadge:focus-visible::after { display: block; left: auto; right: 0; }
+@media (max-width: 1080px) {
+  .searchWorkspace { grid-template-columns: minmax(0, 1fr); }
+  .savedSearchSidebar { display: none; }
+  .advancedSearchActions .savedSearchesTrigger { display: inline-flex; }
+}
+@media (max-width: 760px) {
+  .searchWorkspace .searchIntro h1 { font-size: 28px; }
+  .searchWorkspace .searchPanel-withSubmit { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 16px; gap: 16px; }
+  .searchWorkspace .searchField-submit { grid-column: 1 / -1; }
+  .searchWorkspace .searchPanel .uiControl { min-height: 44px; font-size: 13px; }
+  .searchWorkspace .advancedSearchBar { align-items: flex-start; }
+  .searchWorkspace .advancedSearchActions { justify-content: flex-start; }
+  .searchWorkspace .advancedDateRange { flex-direction: column; gap: 16px; }
+  .searchWorkspace .advancedMultisportFilter { max-width: none; }
+  .searchWorkspace .advancedClubGrid { grid-template-columns: minmax(0, 1fr); }
+  .saveSearchDialog { padding: 20px; }
+  .saveSearchDialogActions > .uiButton { flex: 1; white-space: normal; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .searchWorkspace *, .saveSearchDialog *, .savedSearchSheet * { transition: none !important; animation: none !important; }
+}
+.appShell:has(.searchWorkspace) { width: min(1480px, 100%); }
+.searchTimeError { grid-column: 1 / -1; margin: 0; color: var(--danger); font-size: 14px; }
+.searchWorkspace .uiFieldLabel { font-weight: 500; }
+.searchWorkspace .advancedSearchFooter { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+.advancedSearchFooter > span { font-size: 13px; color: var(--text-muted); }
+.searchWorkspace .advancedSearchFooter .searchSubmitButton { width: auto; min-width: 160px; }
+.nextCheckBadge:hover::after, .nextCheckBadge:focus-visible::after { left: 0; right: auto; max-width: min(240px, calc(100vw - 96px)); }
+@media (min-width: 1280px) {
+  .searchWorkspace .advancedClubGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .searchWorkspace .advancedSearchFooter { flex-wrap: wrap; }
+  .searchWorkspace .advancedSearchFooter .searchSubmitButton { width: 100%; }
+}
+.searchWorkspace .homeDiscoveryIntro { padding: 16px 0; border: 0; box-shadow: none; background: transparent; gap: 24px; }
+.searchWorkspace .homeStats, .searchWorkspace .homeDiscoveryGrid { gap: 24px; }
+.searchWorkspace .homeStat, .searchWorkspace .homeDiscoveryCard { border: 0; border-top: 1px solid var(--border); border-radius: 0; box-shadow: none; background: transparent; padding: 16px 0; gap: 8px; }
+.searchWorkspace .homeStat svg, .searchWorkspace .homeDiscoveryCard svg { color: var(--text-muted); width: 18px; height: 18px; }
+.searchWorkspace .homeStat strong, .searchWorkspace .homeDiscoveryCard h3 { font-weight: 500; font-size: 16px; }
+.searchWorkspace .homeDiscoveryIntro h2, .searchWorkspace .homeFeaturedClubs h2 { font-weight: 500; font-size: 24px; }
+.searchWorkspace .quickSearches { gap: 12px; flex-wrap: wrap; }
+.searchWorkspace .quickSearches .uiButton { min-height: 36px; }
+@media (max-width: 400px) {
+  .appShell:has(.searchWorkspace) .brandMark { gap: 4px; font-size: 12px; font-weight: 600; letter-spacing: 0; }
+  .appShell:has(.searchWorkspace) .topbarActions { gap: 4px; }
+  .appShell:has(.searchWorkspace) .brandMark img { width: 28px; height: 28px; }
+}
+.searchWorkspace .uiButton-primary { background: var(--brand-strong); border-color: var(--brand-strong); }
+
+.advancedSearchOverview { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; min-width: 0; }
+.advancedSearchOverview .advancedSummary { font-size: 12px; line-height: 1.5; }
+.advancedSearchBar .advancedSearchToggle,
+.advancedSearchBar .advancedSaveButton { min-height: 32px; padding: 4px 8px; border: 0; box-shadow: none; font-size: 13px; }
+.advancedSearchBar .advancedSearchToggle { margin-left: -8px; color: var(--text); }
+.advancedSearchBar .advancedSaveButton { color: var(--text-muted); }
+.advancedSearchToggle > span { display: inline-flex; align-items: center; gap: 6px; }
+.advancedSearchBar .advancedSearchToggle:focus-visible,
+.advancedSearchBar .advancedSaveButton:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+@media (max-width: 760px) {
+  .advancedSearchBar .advancedSearchToggle,
+  .advancedSearchBar .advancedSaveButton { min-height: 44px; }
+}

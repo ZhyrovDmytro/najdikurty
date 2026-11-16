@@ -50,6 +50,8 @@ npm run dev:web
 
 The API defaults to `http://localhost:4000`. The web app defaults to `http://localhost:5173`.
 
+The find-court page offers **Advanced search**: select one or more clubs (all courts at each club), or use **Select all**, and choose an inclusive date range within the next seven days. The daily time window and other filters apply to every selected day. Choosing Indoor or Outdoor selects all matching clubs. Manual club changes update the court type without replacing the selection. The MultiSport checkbox restricts the list and search to clubs that list card support; turning it off preserves the remaining checked clubs. Results are grouped by date. **Save search** asks for a unique name and adds the current dates, clubs, time window, duration, court count, court type, and MultiSport filter to the **Saved searches** sidebar. On mobile the saved list opens in a panel. Click an entry to apply its parameters and run it immediately, change its filters and use **Update saved search**, or delete it with an undo option. Searches stay in this browser's local storage; the most recently added search is restored on the next visit. Expired ranges move together into the current booking window when loaded, with an explicit notice; the stored original dates remain visible in the sidebar. The previous single preset is retained as “Previous search”. A date in the URL takes precedence over the saved start date. Range searches query the existing daily API with bounded concurrency; they do not trigger provider scraping in database mode.
+
 ## Supabase database
 
 Phase 3 adds a PostgreSQL availability index without changing the current API or UI runtime. Copy `apps/api/.env.example` to `apps/api/.env.local`, then set:

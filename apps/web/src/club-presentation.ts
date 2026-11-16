@@ -36,3 +36,14 @@ export function formatOpeningHours(
   }
   return groups.map(({ start, end, range }) => `${weekdayLabels[start]}${end === start ? "" : `–${weekdayLabels[end]}`} ${range.start}–${range.end}`).join(", ");
 }
+
+export function courtTypeForSelectedClubs(
+  clubs: Array<{ courtTypes: string[] }>,
+  current: "all" | "indoor" | "outdoor"
+): "all" | "indoor" | "outdoor" {
+  if (clubs.length === 0 || current !== "all" && clubs.every(club => club.courtTypes.includes(current))) return current;
+  const types = new Set(clubs.flatMap(club => club.courtTypes));
+  if (types.size === 1 && types.has("indoor")) return "indoor";
+  if (types.size === 1 && types.has("outdoor")) return "outdoor";
+  return "all";
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { czechCourtCount, formatOpeningHours, matchesDirectoryFilters } from "./club-presentation";
+import { czechCourtCount, formatOpeningHours, matchesDirectoryFilters, courtTypeForSelectedClubs } from "./club-presentation";
 import clubs from "./club-facts.json";
 
 describe("club presentation", () => {
@@ -23,5 +23,23 @@ describe("club presentation", () => {
     expect(matchesDirectoryFilters(club, { query: "", district: "", courtType: "outdoor", multisport: false })).toBe(false);
     const unknown = clubs.find(club => !club.acceptsMultisport)!;
     expect(matchesDirectoryFilters(unknown, { query: "", district: "", courtType: "all", multisport: true })).toBe(false);
+  });
+});
+
+describe("court type from manual club selection", () => {
+  const indoor = { courtTypes: ["indoor"] };
+  const outdoor = { courtTypes: ["outdoor"] };
+  const mixed = { courtTypes: ["indoor", "outdoor"] };
+  it("keeps a type while deselecting matching clubs, including a mixed club", () => {
+    expect(courtTypeForSelectedClubs([outdoor, mixed], "outdoor")).toBe("outdoor");
+    expect(courtTypeForSelectedClubs([indoor, mixed], "indoor")).toBe("indoor");
+    expect(courtTypeForSelectedClubs([], "indoor")).toBe("indoor");
+  });
+  it("switches to all for a mixed selection and narrows when only one type remains", () => {
+    expect(courtTypeForSelectedClubs([outdoor, indoor], "outdoor")).toBe("all");
+    expect(courtTypeForSelectedClubs([outdoor, indoor], "indoor")).toBe("all");
+    expect(courtTypeForSelectedClubs([indoor], "all")).toBe("indoor");
+    expect(courtTypeForSelectedClubs([outdoor], "all")).toBe("outdoor");
+    expect(courtTypeForSelectedClubs([mixed], "all")).toBe("all");
   });
 });
